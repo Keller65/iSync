@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "307792145167",
+    "project_id": "fir-app-aa77f",
+    "storage_bucket": "fir-app-aa77f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307792145167:android:cd4209f34cc74436166c7a",
+        "android_client_info": {
+          "package_name": "com.aerley_adkins2.demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDT8dslYaGSZarqezb0y4VQSkrJ8qfncjI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

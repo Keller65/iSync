@@ -2,13 +2,13 @@ import PlusIcon from '@/assets/icons/PlusIcon';
 import BottomSheetClientDetails from '@/components/BottomSheetClientDetails/page';
 import BottomSheetSearchClients, { BottomSheetSearchClientsHandle } from '@/components/BottomSheetSearchClients/page';
 import { useAppStore } from '@/state';
+import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GooglePlacesTextInput from 'react-native-google-places-textinput';
 import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
-import { useFocusEffect } from '@react-navigation/native';
 
 const LocationsScreen = () => {
   const { updateCustomerLocation, setUpdateCustomerLocation, selectedCustomerLocation } = useAppStore();
@@ -21,6 +21,7 @@ const LocationsScreen = () => {
   const [selectedPlace, setSelectedPlace] = useState<{ lat: number; lon: number; display_name: string } | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
   const [deviceLocation, setDeviceLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const GOOGLE_MAPS_API_KEY = 'AIzaSyAAHjttmr1uloKr30pqnc1TT_1dRyxuw48';
   // 👉 Obtener ubicación del dispositivo
   useEffect(() => {
     const getDeviceLocation = async () => {
@@ -116,7 +117,7 @@ const LocationsScreen = () => {
         return;
       }
 
-      const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.placeId}&key=AIzaSyAjUmggc5C_bvkHjsAT_o3Y_uOVwqIjwX4`;
+      const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.placeId}&key=${GOOGLE_MAPS_API_KEY}`;
       const response = await fetch(url);
       const data = await response.json();
 
@@ -165,7 +166,7 @@ const LocationsScreen = () => {
           <View className="flex-row gap-2">
             <GooglePlacesTextInput
               debounceDelay={250}
-              apiKey="AIzaSyAjUmggc5C_bvkHjsAT_o3Y_uOVwqIjwX4"
+              apiKey={GOOGLE_MAPS_API_KEY}
               onPlaceSelect={handlePlaceSelect}
               placeHolderText='Buscar ciudad, país...'
               showClearButton={false}

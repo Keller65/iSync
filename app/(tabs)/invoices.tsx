@@ -188,18 +188,24 @@ const Invoices = () => {
         </TouchableOpacity>
       </View>
 
-      <FlashList
-        data={data}
-        keyExtractor={(item) => item.docEntry.toString()}
-        renderItem={renderItem}
-        estimatedItemSize={120}
-        onEndReached={fetchInvoices}
-        onEndReachedThreshold={0.3}
-        ListFooterComponent={renderFooter}
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-        showsVerticalScrollIndicator={false}
-      />
+      <View className='flex-1 items-center justify-center'>
+        {data.length === 0 ? (
+          <Text className='text-gray-500 font-[Poppins-Medium] text-lg'>No hay cobros disponibles</Text>
+        ) : (
+          <FlashList
+            data={data}
+            keyExtractor={(item) => item.docEntry.toString()}
+            renderItem={renderItem}
+            estimatedItemSize={120}
+            onEndReached={fetchInvoices}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={renderFooter}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </View>
     </View>
   );
 };

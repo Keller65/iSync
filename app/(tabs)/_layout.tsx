@@ -1,32 +1,32 @@
-import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import { useAuth } from '@/context/auth';
-import { View, Text, Platform } from 'react-native';
 import ConnectivityBanner from '@/components/ConnectivityBanner';
+import { useAuth } from '@/context/auth';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { Platform, Text, View } from 'react-native';
 
 import ProtectedLayout from '../ProtectedLayout';
 
+import CatalogIcon from '@/assets/icons/CatalogIcon';
+import ClientIcon from '@/assets/icons/ClientIcon';
 import HomeIcon from '@/assets/icons/HomeIcon';
 import InvoicesIcon from '@/assets/icons/InvoicesIcon';
-import SettingsIcon from '@/assets/icons/SettingsIcon';
-import OrderIcon from '@/assets/icons/OrdeIcon';
-import ClientIcon from '@/assets/icons/ClientIcon';
-import CatalogIcon from '@/assets/icons/CatalogIcon';
 import LocationIcon from '@/assets/icons/Locations';
+import OrderIcon from '@/assets/icons/OrdeIcon';
+import SettingsIcon from '@/assets/icons/SettingsIcon';
 
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import IndexScreen from './index';
-import ExploreScreen from './explore';
-import InvoicesScreen from './invoices';
-import SettingsScreen from './setting';
 import ProductScreen from './catalog';
+import ExploreScreen from './explore';
+import IndexScreen from './index';
+import InvoicesScreen from './invoices';
 import LocationScreen from './locations';
+import SettingsScreen from './setting';
 
 const Drawer = createDrawerNavigator();
 
 export default function Layout() {
-  const ActiveColor = '#000';
+  const ActiveColor = '#1A3D59';
   const InActiveColor = '#c9c9c9';
 
   return (
@@ -136,8 +136,8 @@ function CustomDrawerContent(props: any) {
   return (
     <DrawerContentScrollView {...props}>
       <View style={{ paddingTop: 16, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View className="bg-[#fcde41] w-[50px] h-[50px] items-center justify-center rounded-full">
-          <ClientIcon size={30} color="#000" />
+        <View className="bg-primary w-[50px] h-[50px] items-center justify-center rounded-full">
+          <ClientIcon size={30} color="#fff" />
         </View>
 
         <View>

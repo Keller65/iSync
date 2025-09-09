@@ -4,7 +4,6 @@ import api from '@/lib/api';
 import { useAppStore } from '@/state';
 import { OrderDataType } from '@/types/types';
 import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
 import { Image } from 'expo-image';
@@ -353,8 +352,8 @@ const OrderDetails = () => {
       <View className="p-5 bg-white rounded-b-[36px] shadow-sm border border-gray-100">
         <View className="flex-row justify-between items-center mb-5">
           <View className="flex-row items-center gap-2">
-            <View className="bg-[#fcde41] w-[40px] h-[40px] items-center justify-center rounded-full">
-              <ClientIcon size={24} color="#000" />
+            <View className="bg-primary w-[40px] h-[40px] items-center justify-center rounded-full">
+              <ClientIcon size={24} color="#fff" />
             </View>
 
             <View>
@@ -417,21 +416,21 @@ const OrderDetails = () => {
         </View>
 
         <TouchableOpacity
-          className="w-full bg-yellow-300 h-[50px] rounded-full flex-row gap-3 p-2 items-center justify-center"
+          className="w-full bg-primary h-[50px] rounded-full flex-row gap-3 p-2 items-center justify-center"
           onPress={handleShareAsPdf}
           disabled={isGeneratingPdf}
         >
           {isGeneratingPdf ? (
             <>
-              <ActivityIndicator color="black" />
-              <Text className="text-black font-[Poppins-SemiBold] tracking-[-0.3px]">
-                Generando PDF
+              <ActivityIndicator color="white" />
+              <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px]">
+                Generando PDF...
               </Text>
             </>
           ) : (
             <>
-              <Entypo name="share" size={24} color="black" />
-              <Text className="text-black font-[Poppins-SemiBold] tracking-[-0.3px]">
+              <Entypo name="share" size={24} color="white" />
+              <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px]">
                 Compartir como PDF
               </Text>
             </>

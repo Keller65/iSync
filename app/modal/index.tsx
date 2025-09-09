@@ -1,10 +1,10 @@
-import AntDesign from '@expo/vector-icons/AntDesign';
 import ClientIcon from '@/assets/icons/ClientIcon';
 import InvoicesIcon from '@/assets/icons/InvoicesIcon';
 import TrashIcon from '@/assets/icons/TrashIcon';
 import { useAuth } from '@/context/auth';
 import { SelectedInvoice, useAppStore } from '@/state';
 import { Invoice } from '@/types/types';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
@@ -130,7 +130,7 @@ const IndexScreen = () => {
         className={`p-4 mb-4 rounded-3xl ${isSelected ? 'bg-blue-100' : 'bg-gray-100'}`}
       >
         <View className="flex-row gap-2 mb-2 border border-b-black/10 border-t-transparent border-x-transparent pb-3 items-center">
-          <View className="bg-yellow-300 p-2 rounded-xl">
+          <View className="bg-primary p-2 rounded-xl">
             <InvoicesIcon />
           </View>
           <Text className="text-base text-start font-[Poppins-SemiBold] tracking-[-0.3px] text-black">
@@ -170,8 +170,8 @@ const IndexScreen = () => {
   const renderSelectedInvoiceItem = ({ item }: { item: SelectedInvoice }) => (
     <View className="p-4 mb-4 rounded-3xl bg-gray-100 relative">
       <View className="flex-row gap-2 mb-2 border border-b-black/10 border-t-transparent border-x-transparent pb-3 items-center">
-        <View className="bg-yellow-300 p-2 rounded-xl">
-          <InvoicesIcon />
+        <View className="bg-primary p-2 rounded-xl">
+          <InvoicesIcon color="white" />
         </View>
         <Text className="text-base text-start font-[Poppins-SemiBold] tracking-[-0.3px] text-black">
           Nº {item.numAtCard}
@@ -200,8 +200,8 @@ const IndexScreen = () => {
   return (
     <View className="flex-1 bg-white px-4 relative">
       <View className='gap-4 flex-row mb-3 py-2'>
-        <View className="bg-[#fcde41] w-[50px] h-[50px] items-center justify-center rounded-full">
-          <ClientIcon size={24} color="#000" />
+        <View className="bg-primary w-[50px] h-[50px] items-center justify-center rounded-full">
+          <ClientIcon size={24} color="white" />
         </View>
         <View className='flex justify-center'>
           <Text className='text-black font-[Poppins-Bold]'>{cardName}</Text>
@@ -210,7 +210,7 @@ const IndexScreen = () => {
       </View>
       {loading && openInvoices.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color="#6b7280" />
           <Text className="text-gray-500 mt-2 font-[Poppins-Medium] tracking-[-0.3px]">Cargando facturas...</Text>
         </View>
       ) : (
@@ -283,9 +283,9 @@ const IndexScreen = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleAccept}
-                    className="bg-yellow-300 py-3 px-6 rounded-full items-center justify-center"
+                    className="bg-primary py-3 px-6 rounded-full items-center justify-center"
                   >
-                    <Text className="text-black tracking-[-0.3px] font-[Poppins-SemiBold]">Aceptar</Text>
+                    <Text className="text-white tracking-[-0.3px] font-[Poppins-SemiBold]">Aceptar</Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -324,10 +324,10 @@ const IndexScreen = () => {
                       }
                     });
                   }}
-                  className="bg-yellow-300 h-[50px] items-center justify-center rounded-full flex-row gap-2"
+                  className="bg-primary h-[50px] items-center justify-center rounded-full flex-row gap-2"
                 >
-                  <Text className="text-black font-[Poppins-SemiBold] text-lg tracking-[-0.3px]">Continuar</Text>
-                  <AntDesign name="arrowright" size={20} color="black" />
+                  <Text className="text-white font-[Poppins-SemiBold] text-lg tracking-[-0.3px]">Continuar</Text>
+                  <AntDesign name="arrowright" size={20} color="white" />
                 </TouchableOpacity>
               </View>
             </>

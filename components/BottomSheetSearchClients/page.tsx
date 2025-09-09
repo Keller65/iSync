@@ -1,13 +1,12 @@
 import ClientIcon from '@/assets/icons/ClientIcon';
-import { useAppStore } from '@/state';
-import { Customer } from '@/types/types';
-import { BottomSheetBackdrop, BottomSheetFlashList, BottomSheetModal } from '@gorhom/bottom-sheet';
-import axios from 'axios';
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
 import { useAuth } from '@/context/auth';
 import api from '@/lib/api';
+import { useAppStore } from '@/state';
+import { Customer } from '@/types/types';
+import Feather from '@expo/vector-icons/Feather';
+import { BottomSheetBackdrop, BottomSheetFlashList, BottomSheetModal } from '@gorhom/bottom-sheet';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export interface Client {
   cardCode: string;
@@ -141,8 +140,8 @@ const BottomSheetSearchClients = forwardRef<BottomSheetSearchClientsHandle, Prop
                 }, 120);
               }}
             >
-              <View className="bg-[#fcde41] w-[50px] h-[50px] items-center justify-center rounded-full">
-                <ClientIcon size={24} color="#000" />
+              <View className="bg-primary w-[50px] h-[50px] items-center justify-center rounded-full">
+                <ClientIcon size={24} color="#fff" />
               </View>
 
               <View className="flex-1 justify-center">

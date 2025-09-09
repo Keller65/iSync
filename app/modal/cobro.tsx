@@ -11,8 +11,8 @@ import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'rea
 
 const InvoiceItem = memo(({ item, formatDate, formatCurrency }: { item: SelectedInvoice, formatDate: (date: string) => string, formatCurrency: (amount: number) => string }) => (
   <View key={item.numAtCard} className="flex-row items-start gap-4 bg-gray-100 p-4 rounded-xl mb-3">
-    <View className="bg-yellow-300 p-2 rounded-xl">
-      <InvoicesIcon />
+    <View className="bg-primary p-2 rounded-xl">
+      <InvoicesIcon color="white" />
     </View>
     <View className="flex-1">
       <View className='flex-row justify-between items-center mb-1'>
@@ -197,8 +197,8 @@ const Cobro = () => {
         <View className="mb-6">
           <Text className="text-xl font-[Poppins-Bold] mb-4 tracking-[-0.3px]">Cliente</Text>
           <View className="flex-row items-center gap-4">
-            <View className="bg-yellow-300 w-[50px] h-[50px] items-center justify-center rounded-full">
-              <ClientIcon size={28} color="#000" />
+            <View className="bg-primary w-[50px] h-[50px] items-center justify-center rounded-full">
+              <ClientIcon size={28} color="white" />
             </View>
             <View>
               <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px]">{Name}</Text>
@@ -274,16 +274,19 @@ const Cobro = () => {
           </Text>
         </View>
         <TouchableOpacity
-          className={`py-4 rounded-full h-[55px] items-center justify-center ${disableCobroBtn ? 'bg-gray-300' : 'bg-yellow-300'}`}
+          className={`py-4 rounded-full h-[55px] items-center justify-center ${disableCobroBtn ? 'bg-gray-300' : 'bg-primary'}`}
           onPress={handleCobro}
           disabled={disableCobroBtn}
         >
           {loading ? (
-            <View className="h-[55px] py-1 w-full items-center justify-center">
+            <View className="h-[55px] py-1 w-full items-center justify-center flex-row gap-2">
               <ActivityIndicator color={disableCobroBtn ? '#6B7280' : '#000'} />
+              <Text className={`font-[Poppins-SemiBold] text-lg tracking-[-0.3px] ${disableCobroBtn ? 'text-gray-500' : 'text-white'}`}>
+                Cargando...
+              </Text>
             </View>
           ) : (
-            <Text className={`font-[Poppins-SemiBold] text-lg tracking-[-0.3px] ${disableCobroBtn ? 'text-gray-500' : 'text-black'}`}>
+            <Text className={`font-[Poppins-SemiBold] text-lg tracking-[-0.3px] ${disableCobroBtn ? 'text-gray-500' : 'text-white'}`}>
               Realizar cobro
             </Text>
           )}

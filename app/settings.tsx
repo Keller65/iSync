@@ -161,7 +161,7 @@ const Settings = () => {
       <TouchableOpacity
         onPress={handleSave}
         disabled={isSaving || !isUrlReady}
-        className={`mt-4 rounded-full py-3 items-center justify-center h-[50px] ${isSaving || !isUrlReady ? 'bg-gray-300' : 'bg-yellow-300'
+        className={`mt-4 rounded-full py-3 items-center justify-center h-[50px] ${isSaving || !isUrlReady ? 'bg-gray-200' : 'bg-primary'
           }`}
       >
         {isSaving ? (
@@ -170,13 +170,13 @@ const Settings = () => {
             <Text className='text-gray-500 tracking-[-0.3px] font-[Poppins-SemiBold] text-base'>Guardando configuración...</Text>
           </View>
         ) : (
-          <Text className="text-black tracking-[-0.3px] font-[Poppins-SemiBold] text-base">Guardar configuración</Text>
+          <Text className="text-white tracking-[-0.3px] font-[Poppins-SemiBold] text-base">Guardar configuración</Text>
         )}
       </TouchableOpacity>
 
       {fetchUrl && (
         <TouchableOpacity
-          className={`rounded-full py-3 items-center justify-center h-[50px] ${(isSyncing || !isUrlReady) ? 'bg-gray-300' : 'bg-yellow-300'}`}
+          className={`rounded-full py-3 items-center justify-center h-[50px] ${(isSyncing || !isUrlReady) ? 'bg-gray-200' : 'bg-primary'}`}
           onPress={handleSync}
           disabled={isSyncing || !isUrlReady}
         >
@@ -186,7 +186,7 @@ const Settings = () => {
               <Text className='text-gray-500 tracking-[-0.3px] font-[Poppins-SemiBold] text-base'>Sincronizando Datos...</Text>
             </View>
           ) : (
-            <Text className='text-black tracking-[-0.3px] font-[Poppins-SemiBold] text-base'>Sincronizar Datos</Text>
+            <Text className='text-white tracking-[-0.3px] font-[Poppins-SemiBold] text-base'>Sincronizar Datos</Text>
           )}
         </TouchableOpacity>
       )}

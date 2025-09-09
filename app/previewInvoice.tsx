@@ -227,21 +227,21 @@ export default function PreviewInvoice() {
         <TouchableOpacity
           onPress={print}
           disabled={generating || loading}
-          className={`flex-1 flex-row items-center justify-center rounded-full px-4 py-3 ${generating || loading ? 'bg-gray-300' : 'bg-yellow-300'
+          className={`flex-1 flex-row items-center justify-center rounded-full px-4 py-3 ${generating || loading ? 'bg-gray-300' : 'bg-primary'
             }`}
         >
-          <Feather name="printer" size={18} color="#000" />
-          <Text className="ml-2 font-[Poppins-SemiBold]">
+          <Feather name="printer" size={18} color="white" />
+          <Text className="ml-2 font-[Poppins-SemiBold] text-white">
             {generating ? 'Procesando...' : 'Imprimir'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={share}
           disabled={loading}
-          className={`flex-1 flex-row items-center justify-center rounded-full px-4 py-3 ${loading ? 'bg-gray-300' : 'bg-yellow-300'}`}
+          className={`flex-1 flex-row items-center justify-center rounded-full px-4 py-3 ${loading ? 'bg-gray-300' : 'bg-primary'}`}
         >
-          <Feather name="share-2" size={18} color="#000" />
-          <Text className="ml-2 font-[Poppins-SemiBold]">
+          <Feather name="share-2" size={18} color="white" />
+          <Text className="ml-2 font-[Poppins-SemiBold] text-white">
             Compartir
           </Text>
         </TouchableOpacity>

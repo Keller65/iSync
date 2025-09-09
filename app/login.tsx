@@ -1,7 +1,4 @@
-import 'react-native-gesture-handler';
-import 'react-native-reanimated';
 import { useAppStore } from '@/state';
-import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -10,8 +7,11 @@ import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import { Redirect, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import 'react-native-gesture-handler';
+import 'react-native-reanimated';
 import Animated, { useAnimatedKeyboard, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from "../context/auth";
 import "../global.css";
 
@@ -180,70 +180,67 @@ export default function Login() {
   if (user) return <Redirect href="/(tabs)" />;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView className="flex-1 p-5 relative justify-center bg-white">
       <Animated.View
-        style={[styles.block, animatedBlockStyles]}
+        className="self-stretch items-stretch"
+        style={animatedBlockStyles}
       >
         <Image
-          source={require('../assets/images/LogoAlfayOmega.png')}
-          style={{ height: 120, width: 260, resizeMode: 'contain', alignSelf: 'center', marginBottom: 60 }}
+          source={require('../assets/images/iSync-ERP.png')}
+          height={160}
+          width={160}
+          className="h-[160px] w-[160px] self-center mb-[60px]"
+          style={{ resizeMode: 'contain' }}
         />
 
-        <View style={{ gap: 24 }}>
+        <View className="gap-6">
           <View>
-            <Text style={{ fontFamily: 'Poppins-Medium', letterSpacing: -0.8, fontSize: 15 }}>Código de Vendedor</Text>
+            <Text className="font-[Poppins-Medium] text-[15px] tracking-[-0.3px] text-primary">Código de Vendedor</Text>
             <TextInput
-              style={styles.input}
+              className="h-14 bg-[#e5e7eb] text-primary px-6 rounded-2xl font-[Poppins-Medium]"
               placeholder="Ingrese su Código de Vendedor"
               value={salesPersonCode}
               onChangeText={setSalesPersonCode}
               keyboardType="numeric"
               editable={!loading}
+              placeholderTextColor="#fff"
             />
           </View>
 
           <View>
-            <Text style={{ fontFamily: 'Poppins-Medium', letterSpacing: -0.8, fontSize: 15 }}>Contraseña</Text>
+            <Text className="font-[Poppins-Medium] text-[15px] tracking-[-0.3px] text-primary">Contraseña</Text>
             <TextInput
-              style={styles.input}
+              className="h-14 bg-[#e5e7eb] text-primary px-6 rounded-2xl font-[Poppins-Medium]"
               placeholder="Ingrese su Contraseña"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               keyboardType="numeric"
               editable={!loading}
+              placeholderTextColor="#fff"
             />
           </View>
         </View>
 
         <TouchableOpacity
-          style={{
-            marginTop: 16,
-            backgroundColor: isFormValid && !loading ? '#3b82f6' : '#d1d5db',
-            padding: 16,
-            height: 56,
-            borderRadius: 99,
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
+          className={`mt-4 ${isFormValid && !loading ? 'bg-primary' : 'bg-gray-200'} px-4 h-14 rounded-full items-center justify-center`}
           onPress={handleLogin}
           disabled={!isFormValid || loading}
         >
           {loading ? (
-            <View className='flex-row gap-2 items-center justify-center'>
-              <ActivityIndicator color="#6b7280" size="small" />
-              <Text style={{ color: '#6b7280', textAlign: 'center', fontFamily: 'Poppins-SemiBold', lineHeight: 12 }}>Iniciando Sesión...</Text>
+            <View className="flex-row gap-2 items-center justify-center">
+              <ActivityIndicator color="#fff" size="small" />
+              <Text className="text-black text-center font-[Poppins-SemiBold] leading-3">Iniciando Sesión...</Text>
             </View>
           ) : (
-            <Text style={{ color: isFormValid && !loading ? '#fff' : '#6b7280', textAlign: 'center', fontFamily: 'Poppins-SemiBold', lineHeight: 12 }}>Iniciar Sesión</Text>
+            <Text className="text-white text-center font-[Poppins-SemiBold] leading-3">Iniciar Sesión</Text>
           )}
         </TouchableOpacity>
 
         {biometricAvailable && (
-          <View className='w-full items-center justify-center mt-16'>
-
+          <View className="w-full items-center justify-center mt-16">
             <TouchableOpacity
-              className="mt-4 w-[50px] h-[50px] bg-blue-500 rounded-full items-center justify-center"
+              className="mt-4 w-[50px] h-[50px] bg-primary rounded-full items-center justify-center"
               onPress={handleBiometricLogin}
             >
               <Ionicons name="finger-print-outline" size={28} color="white" />
@@ -252,35 +249,13 @@ export default function Login() {
         )}
       </Animated.View>
 
-      <View className='flex-1 items-center justify-center absolute bottom-4 right-0 left-0'>
+      <View className="flex-1 items-center justify-center absolute bottom-4 right-0 left-0">
         <TouchableOpacity
           onPress={() => router.push('/settings')}
         >
-          <Text className='font-[Poppins-SemiBold] text-sm tracking-[-0.3px] text-[#3b82f6]'>Configuraciones</Text>
+          <Text className="font-[Poppins-SemiBold] text-sm tracking-[-0.3px] text-primary">Configuraciones</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "white",
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  block: {
-    alignSelf: 'stretch',
-    alignItems: 'stretch'
-  },
-  input: {
-    height: 56,
-    backgroundColor: '#f3f4f6',
-    color: '#6b7280',
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    fontFamily: 'Poppins-Medium'
-  }
-});

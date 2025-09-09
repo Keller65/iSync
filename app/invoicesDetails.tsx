@@ -1,6 +1,6 @@
+import ClientIcon from '@/assets/icons/ClientIcon';
 import ReceiptIcon from '@/assets/icons/InvoicesIcon';
 import { PaymentData } from '@/types/types';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
@@ -52,8 +52,8 @@ const InvoicesDetails = () => {
       </View>
 
       <View className="flex-row gap-4 mb-4 items-center">
-        <View className="bg-yellow-300 rounded-full items-center justify-center h-[50px] w-[50px]">
-          <MaterialCommunityIcons name="account-circle" size={30} color="#000" />
+        <View className="bg-primary rounded-full items-center justify-center h-[50px] w-[50px]">
+          <ClientIcon size={30} color="white" />
         </View>
         <View>
           <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] leading-5">{invoiceDetails.cardName}</Text>
@@ -67,8 +67,8 @@ const InvoicesDetails = () => {
           key={inv.numAtCard ?? inv.invoiceDocNum}
           className="flex-row items-start gap-4 bg-gray-100 p-4 rounded-xl mb-3"
         >
-          <View className="bg-yellow-300 p-2 rounded-xl">
-            <ReceiptIcon />
+          <View className="bg-primary p-2 rounded-xl">
+            <ReceiptIcon color="#fff" />
           </View>
 
           <View className="flex-1">
@@ -97,8 +97,8 @@ const InvoicesDetails = () => {
 
       <Text className="text-xl font-[Poppins-SemiBold] mt-4 mb-2">Información de Pago</Text>
       <View className="bg-white rounded-2xl h-fit overflow-hidden border border-gray-200 shadow-sm">
-        <View className="bg-yellow-300 p-2">
-          <Text className="text-xl font-[Poppins-Bold] text-gray-800 text-center">Detalles del Pago</Text>
+        <View className="bg-primary p-2">
+          <Text className="text-xl font-[Poppins-SemiBold] text-white text-center">Detalles del Pago</Text>
         </View>
 
         <View className="p-4">

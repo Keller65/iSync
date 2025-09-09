@@ -10,7 +10,7 @@ import { FlashList } from '@shopify/flash-list';
 import axios from 'axios';
 // import { Image } from 'expo-image';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, RefreshControl, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { ActivityIndicator, Alert, Image, RefreshControl, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const PAGE_SIZE = 20;
 
@@ -284,11 +284,11 @@ const CategoryProductScreen = memo(() => {
             </Text>
           </View>
           <TouchableOpacity
-            className={`mt-4 rounded-full py-3 items-center justify-center h-[50px] ${!isPriceValid || quantity <= 0 ? 'bg-gray-300' : 'bg-yellow-300'}`}
+            className={`mt-4 rounded-full py-3 items-center justify-center h-[50px] ${!isPriceValid || quantity <= 0 ? 'bg-gray-300' : 'bg-primary'}`}
             onPress={handleAddToCart}
             disabled={!isPriceValid || quantity <= 0}
           >
-            <Text className="text-black font-[Poppins-Bold] tracking-[-0.3px]">Agregar al carrito</Text>
+            <Text className="text-white font-[Poppins-Bold] tracking-[-0.3px]">Agregar al carrito</Text>
           </TouchableOpacity>
         </View>
       </BottomSheetFooter>

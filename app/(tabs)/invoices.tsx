@@ -115,8 +115,8 @@ const Invoices = () => {
         <View className="flex-row justify-between items-center mb-3">
           <View className="flex-row items-center gap-x-2">
             {/* Número documento */}
-            <View className="bg-yellow-300 px-2 py-0.5 rounded-full">
-              <Text className="text-xs text-black font-[Poppins-SemiBold]">
+            <View className="bg-primary px-2 py-0.5 rounded-full">
+              <Text className="text-xs text-white font-[Poppins-SemiBold]">
                 {item.docNum}
               </Text>
             </View>
@@ -140,8 +140,8 @@ const Invoices = () => {
 
         {/* Cliente */}
         <View className="flex-row items-center gap-3">
-          <View className="w-[36px] h-[36px] bg-indigo-500 rounded-full items-center justify-center">
-            <ClientIcon size={30} color="#fde047" />
+          <View className="w-[36px] h-[36px] bg-primary rounded-full items-center justify-center">
+            <ClientIcon size={30} color="white" />
           </View>
           <View>
             <Text className="text-lg font-[Poppins-Bold] text-gray-900 tracking-[-0.3px]">
@@ -155,7 +155,7 @@ const Invoices = () => {
       </View>
 
       {/* Footer */}
-      <View style={{ backgroundColor: item.cancelled === 'tYES' ? '#f87171' : '#4f46e5' }} className="px-4 py-2 flex-row justify-between items-center">
+      <View style={{ backgroundColor: item.cancelled === 'tYES' ? '#f87171' : '#1A3D59' }} className="px-4 py-2 flex-row justify-between items-center">
         <View className="flex-row items-center gap-2">
           <FontAwesome name="credit-card" size={18} color="#fff" />
           <Text className="text-md font-[Poppins-Medium] text-white">
@@ -178,34 +178,28 @@ const Invoices = () => {
     ) : null;
 
   return (
-    <View className="flex-1 bg-white px-4 relative">
-      <View className="absolute bottom-8 right-8 gap-3 items-end z-10">
+    <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: 16, position: 'relative' }}>
+      <View style={{ position: 'absolute', bottom: 32, right: 32, zIndex: 10 }}>
         <TouchableOpacity
-          className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-yellow-300"
+          className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary"
           onPress={() => router.push('/InvoiceClient')}
         >
-          <PlusIcon color="black" />
+          <PlusIcon color="white" />
         </TouchableOpacity>
       </View>
-
-      <View className='flex-1 items-center justify-center'>
-        {data.length === 0 ? (
-          <Text className='text-gray-500 font-[Poppins-Medium] text-lg'>No hay cobros disponibles</Text>
-        ) : (
-          <FlashList
-            data={data}
-            keyExtractor={(item) => item.docEntry.toString()}
-            renderItem={renderItem}
-            estimatedItemSize={120}
-            onEndReached={fetchInvoices}
-            onEndReachedThreshold={0.3}
-            ListFooterComponent={renderFooter}
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
+      
+      <FlashList
+        data={data}
+        keyExtractor={(item) => item.docEntry.toString()}
+        renderItem={renderItem}
+        estimatedItemSize={120}
+        onEndReached={fetchInvoices}
+        onEndReachedThreshold={0.3}
+        ListFooterComponent={renderFooter}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 };

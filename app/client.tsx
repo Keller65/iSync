@@ -120,8 +120,8 @@ const ClientScreen = memo(() => {
         onPress={() => handleCustomerPress(item)}
         className="flex-row items-center gap-3 px-4 my-2"
       >
-        <View className="bg-[#fcde41] w-[50px] h-[50px] items-center justify-center rounded-full">
-          <ClientIcon size={24} color="#000" />
+        <View className="bg-primary w-[50px] h-[50px] items-center justify-center rounded-full">
+          <ClientIcon size={24} color="#fff" />
         </View>
 
         <View className="flex-1 justify-center">

@@ -39,6 +39,8 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="demo"/>
         <data android:scheme="exp+demo"/>
+        <data android:scheme="iSync-ERP"/>
+        <data android:scheme="exp+isync-erp"/>
       </intent-filter>
     </activity>
     <uses-library android:name="org.apache.http.legacy" android:required="false"/>

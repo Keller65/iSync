@@ -215,10 +215,10 @@ const LocationsScreen = () => {
             />
 
             <TouchableOpacity
-              className="h-[46px] w-[46px] items-center justify-center rounded-2xl bg-yellow-300"
+              className="h-[46px] w-[46px] items-center justify-center rounded-2xl bg-primary"
               onPress={() => bottomSheetRef.current?.present()}
             >
-              <PlusIcon color="black" />
+              <PlusIcon color="white" />
             </TouchableOpacity>
           </View>
 

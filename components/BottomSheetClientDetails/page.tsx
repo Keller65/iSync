@@ -4,14 +4,13 @@ import { useAuth } from '@/context/auth';
 import api from '@/lib/api';
 import { useAppStore } from '@/state';
 import { CustomerAddress } from '@/types/types';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import MapView from 'react-native-maps';
 
 interface BottomSheetClientDetailsProps {
@@ -198,8 +197,8 @@ const BottomSheetClientDetails: React.FC<BottomSheetClientDetailsProps> = ({ map
       {selectedCustomerLocation && (
         <View className='p-4 gap-4 bg-white'>
           <View className="flex-row gap-4 items-center">
-            <View className="bg-[#fcde41] w-[38px] h-[38px] items-center justify-center rounded-full">
-              <ClientIcon size={24} color="#000" />
+            <View className="bg-primary w-[38px] h-[38px] items-center justify-center rounded-full">
+              <ClientIcon size={24} color="white" />
             </View>
 
             <View>
@@ -221,10 +220,10 @@ const BottomSheetClientDetails: React.FC<BottomSheetClientDetailsProps> = ({ map
           <View className='flex-row gap-4'>
             <TouchableOpacity
               onPress={handlePresentModalPress}
-              className='flex-1 bg-yellow-300 h-[50px] flex-row gap-2 items-center justify-center rounded-full'
+              className='flex-1 bg-primary h-[50px] flex-row gap-2 items-center justify-center rounded-full'
             >
-              <LocationIcon size={22} />
-              <Text className='text-black text-center font-[Poppins-SemiBold] tracking-[0.3px]'>
+              <LocationIcon size={22} color="white" />
+              <Text className='text-white text-center font-[Poppins-SemiBold] tracking-[0.3px]'>
                 Ubicaciones
               </Text>
             </TouchableOpacity>
@@ -232,15 +231,15 @@ const BottomSheetClientDetails: React.FC<BottomSheetClientDetailsProps> = ({ map
             {updateCustomerLocation.updateLocation && (
               <TouchableOpacity
                 onPress={updateCustomerGeoLocation}
-                className='flex-1 bg-yellow-300 h-[50px] flex-row gap-2 items-center justify-center rounded-full'
+                className='flex-1 bg-primary h-[50px] flex-row gap-2 items-center justify-center rounded-full'
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <ActivityIndicator size="small" color="#000" />
+                  <ActivityIndicator size="small" color="white" />
                 ) : (
                   <>
-                    <AntDesign name="cloudupload" size={24} color="black" />
-                    <Text className='text-black text-center font-[Poppins-SemiBold] tracking-[0.3px]'>
+                    <AntDesign name="cloudupload" size={24} color="white" />
+                    <Text className='text-white text-center font-[Poppins-SemiBold] tracking-[0.3px]'>
                       Actualizar
                     </Text>
                   </>
@@ -262,8 +261,8 @@ const BottomSheetClientDetails: React.FC<BottomSheetClientDetailsProps> = ({ map
           {selectedCustomerLocation ? (
             <View className='gap-4 pb-4'>
               <View className="flex-row gap-4 items-center flex-1">
-                <View className="bg-[#fcde41] w-[50px] h-[50px] items-center justify-center rounded-full">
-                  <ClientIcon size={28} color="#000" />
+                <View className="bg-primary w-[50px] h-[50px] items-center justify-center rounded-full">
+                  <ClientIcon size={28} color="white" />
                 </View>
 
                 <View className="flex-1">
@@ -291,9 +290,9 @@ const BottomSheetClientDetails: React.FC<BottomSheetClientDetailsProps> = ({ map
                       <View className="flex-row gap-2 mt-4">
                         <TouchableOpacity
                           onPress={() => handleUpdateLocation(address.rowNum)}
-                          className='flex-1 h-[40px] bg-yellow-300 items-center justify-center rounded-full'
+                          className='flex-1 h-[40px] bg-primary items-center justify-center rounded-full'
                         >
-                          <Text className="text-black font-[Poppins-SemiBold] tracking-[-0.3px]">Editar</Text>
+                          <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px]">Editar</Text>
                         </TouchableOpacity>
 
                         {address.u_Latitud && address.u_Longitud && (

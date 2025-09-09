@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState, memo } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity, Alert, TextInput, RefreshControl, } from 'react-native';
+import ClientIcon from '@/assets/icons/ClientIcon';
 import { useAuth } from '@/context/auth';
-import { useRouter } from 'expo-router';
+import api from '@/lib/api';
 import { useAppStore } from '@/state/index';
 import { Customer } from '@/types/types';
-import { FlashList } from '@shopify/flash-list';
-import ClientIcon from '@/assets/icons/ClientIcon';
 import Feather from '@expo/vector-icons/Feather';
-import api from '@/lib/api';
+import { FlashList } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
+import { memo, useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, RefreshControl, Text, TextInput, TouchableOpacity, View, } from 'react-native';
 
 const PAGE_SIZE = 1000;
 
@@ -116,8 +116,8 @@ const InvoicesClientScreen = memo(() => {
         onPress={() => handleCustomerPress(item)}
         className="flex-row items-center gap-3 px-4 my-2"
       >
-        <View className="bg-[#fcde41] w-[50px] h-[50px] items-center justify-center rounded-full">
-          <ClientIcon size={24} color="#000" />
+        <View className="bg-primary w-[50px] h-[50px] items-center justify-center rounded-full">
+          <ClientIcon size={24} color="#fff" />
         </View>
 
         <View className="flex-1 justify-center">

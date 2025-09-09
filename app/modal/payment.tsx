@@ -449,12 +449,12 @@ const PaymentScreen = () => {
       {/* Botón continuar */}
       <View className="p-4 bg-white border-t border-gray-200">
         <TouchableOpacity
-          className={`py-4 rounded-full items-center ${isFormComplete ? 'bg-yellow-300' : 'bg-gray-300'}`}
+          className={`py-4 rounded-full items-center ${isFormComplete ? 'bg-primary' : 'bg-gray-300'}`}
           disabled={!isFormComplete}
           onPress={handleContinue}
         >
           <Text
-            className={`font-[Poppins-SemiBold] text-lg tracking-[-0.3px] ${isFormComplete ? 'text-black' : 'text-gray-500'}`}
+            className={`font-[Poppins-SemiBold] text-lg tracking-[-0.3px] ${isFormComplete ? 'text-white' : 'text-gray-500'}`}
           >
             Continuar
           </Text>

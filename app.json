@@ -12,6 +12,10 @@
       "supportsTablet": true,
       "runtimeVersion": {
         "policy": "fingerprint"
+      },
+      "bundleIdentifier": "isync",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

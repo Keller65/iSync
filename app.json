@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "iSync-ERP",
+    "scheme": "isyncerp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -80,7 +80,7 @@
       }
     },
     "updates": {
-      "url": ""
+      "url": "https://u.expo.dev/630fb244-2368-4513-8e53-086acaa58df0"
     },
     "owner": "aerley_adkins-2"
   }

@@ -111,7 +111,7 @@ const Invoices = () => {
       className="bg-white rounded-3xl mb-4 shadow-sm overflow-hidden"
     >
       {/* Header */}
-      <View className="bg-indigo-100 p-4">
+      <View className={`${item.cancelled === 'tYES' ? 'bg-red-100' : 'bg-indigo-100'} p-4`}>
         <View className="flex-row justify-between items-center mb-3">
           <View className="flex-row items-center gap-x-2">
             {/* Número documento */}

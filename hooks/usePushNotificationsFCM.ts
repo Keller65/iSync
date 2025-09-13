@@ -38,25 +38,42 @@ export function usePushNotificationsFCM(): UsePushReturn {
 
   useEffect(() => {
     (async () => {
+      console.log('Iniciando configuración de notificaciones...');
       await ensureAndroidChannel();
 
-      if (!Device.isDevice) return;
+      if (!Device.isDevice) {
+        console.log('No es un dispositivo físico, saltando obtención de token');
+        return;
+      }
 
+      console.log('Verificando permisos...');
       // Android 13+ necesita permiso en tiempo de ejecución; esto lo gestiona expo-notifications
       const { status: existing } = await Notifications.getPermissionsAsync();
+      console.log('Estado de permisos existente:', existing);
       let status = existing;
       if (existing !== 'granted') {
+        console.log('Solicitando permisos...');
         const req = await Notifications.requestPermissionsAsync();
         status = req.status;
+        console.log('Estado de permisos después de solicitud:', status);
       }
       const granted = status === 'granted';
       setPermissionGranted(granted);
-      if (!granted) return;
+      if (!granted) {
+        console.log('Permisos no concedidos, no se puede obtener token');
+        return;
+      }
 
-      // IMPORTANTE: para FCM usa el token de dispositivo nativo (no ExpoPushToken)
-      const nativeToken = (await Notifications.getDevicePushTokenAsync()).data;
-      setFcmToken(nativeToken);
-      console.log('FCM Token:', nativeToken);
+      console.log('Obteniendo token FCM...');
+      try {
+        // IMPORTANTE: para FCM usa el token de dispositivo nativo (no ExpoPushToken)
+        const tokenResult = await Notifications.getDevicePushTokenAsync();
+        const nativeToken = tokenResult.data;
+        console.log('Token FCM obtenido:', nativeToken);
+        setFcmToken(nativeToken);
+      } catch (error) {
+        console.error('Error obteniendo token FCM:', error);
+      }
     })();
 
     // Listeners de eventos (foreground / interacción)

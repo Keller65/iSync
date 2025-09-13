@@ -12,6 +12,7 @@ import InvoicesIcon from '@/assets/icons/InvoicesIcon';
 import LocationIcon from '@/assets/icons/Locations';
 import OrderIcon from '@/assets/icons/OrdeIcon';
 import SettingsIcon from '@/assets/icons/SettingsIcon';
+import InboxIcon from '@/assets/icons/InboxIcon';
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -22,6 +23,7 @@ import IndexScreen from './index';
 import InvoicesScreen from './invoices';
 import LocationScreen from './locations';
 import SettingsScreen from './setting';
+import FeedScreen from './feed';
 
 const Drawer = createDrawerNavigator();
 
@@ -110,6 +112,16 @@ export default function Layout() {
                 title: 'Ubicaciones',
                 drawerIcon: ({ focused }) => (
                   <LocationIcon size={24} color={focused ? ActiveColor : InActiveColor} />
+                ),
+              }}
+            />
+            <Drawer.Screen
+              name="feed"
+              component={FeedScreen}
+              options={{
+                title: 'Notificaciones',
+                drawerIcon: ({ focused }) => (
+                  <InboxIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),
               }}
             />

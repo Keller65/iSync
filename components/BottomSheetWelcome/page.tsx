@@ -43,16 +43,16 @@ export default function BottomSheetWelcome() {
         <BottomSheetView className="flex-1 px-6 pb-6">
           <View className="flex-1 justify-between">
             <View>
-              <Text className="text-black text-2xl font-semibold font-[Poppins-SemiBold] tracking-[-0.3px] text-center">¡Bienvenido {user?.fullName}!</Text>
+              <Text className="text-primary text-2xl font-semibold font-[Poppins-SemiBold] tracking-[-0.3px] text-center">¡Bienvenido {user?.fullName}!</Text>
               <Text className="text-base text-gray-500 font-[Poppins-Regular] tracking-[-0.3px] mt-4 leading-5">
                 Aqui podras realizar todas las gestiones de ventas de manera rápida y sencilla.
               </Text>
 
               {/* Sección: Envío y Gestión de Pedidos */}
               <View className="flex-row items-start mt-6">
-                <FontAwesome6 name="cart-flatbed" size={22} color="#333" className="mr-4 mt-1" />
+                <FontAwesome6 name="cart-flatbed" size={22} color="#1A3D59" className="mr-4 mt-1" />
                 <View className="flex-1">
-                  <Text className="text-lg font-semibold text-black font-[Poppins-SemiBold]">Envío y Gestión de Pedidos</Text>
+                  <Text className="text-lg font-semibold text-primary font-[Poppins-SemiBold]">Envío y Gestión de Pedidos</Text>
                   <Text className="text-base text-gray-500 font-[Poppins-Regular] tracking-[-0.3px] leading-5 mt-1">
                     Tramita y organiza todas tus órdenes de manera eficiente, desde la creación hasta la entrega.
                   </Text>
@@ -61,9 +61,9 @@ export default function BottomSheetWelcome() {
 
               {/* Sección: Impresión de Facturas */}
               <View className="flex-row items-start mt-4">
-                <FontAwesome6 name="print" size={24} color="#333" className="mr-4 mt-1" />
+                <FontAwesome6 name="print" size={24} color="#1A3D59" className="mr-4 mt-1" />
                 <View className="flex-1">
-                  <Text className="text-lg font-semibold text-black font-[Poppins-SemiBold]">Impresión Instantánea de Facturas</Text>
+                  <Text className="text-lg font-semibold text-primary font-[Poppins-SemiBold]">Impresión Instantánea de Facturas</Text>
                   <Text className="text-base text-gray-500 font-[Poppins-Regular] tracking-[-0.3px] leading-5 mt-1">
                     Genera e imprime tus facturas al instante, manteniendo un registro claro y profesional.
                   </Text>
@@ -72,9 +72,9 @@ export default function BottomSheetWelcome() {
 
               {/* Sección: Datos de Ventas */}
               <View className="flex-row items-start mt-4">
-                <MaterialCommunityIcons name="chart-line-variant" size={26} color="#333" className="mr-4 mt-1" />
+                <MaterialCommunityIcons name="chart-line-variant" size={26} color="#1A3D59" className="mr-4 mt-1" />
                 <View className="flex-1">
-                  <Text className="text-lg font-semibold text-black font-[Poppins-SemiBold]">Análisis de Datos de Ventas</Text>
+                  <Text className="text-lg font-semibold text-primary font-[Poppins-SemiBold]">Análisis de Datos de Ventas</Text>
                   <Text className="text-base text-gray-500 font-[Poppins-Regular] tracking-[-0.3px] leading-5 mt-1">
                     Accede a estadísticas detalladas para un control total del rendimiento y crecimiento de tu negocio.
                   </Text>
@@ -84,7 +84,7 @@ export default function BottomSheetWelcome() {
             </View>
 
             <TouchableOpacity className='bg-primary w-full h-[50px] rounded-full items-center justify-center mt-6 z-50' onPress={handleStart}>
-              <Text className="text-black text-base font-[Poppins-SemiBold]">Empezar</Text>
+              <Text className="text-white text-base font-[Poppins-SemiBold]">Empezar</Text>
             </TouchableOpacity>
           </View>
         </BottomSheetView>

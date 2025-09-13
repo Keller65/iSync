@@ -71,7 +71,6 @@ const SettingsScreen = () => {
   useEffect(() => {
     const fetchMacAddress = async () => {
       try {
-        const networkState = await Network.getNetworkStateAsync();
         setMacAddress(await Network.getIpAddressAsync());
       } catch (e) {
         console.warn('Error obteniendo la dirección MAC', e);
@@ -339,6 +338,9 @@ const SettingsScreen = () => {
 
   return (
     <ScrollView className="flex-1 bg-gray-50" contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <Text>{pushEnabled ? 'Notificaciones habilitadas' : 'Notificaciones deshabilitadas'}</Text>
+      <Text>{fcmToken ? `FCM Token: ${fcmToken}` : 'FCM Token no disponible'}</Text>
+
       <SettingsSection title="Sistema">
         <SettingItem
           kind="info"

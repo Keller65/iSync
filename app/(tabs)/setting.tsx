@@ -338,9 +338,6 @@ const SettingsScreen = () => {
 
   return (
     <ScrollView className="flex-1 bg-gray-50" contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-      <Text>{pushEnabled ? 'Notificaciones habilitadas' : 'Notificaciones deshabilitadas'}</Text>
-      <Text>{fcmToken ? `FCM Token: ${fcmToken}` : 'FCM Token no disponible'}</Text>
-
       <SettingsSection title="Sistema">
         <SettingItem
           kind="info"

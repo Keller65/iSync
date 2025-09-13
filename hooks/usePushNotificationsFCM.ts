@@ -2,6 +2,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type UsePushReturn = {
   fcmToken: string | null;
@@ -9,15 +10,35 @@ type UsePushReturn = {
 };
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    priority: Notifications.AndroidNotificationPriority.HIGH,
-    channelId: 'default',
-    sound: 'notification.wav',
-  }),
+  handleNotification: async (notification) => {
+    console.log('Manejando notificación:', notification.request.content.title);
+    try {
+      const stored = await AsyncStorage.getItem('notifications');
+      const notifications = stored ? JSON.parse(stored) : [];
+      const notifData = {
+        id: Date.now(),
+        title: notification.request.content.title || 'Notificación',
+        message: notification.request.content.body || '',
+        time: new Date().toISOString(),
+        icon: 'mail-unread-outline',
+        color: 'bg-primary',
+      };
+      notifications.unshift(notifData);
+      await AsyncStorage.setItem('notifications', JSON.stringify(notifications));
+      console.log('Notificación guardada desde handler:', notifData);
+    } catch (e: any) {
+      console.error('Error guardando notificación desde handler:', e);
+    }
+    return {
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      priority: Notifications.AndroidNotificationPriority.HIGH,
+      channelId: 'default',
+      sound: 'notification.wav',
+    };
+  },
 });
 
 export function usePushNotificationsFCM(): UsePushReturn {

@@ -491,7 +491,7 @@ const SettingsScreen = () => {
 
       <View className="mt-4">
         <Text className="text-center text-gray-400 text-[11px] font-[Poppins-Regular] tracking-[-0.3px]">
-          © {new Date().getFullYear()} Grupo Alfa & Omega S. de R. L. de C. V. - Todos los derechos reservados
+          © {new Date().getFullYear()} iSync ERP - Todos los derechos reservados
         </Text>
         <Text className="text-center text-gray-300 text-[10px] mt-1">{Platform.OS.toUpperCase()} Build</Text>
       </View>

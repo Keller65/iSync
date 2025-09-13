@@ -11,7 +11,6 @@ import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, Vie
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import Animated, { useAnimatedKeyboard, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from "../context/auth";
 import "../global.css";
 
@@ -21,6 +20,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { fetchUrl } = useAppStore()
   const FETCH_URL = fetchUrl + "/auth/employee";
@@ -180,19 +180,22 @@ export default function Login() {
   if (user) return <Redirect href="/(tabs)" />;
 
   return (
-    <SafeAreaView className="flex-1 p-5 relative justify-center bg-white">
-      <Animated.View
-        className="self-stretch items-stretch"
-        style={animatedBlockStyles}
-      >
+    <View className="flex-1 bg-primary">
+
+      <View className='bg-primary h-[40%] p-4 items-center justify-center'>
         <Image
-          source={require('../assets/images/iSync-ERP.png')}
-          height={160}
-          width={160}
-          className="h-[160px] w-[160px] self-center mb-[60px]"
+          source={require('@/assets/images/icon.png')}
+          height={200}
+          width={200}
+          className="h-[200px] w-[200px] self-center"
           style={{ resizeMode: 'contain' }}
         />
+      </View>
 
+      <Animated.View
+        className="self-stretch items-stretch p-5 bg-white flex-1 rounded-t-3xl"
+        style={animatedBlockStyles}
+      >
         <View className="gap-6">
           <View>
             <Text className="font-[Poppins-Medium] text-[15px] tracking-[-0.3px] text-primary">Código de Vendedor</Text>
@@ -209,16 +212,28 @@ export default function Login() {
 
           <View>
             <Text className="font-[Poppins-Medium] text-[15px] tracking-[-0.3px] text-primary">Contraseña</Text>
-            <TextInput
-              className="h-14 bg-[#e5e7eb] text-primary px-6 rounded-2xl font-[Poppins-Medium]"
-              placeholder="Ingrese su Contraseña"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              keyboardType="numeric"
-              editable={!loading}
-              placeholderTextColor="#fff"
-            />
+            <View className="relative">
+              <TextInput
+                className="h-14 bg-[#e5e7eb] text-primary px-6 rounded-2xl font-[Poppins-Medium] pr-14"
+                placeholder="Ingrese su Contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                keyboardType="numeric"
+                editable={!loading}
+                placeholderTextColor="#fff"
+              />
+              <TouchableOpacity
+                className="absolute right-4 top-4"
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={24}
+                  color="gray"
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -229,11 +244,11 @@ export default function Login() {
         >
           {loading ? (
             <View className="flex-row gap-2 items-center justify-center">
-              <ActivityIndicator color="#fff" size="small" />
-              <Text className="text-black text-center font-[Poppins-SemiBold] leading-3">Iniciando Sesión...</Text>
+              <ActivityIndicator color="black" size="small" />
+              <Text className="text-black text-center font-[Poppins-SemiBold]">Iniciando Sesión...</Text>
             </View>
           ) : (
-            <Text className="text-white text-center font-[Poppins-SemiBold] leading-3">Iniciar Sesión</Text>
+            <Text className="text-white text-center font-[Poppins-SemiBold]">Iniciar Sesión</Text>
           )}
         </TouchableOpacity>
 
@@ -256,6 +271,6 @@ export default function Login() {
           <Text className="font-[Poppins-SemiBold] text-sm tracking-[-0.3px] text-primary">Configuraciones</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

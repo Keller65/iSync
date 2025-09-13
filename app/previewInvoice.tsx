@@ -11,7 +11,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 
-const IMAGE = Asset.fromModule(require('@/assets/images/LogoAlfayOmega.png'));
+const IMAGE = Asset.fromModule(require('@/assets/images/iSync-ERP-blue.png'));
 
 // Helpers
 const formatMoney = (value: number | string | null | undefined) => {
@@ -90,7 +90,7 @@ const generateInvoiceHTML = async (
       * { font-family: 'Inter', sans-serif; }
       body { margin:0; padding:8px; font-size:10px; }
       .ticket { width:100%; max-width:400px; margin:0 auto; }
-      img { max-width:80%; margin:12px auto; display:block; }
+      img { max-width:50%; margin:12px auto 40px auto; display:block; }
       .center { text-align:center; }
       .bold { font-weight:500; }
       .title-bold { font-weight:600; }
@@ -106,7 +106,6 @@ const generateInvoiceHTML = async (
     <div class="ticket">
       <div class="center">
         <img src="data:image/png;base64,${base64Logo}" />
-        <div class="title-bold" style="font-size:18px; margin-bottom:34px;">Grupo Alfa & Omega</div>
       </div>
       <div>
         <div class="row"><span class="bold">Recibo</span><span>${folio}</span></div>
@@ -133,7 +132,7 @@ const generateInvoiceHTML = async (
       <div class="divider"></div>
       <div class="row bold"><span>Saldo pendiente</span><span>L. ${formatMoney(totalPendiente)}</span></div>
       <div class="divider"></div>
-      <div class="foot">¡Gracias por su pago!<br/>Dudas o reclamos llamar al 9458-7168</div>
+      <div class="foot">¡Gracias por su pago!<br/>Dudas o reclamos llamar al 9793-9671</div>
     </div>
     </body></html>`;
 };

@@ -231,7 +231,7 @@ const OrderDetails = () => {
         <p>${orderData.address ?? 'Dirección no disponible'}</p>
       </div>
       <div class="encabezado-der">
-        <div class="logo">Grupo Alfa & Omega</div>
+        <div class="logo">Grupo iSync ERP</div>
         <p></p>
       </div>
     </div>
@@ -297,7 +297,7 @@ const OrderDetails = () => {
 
     <!-- Footer -->
     <div class="pie">
-      <div>© ${new Date().getFullYear()} Grupo Alfa & Omega</div>
+      <div>© ${new Date().getFullYear()} Grupo iSync ERP</div>
       <div class="pie-info">
         <span>📍 Barrio el cacao 32 y 33 cll SE 3 AV SE San pedro sula, cortes, Honduras.</span>
         <span>📧 info@alfayomega-hn.com</span>

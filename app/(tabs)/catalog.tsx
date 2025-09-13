@@ -85,7 +85,7 @@ function generateCoverPage() {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:#fff;height:100%;width:100%;font-weight:600;">
       <p style="font-size:40px;font-family:'Poppins',Arial,sans-serif;color:#000;margin-bottom:24px;text-align:center;">Catálogo de Productos</p>
-      <img src="https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/LogoAlfayOmega.png" alt="Portada del catálogo" style="width:450px;height:auto;border-radius:12px;display:block;margin:0 auto;">
+      <img src="https://pub-377e394d2d944d18a81d9e364842d49d.r2.dev/iSync-ERP-blue.png" alt="Portada del catálogo" style="width:350px;height:auto;border-radius:12px;display:block;margin:0 auto;">
     </div>
   `;
 }
@@ -128,7 +128,7 @@ const ProductScreen = () => {
     try {
       const currentDate = new Date();
       const formattedDate = `${currentDate.toLocaleDateString().replace(/\//g, '-')}_${currentDate.toLocaleTimeString().replace(/:/g, '-')}`;
-      const fileName = `Catalogo Alfa & Omega - ${formattedDate}.pdf`;
+      const fileName = `Catalogo iSync ERP - ${formattedDate}.pdf`;
 
       const { uri } = await Print.printToFileAsync({
         html: `

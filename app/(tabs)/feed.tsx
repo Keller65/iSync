@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FlashList } from '@shopify/flash-list';
 import * as Notifications from 'expo-notifications';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -120,30 +121,31 @@ const Feed = () => {
   );
 
   return (
-    <ScrollView
-      className="flex-1 bg-white"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 20 }}
-    >
-      <View className="px-4">
-        <View className="w-full">
-          {loading ? (
-            <Text className="text-gray-400">Cargando notificaciones...</Text>
-          ) : notifications.length === 0 ? (
-            <Text className="text-gray-400">No hay notificaciones</Text>
+    <View className='flex-1 bg-white'>
+      <FlashList
+        data={notifications}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item, index }) => (
+          <NotificationItem notification={item} index={index} />
+        )}
+        estimatedItemSize={100} // Tamaño estimado de cada elemento para optimización
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        ListEmptyComponent={
+          loading ? (
+            <View className="flex-1 gap-2 items-center justify-center">
+              <ActivityIndicator color="#9ca3af" size="small" />
+              <Text className="text-gray-400 font-[Poppins-SemiBold] tracking-[-0.3px]">Cargando notificaciones...</Text>
+            </View>
           ) : (
-            notifications.map((n, index) => (
-              <NotificationItem
-                key={String(n.id)}
-                notification={n}
-                index={index}
-              />
-            ))
-          )}
-        </View>
-      </View>
-    </ScrollView>
+            <View className="flex-1 gap-2 items-center justify-center">
+              <Text className="text-gray-400 font-[Poppins-SemiBold] tracking-[-0.3px]">No hay notificaciones</Text>
+            </View>
+          )
+        }
+        contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16, backgroundColor: 'white' }}
+      />
+    </View>
   );
 };
 

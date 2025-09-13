@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "307792145167",
-    "project_id": "fir-app-aa77f",
-    "storage_bucket": "fir-app-aa77f.firebasestorage.app"
+    "project_number": "141295196284",
+    "project_id": "isync-erp",
+    "storage_bucket": "isync-erp.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:307792145167:android:cd4209f34cc74436166c7a",
+        "mobilesdk_app_id": "1:141295196284:android:16f6ff7c10b7cde91f51f9",
         "android_client_info": {
-          "package_name": "com.aerley_adkins2.demo"
+          "package_name": "com.aerley_adkins2.iSyncERP"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDT8dslYaGSZarqezb0y4VQSkrJ8qfncjI"
+          "current_key": "AIzaSyCn1tNh_hupb4Gmw4VHR00gBuJ99-x5K98"
         }
       ],
       "services": {

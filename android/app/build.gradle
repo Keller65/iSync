@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.aerley_adkins2.demo'
+    namespace 'com.aerley_adkins2.iSyncERP'
     defaultConfig {
-        applicationId 'com.aerley_adkins2.demo'
+        applicationId 'com.aerley_adkins2.iSyncERP'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

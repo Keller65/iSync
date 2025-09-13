@@ -21,7 +21,8 @@ const LocationsScreen = () => {
   const [selectedPlace, setSelectedPlace] = useState<{ lat: number; lon: number; display_name: string } | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
   const [deviceLocation, setDeviceLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const GOOGLE_MAPS_API_KEY = 'AIzaSyAAHjttmr1uloKr30pqnc1TT_1dRyxuw48';
+  const GOOGLE_MAPS_API_KEY = 'AIzaSyAbBbz7aDcMYUrHDXMJ49XNylMthLh1v-Y';
+  
   // 👉 Obtener ubicación del dispositivo
   useEffect(() => {
     const getDeviceLocation = async () => {

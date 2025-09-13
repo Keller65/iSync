@@ -1,4 +1,4 @@
-package com.aerley_adkins2.demo
+package com.aerley_adkins2.iSyncERP
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

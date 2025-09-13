@@ -17,7 +17,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1A3D59"
       },
       "config": {
         "googleMaps": {
@@ -25,7 +25,7 @@
         }
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.aerley_adkins2.demo",
+      "package": "com.aerley_adkins2.iSyncERP",
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO",
@@ -76,7 +76,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "971d7910-dd9d-4053-9206-649ae8faf758"
+        "projectId": "630fb244-2368-4513-8e53-086acaa58df0"
       }
     },
     "updates": {

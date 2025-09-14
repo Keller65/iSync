@@ -171,6 +171,15 @@ const Cobro = () => {
       console.log('Parametro enviado: ', JSON.stringify(response.data));
     } catch (error) {
       console.error('Error al realizar cobro:', error);
+      route.push({
+        pathname: '/modal/error',
+        params: {
+          errorCode: axios.isAxiosError(error) && error.response ? String(error.response.status) : '500',
+          errorMessage: axios.isAxiosError(error) && error.response && error.response.data && typeof error.response.data === 'string'
+            ? error.response.data
+            : 'Ocurrió un error inesperado al realizar el cobro. Por favor, inténtalo de nuevo.'
+        }
+      });
     }
     console.log('Cuerpo del Post', body);
     setLoading(false);
@@ -282,7 +291,7 @@ const Cobro = () => {
             <View className="h-[55px] py-1 w-full items-center justify-center flex-row gap-2">
               <ActivityIndicator color={disableCobroBtn ? '#6B7280' : '#000'} />
               <Text className={`font-[Poppins-SemiBold] text-lg tracking-[-0.3px] ${disableCobroBtn ? 'text-gray-500' : 'text-white'}`}>
-                Cargando...
+                Realizando cobro...
               </Text>
             </View>
           ) : (

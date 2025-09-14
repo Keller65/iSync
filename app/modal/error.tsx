@@ -30,12 +30,12 @@ const Error = () => {
   }, []);
 
   const handleRetry = () => {
-    logout()
-    router.push('/login')
-  };
-
-  const handleBack = () => {
-    router.back();
+    if (errorCode === '401') {
+      logout();
+      router.replace('/login');
+    } else {
+      router.back();
+    }
   };
 
   return (
@@ -53,7 +53,19 @@ const Error = () => {
       />
 
       <Text style={{ fontSize: 28, fontFamily: 'Poppins-Medium', color: '#cc0000', marginTop: 20, textAlign: 'center' }}>
-        {errorCode === '401' ? 'Sesión expirada' : '¡Ha ocurrido un error!'}
+        {errorCode === '401'
+          ? 'Sesión expirada'
+          : errorCode === '403'
+          ? 'Acceso denegado'
+          : errorCode === '404'
+          ? 'Recurso no encontrado'
+          : errorCode === '408'
+          ? 'Tiempo de espera agotado'
+          : errorCode === '500'
+          ? 'Error interno del servidor'
+          : errorCode === '503'
+          ? 'Servicio no disponible'
+          : '¡Ha ocurrido un error!'}
       </Text>
 
       <Text style={{ fontSize: 16, color: '#666', marginTop: 10, marginBottom: 40, textAlign: 'center' }}>
@@ -66,15 +78,6 @@ const Error = () => {
       >
         <Text style={{ fontFamily: 'Poppins-Medium', color: '#fff', fontSize: 18 }}>
           {errorCode === '401' ? 'Iniciar sesión' : 'Intentar de nuevo'}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handleBack}
-        style={{ width: '100%', height: 50, alignItems: 'center', justifyContent: 'center', borderRadius: 99 }}
-      >
-        <Text style={{ fontFamily: 'Poppins-Medium', color: '#cc0000', fontSize: 18 }}>
-          Volver a Intentar
         </Text>
       </TouchableOpacity>
     </SafeAreaView>

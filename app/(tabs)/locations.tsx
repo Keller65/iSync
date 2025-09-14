@@ -222,49 +222,6 @@ const LocationsScreen = () => {
     }, [])
   );
 
-  // Seguimiento en tiempo real de la ubicación del usuario
-  useEffect(() => {
-    let locationSubscription: Location.LocationSubscription | null = null;
-
-    const startWatchingLocation = async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          console.warn('Permiso de ubicación denegado');
-          return;
-        }
-
-        locationSubscription = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 800, // Actualizar cada 800 ms
-            distanceInterval: 1, // Actualizar si se mueve al menos 1 metro
-          },
-          (location) => {
-            const { latitude, longitude } = location.coords;
-            setDeviceLocation({ latitude, longitude });
-            setRegion((prevRegion) => ({
-              latitude,
-              longitude,
-              latitudeDelta: prevRegion?.latitudeDelta || 0.0922,
-              longitudeDelta: prevRegion?.longitudeDelta || 0.0421,
-            }));
-          }
-        );
-      } catch (error) {
-        console.error('Error al iniciar el seguimiento de ubicación:', error);
-      }
-    };
-
-    startWatchingLocation();
-
-    return () => {
-      if (locationSubscription) {
-        locationSubscription.remove();
-      }
-    };
-  }, []);
-
   return (
     <View className="flex-1 bg-white relative">
       <View className="z-20">

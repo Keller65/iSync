@@ -7,8 +7,35 @@ import * as Location from 'expo-location';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GooglePlacesTextInput from 'react-native-google-places-textinput';
-import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import MapView, { MapPressEvent, Marker, Polyline, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+
+function decodePolyline(encoded: string) {
+  let points = [];
+  let index = 0, len = encoded.length;
+  let lat = 0, lng = 0;
+  while (index < len) {
+    let b, shift = 0, result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lat += dlat;
+    shift = 0;
+    result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lng += dlng;
+    points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
+  }
+  return points;
+}
 
 const LocationsScreen = () => {
   const { updateCustomerLocation, setUpdateCustomerLocation, selectedCustomerLocation } = useAppStore();
@@ -21,9 +48,9 @@ const LocationsScreen = () => {
   const [selectedPlace, setSelectedPlace] = useState<{ lat: number; lon: number; display_name: string } | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
   const [deviceLocation, setDeviceLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [routeCoords, setRouteCoords] = useState<Array<{ latitude: number; longitude: number }>>([]);
   const GOOGLE_MAPS_API_KEY = 'AIzaSyAbBbz7aDcMYUrHDXMJ49XNylMthLh1v-Y';
-  
-  // 👉 Obtener ubicación del dispositivo
+
   useEffect(() => {
     const getDeviceLocation = async () => {
       try {
@@ -51,7 +78,6 @@ const LocationsScreen = () => {
     getDeviceLocation();
   }, []);
 
-  // 👉 Obtener detalles de un lugar (lat/lng)
   const handleSelectPlace = (place: any) => {
     if (!place) return;
     const lat = parseFloat(place.lat);
@@ -133,6 +159,42 @@ const LocationsScreen = () => {
     }
   };
 
+  // Obtener ruta entre ubicaciones
+  useEffect(() => {
+    const fetchRoute = async () => {
+      if (
+        deviceLocation &&
+        updateCustomerLocation &&
+        typeof updateCustomerLocation.latitude === 'number' &&
+        typeof updateCustomerLocation.longitude === 'number'
+      ) {
+        const origin = `${deviceLocation.latitude},${deviceLocation.longitude}`;
+        const destination = `${updateCustomerLocation.latitude},${updateCustomerLocation.longitude}`;
+        const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${GOOGLE_MAPS_API_KEY}`;
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+          if (
+            data.routes &&
+            data.routes.length > 0 &&
+            data.routes[0].overview_polyline &&
+            data.routes[0].overview_polyline.points
+          ) {
+            const points = decodePolyline(data.routes[0].overview_polyline.points);
+            setRouteCoords(points);
+          } else {
+            setRouteCoords([]);
+          }
+        } catch (err) {
+          setRouteCoords([]);
+        }
+      } else {
+        setRouteCoords([]);
+      }
+    };
+    fetchRoute();
+  }, [deviceLocation, updateCustomerLocation]);
+
   useFocusEffect(
     useCallback(() => {
       // Lógica que se ejecuta cuando la pantalla está en foco
@@ -159,6 +221,49 @@ const LocationsScreen = () => {
       };
     }, [])
   );
+
+  // Seguimiento en tiempo real de la ubicación del usuario
+  useEffect(() => {
+    let locationSubscription: Location.LocationSubscription | null = null;
+
+    const startWatchingLocation = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.warn('Permiso de ubicación denegado');
+          return;
+        }
+
+        locationSubscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 800, // Actualizar cada 800 ms
+            distanceInterval: 1, // Actualizar si se mueve al menos 1 metro
+          },
+          (location) => {
+            const { latitude, longitude } = location.coords;
+            setDeviceLocation({ latitude, longitude });
+            setRegion((prevRegion) => ({
+              latitude,
+              longitude,
+              latitudeDelta: prevRegion?.latitudeDelta || 0.0922,
+              longitudeDelta: prevRegion?.longitudeDelta || 0.0421,
+            }));
+          }
+        );
+      } catch (error) {
+        console.error('Error al iniciar el seguimiento de ubicación:', error);
+      }
+    };
+
+    startWatchingLocation();
+
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
+  }, []);
 
   return (
     <View className="flex-1 bg-white relative">
@@ -315,6 +420,15 @@ const LocationsScreen = () => {
             description="Esta es tu ubicación actual"
             pinColor="blue"
             identifier="current-location"
+          />
+        )}
+
+        {/* Dibuja la ruta si existe */}
+        {routeCoords.length > 0 && (
+          <Polyline
+            coordinates={routeCoords}
+            strokeColor="#2563eb"
+            strokeWidth={5}
           />
         )}
       </MapView>

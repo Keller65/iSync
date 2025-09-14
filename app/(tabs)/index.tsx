@@ -263,7 +263,7 @@ export default function App() {
       />
 
       <BottomSheetWelcome />
-      {!showSessionExpired && <BottomSheetSession />}
+      {showSessionExpired && <BottomSheetSession />}
     </View>
   );
 }

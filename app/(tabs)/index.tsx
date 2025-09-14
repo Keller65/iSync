@@ -1,5 +1,6 @@
 import { useLicense } from "@/auth/useLicense";
 import BottomSheetCart from '@/components/BottomSheetCart/page';
+import BottomSheetSession from "@/components/BottomSheetSession/pagex";
 import BottomSheetWelcome from '@/components/BottomSheetWelcome/page';
 import GoalDonut from '@/components/Dashboard/GoalDonut';
 import KPICard from '@/components/Dashboard/KPICard';
@@ -28,6 +29,7 @@ export default function App() {
   const [loadingTableData, setLoadingTableData] = useState(false);
   const [tableError, setTableError] = useState<string | null>(null);
   const [loadingSales, setLoadingSales] = useState(false);
+  const [showSessionExpired, setShowSessionExpired] = useState(false);
 
   const fetchData = async () => {
     if (!user?.token) return;
@@ -49,13 +51,25 @@ export default function App() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user.token}`,
           }
-        }).then(res => res.json()),
+        }).then(res => {
+          if (res.status === 401) {
+            setShowSessionExpired(true);
+            throw new Error('Unauthorized');
+          }
+          return res.json();
+        }),
         fetch(`${fetchUrl}/api/Kpi/monthly/${slpCode}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user.token}`,
           }
-        }).then(res => res.json())
+        }).then(res => {
+          if (res.status === 401) {
+            setShowSessionExpired(true);
+            throw new Error('Unauthorized');
+          }
+          return res.json();
+        })
       ]);
 
       const goalData = goalRes.data;
@@ -92,6 +106,11 @@ export default function App() {
           Authorization: `Bearer ${user.token}`,
         },
       });
+
+      if (response.status === 401) {
+        setShowSessionExpired(true);
+        throw new Error('Unauthorized');
+      }
 
       if (!response.ok) {
         throw new Error("Error al obtener los datos de la tabla");
@@ -244,6 +263,7 @@ export default function App() {
       />
 
       <BottomSheetWelcome />
+      {!showSessionExpired && <BottomSheetSession />}
     </View>
   );
 }

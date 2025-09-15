@@ -105,6 +105,12 @@ interface AppStoreState {
     rowNum: number | null;
   }>) => void;
   clearUpdateCustomerLocation: () => void;
+
+  selectedCustomerConsignment: Customer | null;
+  setSelectedCustomerConsignment: (customer: Customer | null) => void;
+  clearSelectedCustomerConsignment: () => void;
+
+  productsInConsignment: CartItem[];
 }
 
 export const useAppStore = create<AppStoreState>()(
@@ -123,6 +129,8 @@ export const useAppStore = create<AppStoreState>()(
       selectedInvoices: [],
       selectedCustomerInvoices: null,
       userClickAcceptWelcome: false,
+      selectedCustomerConsignment: null,
+      productsInConsignment: [],
       setUserClickAcceptWelcome: (value: boolean) => set({ userClickAcceptWelcome: value }),
       // Estado NO persistente para datos del formulario de pago
       paymentForm: {
@@ -162,8 +170,10 @@ export const useAppStore = create<AppStoreState>()(
 
       addProduct: (productToAdd) => {
         const products = get().products;
+        const productsInConsignment = get().productsInConsignment;
         const existingIndex = products.findIndex(p => p.itemCode === productToAdd.itemCode);
         const updatedProducts = [...products];
+        const updatedConsignmentProducts = [...productsInConsignment];
         const newQuantity = productToAdd.quantity;
         const unitPrice = productToAdd.unitPrice;
         const newTotal = unitPrice * newQuantity;
@@ -171,10 +181,18 @@ export const useAppStore = create<AppStoreState>()(
         if (newQuantity <= 0) {
           if (existingIndex > -1) {
             updatedProducts.splice(existingIndex, 1);
+            updatedConsignmentProducts.splice(existingIndex, 1);
           }
         } else if (existingIndex > -1) {
           updatedProducts[existingIndex] = {
             ...products[existingIndex],
+            ...productToAdd,
+            quantity: newQuantity,
+            unitPrice: unitPrice,
+            total: newTotal,
+          };
+          updatedConsignmentProducts[existingIndex] = {
+            ...productsInConsignment[existingIndex],
             ...productToAdd,
             quantity: newQuantity,
             unitPrice: unitPrice,
@@ -187,8 +205,14 @@ export const useAppStore = create<AppStoreState>()(
             unitPrice: unitPrice,
             total: newTotal,
           });
+          updatedConsignmentProducts.push({
+            ...productToAdd,
+            quantity: newQuantity,
+            unitPrice: unitPrice,
+            total: newTotal,
+          });
         }
-        set({ products: updatedProducts });
+        set({ products: updatedProducts, productsInConsignment: updatedConsignmentProducts });
       },
 
       updateQuantity: (itemCode, quantity, newPrice) => {
@@ -215,8 +239,9 @@ export const useAppStore = create<AppStoreState>()(
       },
 
       removeProduct: (itemCode) => {
-        const updated = get().products.filter(p => p.itemCode !== itemCode);
-        set({ products: updated });
+        const updatedProducts = get().products.filter(p => p.itemCode !== itemCode);
+        const updatedConsignmentProducts = get().productsInConsignment.filter(p => p.itemCode !== itemCode);
+        set({ products: updatedProducts, productsInConsignment: updatedConsignmentProducts });
       },
 
       clearCart: () => set({ products: [] }),
@@ -295,6 +320,9 @@ export const useAppStore = create<AppStoreState>()(
       clearUpdateCustomerLocation: () => {
         set({ updateCustomerLocation: { updateLocation: false, latitude: null, longitude: null, addressName: null, rowNum: null } });
       },
+
+      setSelectedCustomerConsignment: (customer) => set({ selectedCustomerConsignment: customer }),
+      clearSelectedCustomerConsignment: () => set({ selectedCustomerConsignment: null }),
     }),
     {
       name: 'app-store',

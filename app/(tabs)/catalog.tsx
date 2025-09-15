@@ -14,9 +14,9 @@ import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'rea
 import Animated, { FadeInDown, FadeOutDown, FadeOutUp } from 'react-native-reanimated';
 import '../../global.css';
 
-// Definimos los tipos para los parámetros y las estructuras
+// Tipos para categorías y agrupación
 type Category = {
-  code: string;
+  code: string | number;
   name: string;
 };
 
@@ -27,7 +27,7 @@ type GroupedProducts = {
   };
 };
 
-// Genera un HTML estilizado para un producto con foto, nombre y código
+// HTML de producto
 function generateProductHtml(product: ProductDiscount) {
   return `
     <div style="text-align:center;padding:16px;margin-bottom:12px;">
@@ -41,7 +41,7 @@ function generateProductHtml(product: ProductDiscount) {
   `;
 }
 
-// Genera un HTML estilizado para una categoría con 3 productos por fila
+// HTML de categoría
 function generateCategoryHtml(categoryName: string, productsHtml: string) {
   return `
     <div style="margin-bottom:24px;">
@@ -53,21 +53,20 @@ function generateCategoryHtml(categoryName: string, productsHtml: string) {
   `;
 }
 
-// Nueva función para agrupar productos por categoría
+// Agrupar productos por categoría
 function groupProductsByCategory(products: ProductDiscount[], categories: Category[]): GroupedProducts {
   const grouped: GroupedProducts = {};
 
   categories.forEach((category) => {
-    grouped[category.code] = {
+    grouped[String(category.code)] = {
       name: category.name,
       products: [],
     };
   });
 
-  // Asegurarse de que los productos tengan la propiedad `categoryCode` asignada correctamente
   products.forEach((product) => {
-    if (product.groupCode && grouped[product.groupCode]) {
-      grouped[product.groupCode].products.push(product);
+    if (product.groupCode !== undefined && grouped[String(product.groupCode)]) {
+      grouped[String(product.groupCode)].products.push(product);
     } else {
       console.warn(`Producto sin categoría asignada: ${product.itemName}`);
     }
@@ -76,13 +75,12 @@ function groupProductsByCategory(products: ProductDiscount[], categories: Catego
   return grouped;
 }
 
-// Genera una portada para el catálogo
+// Portada PDF
 function generateCoverPage() {
   return `
-    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:#fff;height:100%;width:100%;font-weight:600;">
       <p style="font-size:40px;font-family:'Poppins',Arial,sans-serif;color:#000;margin-bottom:24px;text-align:center;">Catálogo de Productos</p>
       <img src="https://pub-377e394d2d944d18a81d9e364842d49d.r2.dev/iSync-ERP-blue.png" alt="Portada del catálogo" style="width:350px;height:auto;border-radius:12px;display:block;margin:0 auto;">
@@ -95,35 +93,33 @@ const ProductScreen = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState<ProductDiscount[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [isLoading, setIsLoading] = useState(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(['all']);
 
+  // 🔹 Cargar categorías
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${fetchUrl}/sap/items/categories`);
-        setCategories(response.data);
+        const response = await axios.get(`${fetchUrl}/api/Catalog/products/categories`);
+        setCategories(response.data?.categories ?? []); // ✅ fix
       } catch (error) {
         console.error('❌ Error al cargar las categorías', error);
+        setCategories([]); // fallback vacío
       }
     };
 
     fetchCategories();
-  }, []);
+  }, [fetchUrl]);
 
   useEffect(() => {
-    if (selectedCategories.includes('all')) {
-      setSelectedCategories(['all', ...categories.map((category) => category.code)]);
+    // Inicializar 'all' cuando se cargan las categorías
+    if (categories.length > 0 && selectedCategories.length === 1 && selectedCategories[0] === 'all') {
+      setSelectedCategories(['all', ...categories.map(c => String(c.code))]);
     }
   }, [categories]);
 
-  useEffect(() => {
-    if (categories.length > 0 && categories.every((category) => selectedCategories.includes(category.code))) {
-      setSelectedCategories((prev) => (prev.includes('all') ? prev : ['all', ...prev]));
-    }
-  }, [selectedCategories, categories]);
-
+  // Generar PDF
   const handleGeneratePdf = async (htmlContent: string) => {
     try {
       const currentDate = new Date();
@@ -162,33 +158,45 @@ const ProductScreen = () => {
     }
   };
 
+  // Selección de categorías
   const handleCategorySelection = (categoryCode: string) => {
-    setSelectedCategories((prev) => {
+    setSelectedCategories(prev => {
+      // Caso 1: Se selecciona "Todas las categorías"
       if (categoryCode === 'all') {
-        return prev.includes('all') ? [] : ['all', ...categories.map((category) => category.code)];
+        return prev.includes('all') ? [] : ['all', ...categories.map(c => String(c.code))];
       }
 
-      const updated = prev.includes(categoryCode)
-        ? prev.filter((code) => code !== categoryCode)
-        : [...prev.filter((code) => code !== 'all'), categoryCode];
-
-      if (!categories.every((category) => updated.includes(category.code))) {
-        return updated.filter((code) => code !== 'all');
+      // Caso 2: Se selecciona una categoría individual
+      const isSelected = prev.includes(categoryCode);
+      let updatedCategories;
+      if (isSelected) {
+        // Eliminar la categoría y el 'all' si estaba
+        updatedCategories = prev.filter(c => c !== categoryCode && c !== 'all');
+      } else {
+        // Añadir la categoría
+        updatedCategories = [...prev, categoryCode];
       }
 
-      return updated;
+      // Comprobar si todas las categorías individuales están seleccionadas
+      const allCategoriesSelected = categories.every(category => updatedCategories.includes(String(category.code)));
+      if (allCategoriesSelected) {
+        return ['all', ...updatedCategories];
+      }
+
+      return updatedCategories;
     });
   };
 
   const filteredCategories = categories.filter((category) =>
-    selectedCategories.includes('all') || selectedCategories.includes(category.code)
+    selectedCategories.includes('all') || selectedCategories.includes(String(category.code))
   );
 
+  // Generar catálogo
   const handleGenerateCatalog = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get<ProductDiscount[]>(
-        `/api/Catalog/products/all?priceList=1&pageSize=1000`,
+      const response = await axios.get<{ products: ProductDiscount[] }>(
+        `/api/Catalog/products/all?groupCode=2&priceList=1`,
         {
           baseURL: fetchUrl,
           headers: {
@@ -198,9 +206,19 @@ const ProductScreen = () => {
         }
       );
 
-      setProducts(response.data);
+      const data = response.data?.products ?? []; 
 
-      const groupedProducts = groupProductsByCategory(response.data, filteredCategories);
+      const isAllSelected = selectedCategories.includes('all');
+      let products;
+      if (!isAllSelected) {
+        products = data.filter(product => selectedCategories.includes(String(product.groupCode)));
+      } else {
+        products = data;
+      }
+      
+      setProducts(products);
+
+      const groupedProducts = groupProductsByCategory(products, filteredCategories);
 
       const pdfContent = `
         ${generateCoverPage()}
@@ -216,7 +234,6 @@ const ProductScreen = () => {
                 })
               )
               .join('');
-
             return generateCategoryHtml(category.name, productsHtml);
           })
           .join('')}
@@ -227,6 +244,7 @@ const ProductScreen = () => {
       bottomSheetRef.current?.close();
     } catch (error) {
       console.error('❌ Error al cargar los productos', error);
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
@@ -284,6 +302,30 @@ const ProductScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
+        
+        {products.length > 0 && (
+          <ScrollView className="mb-4">
+            <Text className="text-md text-gray-400 font-[Poppins-SemiBold] tracking-[-0.4px] mb-2">
+              Productos Cargados
+            </Text>
+            <View className="flex-row flex-wrap justify-between">
+              {products.map((product) => (
+                <View key={String(product.itemCode)} className="w-[48%] bg-gray-100 p-3 mb-4 rounded-xl items-center">
+                  <ExpoImage
+                    source={`https://pub-266f56f2e24d4d3b8e8abdb612029f2f.r2.dev/${product.itemCode}.jpg`}
+                    style={{ width: 100, height: 100, borderRadius: 8 }}
+                  />
+                  <Text className="mt-2 text-center text-sm font-[Poppins-Medium] tracking-[-0.3px]">
+                    {product.itemName}
+                  </Text>
+                  <Text className="mt-1 text-center text-xs text-gray-500">
+                    {product.salesUnit}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        )}
       </View>
 
       <BottomSheetModal
@@ -322,7 +364,9 @@ const ProductScreen = () => {
               onValueChange={() => handleCategorySelection('all')}
               color={selectedCategories.includes('all') ? '#1A3D59' : undefined}
             />
-            <Text className="ml-2 leading-5 text-black tracking-[-0.3px] font-[Poppins-Regular] text-sm">Todas las categorías</Text>
+            <Text className="ml-2 leading-5 text-black tracking-[-0.3px] font-[Poppins-Regular] text-sm">
+              Todas las categorías
+            </Text>
           </View>
 
           <ScrollView
@@ -334,18 +378,19 @@ const ProductScreen = () => {
             {categories.map((category) => (
               <View
                 className="h-fit w-[46%] px-3"
-                key={category.code}
+                key={String(category.code)}
                 style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}
-                onTouchEnd={() => handleCategorySelection(category.code)}
+                onTouchEnd={() => handleCategorySelection(String(category.code))}
               >
                 <Checkbox
                   style={{ borderRadius: 6, borderColor: '#000' }}
-                  value={selectedCategories.includes(category.code)}
-                  onValueChange={() => handleCategorySelection(category.code)}
-                  color={selectedCategories.includes(category.code) ? '#1A3D59' : undefined}
-                  onTouchEnd={() => handleCategorySelection(category.code)}
+                  value={selectedCategories.includes(String(category.code))}
+                  onValueChange={() => handleCategorySelection(String(category.code))}
+                  color={selectedCategories.includes(String(category.code)) ? '#1A3D59' : undefined}
                 />
-                <Text className="ml-2 leading-5 text-black tracking-[-0.3px] font-[Poppins-Regular] text-sm">{category.name}</Text>
+                <Text className="ml-2 text-black tracking-[-0.3px] font-[Poppins-Regular] text-sm">
+                  {category.name}
+                </Text>
               </View>
             ))}
           </ScrollView>

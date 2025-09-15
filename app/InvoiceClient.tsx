@@ -7,71 +7,70 @@ import Feather from '@expo/vector-icons/Feather';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, RefreshControl, Text, TextInput, TouchableOpacity, View, } from 'react-native';
-
-const PAGE_SIZE = 1000;
+import {
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 const InvoicesClientScreen = memo(() => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useAuth();
   const router = useRouter();
-  const setSelectedCustomerInvoices = useAppStore((state) => state.setSelectedCustomerInvoices);
+  const setSelectedCustomerInvoices = useAppStore(
+    (state) => state.setSelectedCustomerInvoices
+  );
   const { fetchUrl } = useAppStore();
 
-  const FETCH_URL = fetchUrl + "/api/customers/";
+  const FETCH_URL = fetchUrl + '/api/customers/';
 
-  const fetchCustomers = async (pageNumber: number) => {
+  const fetchCustomers = useCallback(async () => {
     if (!user?.salesPersonCode || !user?.token) return;
 
     try {
-      if (pageNumber === 1 && !refreshing) setLoading(true);
-      if (pageNumber > 1) setLoadingMore(true);
+      setLoading(true);
 
-      const res = await api.get(
-        `by-sales-emp?slpCode=${user.salesPersonCode}&page=${pageNumber}&pageSize=${PAGE_SIZE}`,
-        {
-          baseURL: FETCH_URL,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${user.token}`,
-          },
-          cache: {
-            ttl: 1000 * 60 * 60 * 24,
-          }
-        }
+      const res = await api.get(`by-sales-emp?slpCode=${user.salesPersonCode}`, {
+        baseURL: FETCH_URL,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
+        },
+        cache: {
+          ttl: 1000 * 60 * 60 * 24,
+        },
+      });
+
+      console.info(
+        res.cached ? 'Clientes cargados desde cache' : 'Clientes cargados desde red'
       );
 
-      console.info(res.cached ? 'Clientes cargados desde cache' : 'Clientes cargados desde red');
-
-      const newCustomers = res.data.items || [];
-
-      setCustomers((prev) =>
-        pageNumber === 1 ? newCustomers : [...prev, ...newCustomers]
-      );
-
-      setHasMore(newCustomers.length === PAGE_SIZE);
+      const newCustomers = res.data || [];
+      setCustomers(newCustomers);
     } catch (err: any) {
       console.error('Error al cargar clientes:', err);
-      setError(err.response?.data?.message || err.message || 'Error desconocido.');
+      setError(
+        err.response?.data?.message || err.message || 'Error desconocido.'
+      );
     } finally {
       setLoading(false);
-      setLoadingMore(false);
       setRefreshing(false);
     }
-  };
+  }, [user?.salesPersonCode, user?.token, FETCH_URL]);
 
   useEffect(() => {
-    fetchCustomers(1);
-  }, [user?.salesPersonCode, user?.token]);
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   useEffect(() => {
     if (!search.trim()) {
@@ -86,7 +85,8 @@ const InvoicesClientScreen = memo(() => {
         (c) =>
           c.cardName.toLowerCase().includes(lowerSearch) ||
           c.cardCode.toLowerCase().includes(lowerSearch) ||
-          (c.federalTaxID && c.federalTaxID.toLowerCase().includes(lowerSearch))
+          (c.federalTaxID &&
+            c.federalTaxID.toLowerCase().includes(lowerSearch))
       )
     );
   }, [search, customers]);
@@ -104,12 +104,21 @@ const InvoicesClientScreen = memo(() => {
         });
       } catch (err) {
         console.error('Error al navegar:', err);
-        Alert.alert('Error de navegación', 'No se pudo abrir la pantalla de pedido.');
+        Alert.alert(
+          'Error de navegación',
+          'No se pudo abrir la pantalla de pedido.'
+        );
       }
     },
     [router, setSelectedCustomerInvoices]
   );
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchCustomers();
+  }, [fetchCustomers]);
+
+  // 👇 este hook ya no está después de returns condicionales
   const renderCustomerItem = useCallback(
     ({ item }: { item: Customer }) => (
       <TouchableOpacity
@@ -127,13 +136,17 @@ const InvoicesClientScreen = memo(() => {
 
           <View className="flex-row gap-2">
             <Text className="text-gray-600 font-[Poppins-SemiBold] tracking-[-0.3px]">
-              Código: <Text className="font-[Poppins-Regular]">{item.cardCode}</Text>
+              Código:{' '}
+              <Text className="font-[Poppins-Regular]">{item.cardCode}</Text>
             </Text>
             <Text className="text-gray-600 font-[Poppins-SemiBold] tracking-[-0.3px]">
-              RTN: {' '}
+              RTN:{' '}
               <Text className="font-[Poppins-Regular] tracking-[-0.3px]">
                 {item.federalTaxID
-                  ? item.federalTaxID.replace(/^(\d{4})(\d{4})(\d{6})$/, '$1-$2-$3')
+                  ? item.federalTaxID.replace(
+                      /^\d{4}(\d{4})(\d{6})$/,
+                      '$1-$2-$3'
+                    )
                   : ''}
               </Text>
             </Text>
@@ -144,57 +157,12 @@ const InvoicesClientScreen = memo(() => {
     [handleCustomerPress]
   );
 
-  const loadMore = async () => {
-    if (!loadingMore && hasMore && !search.trim()) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      await fetchCustomers(nextPage);
-    }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setPage(1);
-
-    if (!user?.salesPersonCode || !user?.token) return;
-
-    try {
-      setLoading(true);
-
-      const res = await api.get(
-        `by-sales-emp?slpCode=${user.salesPersonCode}&page=${page}&pageSize=${PAGE_SIZE}`,
-        {
-          baseURL: FETCH_URL,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${user.token}`,
-          },
-          cache: {
-            ttl: 1000 * 60 * 60 * 24,
-            override: true,
-          }
-        }
-      );
-
-      console.info(res.cached ? 'Clientes cargados desde cache (refresh)' : 'Clientes cargados desde red (refresh)');
-
-      const newCustomers = res.data.items || [];
-
-      setCustomers(newCustomers);
-      setHasMore(newCustomers.length === PAGE_SIZE);
-    } catch (err: any) {
-      console.error('Error al refrescar clientes:', err);
-      setError(err.response?.data?.message || err.message || 'Error desconocido.');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
   if (!user?.token) {
     return (
       <View className="flex-1 justify-center items-center bg-white px-5">
-        <Text className="text-center text-red-500 text-base">No has iniciado sesión o tu sesión ha expirado.</Text>
+        <Text className="text-center text-red-500 text-base">
+          No has iniciado sesión o tu sesión ha expirado.
+        </Text>
       </View>
     );
   }
@@ -212,7 +180,9 @@ const InvoicesClientScreen = memo(() => {
     return (
       <View className="flex-1 justify-center items-center bg-white px-5">
         <Text className="text-red-500 text-base text-center mb-2">{error}</Text>
-        <Text className="text-gray-500 text-sm text-center">Inicia sesión nuevamente.</Text>
+        <Text className="text-gray-500 text-sm text-center">
+          Inicia sesión nuevamente.
+        </Text>
       </View>
     );
   }
@@ -220,14 +190,16 @@ const InvoicesClientScreen = memo(() => {
   if (customers.length === 0 && !loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white px-5">
-        <Text className="text-gray-500 text-base text-center">No se encontraron clientes asociados a tu cuenta.</Text>
+        <Text className="text-gray-500 text-base text-center">
+          No se encontraron clientes asociados a tu cuenta.
+        </Text>
       </View>
     );
   }
 
   return (
     <View className="flex-1 bg-white">
-      <View className='px-4'>
+      <View className="px-4">
         <View className="bg-gray-200 rounded-2xl px-4 mb-2 text-base font-[Poppins-Regular] text-black flex-row items-center gap-2">
           <Feather name="search" size={20} color="#9ca3af" />
           <TextInput
@@ -246,8 +218,6 @@ const InvoicesClientScreen = memo(() => {
         renderItem={renderCustomerItem}
         keyExtractor={(item) => item.cardCode}
         estimatedItemSize={80}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -256,17 +226,11 @@ const InvoicesClientScreen = memo(() => {
             tintColor="#000"
           />
         }
-        ListFooterComponent={
-          loadingMore ? (
-            <View className="py-6 items-center justify-center">
-              <ActivityIndicator size="small" color="#000" />
-              <Text className="text-gray-500 mt-2">Cargando más clientes...</Text>
-            </View>
-          ) : null
-        }
         ListEmptyComponent={
           <View className="justify-center items-center py-10">
-            <Text className="text-gray-500 text-base text-center">No se encontraron clientes con ese criterio.</Text>
+            <Text className="text-gray-500 text-base text-center">
+              No se encontraron clientes con ese criterio.
+            </Text>
           </View>
         }
       />

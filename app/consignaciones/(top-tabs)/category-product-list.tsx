@@ -50,6 +50,7 @@ const CategoryProductScreen = memo(() => {
   const addProduct = useAppStore(state => state.addProduct);
   const updateQuantity = useAppStore(state => state.updateQuantity);
   const productsInCart = useAppStore(state => state.products);
+  const productsInConsignment = useAppStore(state => state.productsInConsignment);
   const debouncedSearchText = useAppStore(state => state.debouncedSearchText);
   const { products, fetchUrl } = useAppStore()
 
@@ -204,11 +205,11 @@ const CategoryProductScreen = memo(() => {
       return;
     }
 
-    const itemInCart = productsInCart.find(p => p.itemCode === selectedItem.itemCode);
+    const itemInConsignment = productsInConsignment.find(p => p.itemCode === selectedItem.itemCode);
     const productData = { ...selectedItem, quantity, unitPrice: finalPriceForCart, tiers: editableTiers, originalPrice: selectedItem.price };
 
-    if (itemInCart) {
-      Alert.alert('Producto ya en carrito', `${selectedItem.itemName} ya está en tu carrito. ¿Actualizar cantidad y precio?`, [
+    if (itemInConsignment) {
+      Alert.alert('Producto ya en consignación', `${selectedItem.itemName} ya está en consignación. ¿Actualizar cantidad y precio?`, [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Actualizar', onPress: () => {
@@ -219,10 +220,10 @@ const CategoryProductScreen = memo(() => {
       ]);
     } else {
       addProduct(productData);
-      console.log("Producto Agregado al carrito", productData)
+      console.log("Producto Agregado a consignación", productData);
       bottomSheetModalRef.current?.dismiss();
     }
-  }, [addProduct, productsInCart, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
+  }, [addProduct, productsInConsignment, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
 
   const filteredItems = useMemo(() => {
     const text = debouncedSearchText?.toLowerCase() || '';

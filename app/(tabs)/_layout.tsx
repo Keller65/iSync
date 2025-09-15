@@ -24,6 +24,7 @@ import InvoicesScreen from './invoices';
 import LocationScreen from './locations';
 import SettingsScreen from './setting';
 import FeedScreen from './feed';
+import Consignment from './consignment';
 
 const Drawer = createDrawerNavigator();
 
@@ -88,6 +89,16 @@ export default function Layout() {
               component={InvoicesScreen}
               options={{
                 title: 'Cobros',
+                drawerIcon: ({ focused }) => (
+                  <InvoicesIcon size={26} color={focused ? ActiveColor : InActiveColor} />
+                ),
+              }}
+            />
+            <Drawer.Screen
+              name="consignment"
+              component={Consignment}
+              options={{
+                title: 'Consignaciones',
                 drawerIcon: ({ focused }) => (
                   <InvoicesIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),

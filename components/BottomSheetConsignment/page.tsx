@@ -149,7 +149,7 @@ export default function BottomSheetConsignment() {
   const updateQuantity = useAppStore((s) => s.updateQuantity);
   const removeProduct = useAppStore((s) => s.removeProduct);
   const clearCart = useAppStore((s) => s.clearCart);
-  const customerSelected = useAppStore((s) => s.selectedCustomer);
+  const customerSelected = useAppStore((s) => s.selectedCustomerConsignment);
   const setLastOrderDocEntry = useAppStore((s) => s.setLastOrderDocEntry);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { user } = useAuth();
@@ -447,7 +447,7 @@ export default function BottomSheetConsignment() {
         <MemoizedCommentInput comments={comments} onCommentsChange={setComments} />
 
         {productsInConsignment.length === 0 ? (
-          <EmptyCart onClose={closeCart} onAddProducts={() => router.push('/client')} />
+          <EmptyCart onClose={closeCart} onAddProducts={() => router.push('/consignaciones')} />
         ) : (
           <BottomSheetFlatList<CartItemType>
             data={productsInConsignment}

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
 import slugify from 'slugify';
 import CategoryProductScreen from './(top-tabs)/category-product-list';
+import BottomSheetConsignment from '@/components/BottomSheetConsignment/page';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -177,7 +178,11 @@ export default function TopTabNavigatorLayout() {
         {tabScreens}
       </Tab.Navigator>
 
-      {products.length > 0 && <NavigateOrder />}
+      {products.length > 0 && (
+        <View className="absolute bottom-4 right-8 gap-3 items-end z-10">
+          <BottomSheetConsignment />
+        </View>
+      )}
     </View>
   );
 }

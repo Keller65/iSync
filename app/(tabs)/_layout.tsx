@@ -13,6 +13,7 @@ import LocationIcon from '@/assets/icons/Locations';
 import OrderIcon from '@/assets/icons/OrdeIcon';
 import SettingsIcon from '@/assets/icons/SettingsIcon';
 import InboxIcon from '@/assets/icons/InboxIcon';
+import ConsignmentIcon from '@/assets/icons/ConsignmentIcon';
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -100,7 +101,7 @@ export default function Layout() {
               options={{
                 title: 'Consignaciones',
                 drawerIcon: ({ focused }) => (
-                  <InvoicesIcon size={26} color={focused ? ActiveColor : InActiveColor} />
+                  <ConsignmentIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),
               }}
             />

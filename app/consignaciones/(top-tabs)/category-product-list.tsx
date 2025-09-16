@@ -47,7 +47,7 @@ const CategoryProductScreen = memo(() => {
   const route = useRoute();
   const { groupCode, priceListNum } = route.params as { groupCode?: string, priceListNum?: string };
 
-  const addProduct = useAppStore(state => state.addProduct);
+  const addProductToConsignment = useAppStore(state => state.addProductToConsignment);
   const updateQuantity = useAppStore(state => state.updateQuantity);
   const productsInCart = useAppStore(state => state.products);
   const productsInConsignment = useAppStore(state => state.productsInConsignment);
@@ -219,11 +219,39 @@ const CategoryProductScreen = memo(() => {
         },
       ]);
     } else {
-      addProduct(productData);
+      addProductToConsignment(productData);
       console.log("Producto Agregado a consignación", productData);
       bottomSheetModalRef.current?.dismiss();
     }
-  }, [addProduct, productsInConsignment, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
+  }, [addProductToConsignment, productsInConsignment, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
+
+  const handleAddToConsignment = useCallback(() => {
+    const finalPriceForConsignment = editablePrice;
+
+    if (!selectedItem || quantity <= 0 || !isPriceValid || finalPriceForConsignment <= 0) {
+      Alert.alert('Error', 'Por favor, asegúrate de que la cantidad sea mayor a 0 y el precio sea válido.');
+      return;
+    }
+
+    const itemInConsignment = productsInConsignment.find(p => p.itemCode === selectedItem.itemCode);
+    const productData = { ...selectedItem, quantity, unitPrice: finalPriceForConsignment, tiers: editableTiers, originalPrice: selectedItem.price };
+
+    if (itemInConsignment) {
+      Alert.alert('Producto ya en consignación', `${selectedItem.itemName} ya está en consignación. ¿Actualizar cantidad y precio?`, [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Actualizar', onPress: () => {
+            updateQuantity(selectedItem.itemCode, quantity, finalPriceForConsignment);
+            bottomSheetModalRef.current?.dismiss();
+          }
+        },
+      ]);
+    } else {
+      addProductToConsignment(productData);
+      console.log("Producto Agregado a consignación", productData);
+      bottomSheetModalRef.current?.dismiss();
+    }
+  }, [addProductToConsignment, productsInConsignment, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
 
   const filteredItems = useMemo(() => {
     const text = debouncedSearchText?.toLowerCase() || '';

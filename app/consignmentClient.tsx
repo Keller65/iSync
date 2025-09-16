@@ -94,7 +94,10 @@ const InvoicesClientScreen = memo(() => {
   const handleCustomerPress = useCallback(
     async (customer: Customer) => {
       try {
+        // Guardar el cliente seleccionado en el estado de Zustand
         setSelectedCustomerConsignment(customer);
+
+        // Navegar a la pantalla de consignaciones con los parámetros del cliente
         router.push({
           pathname: '/consignaciones',
           params: {

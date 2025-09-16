@@ -8,7 +8,7 @@ export default function TabIndex() {
 
   useEffect(() => {
     if (selectedCustomer) {
-      router.replace('/explore');
+      router.replace('/consignment');
     }
   }, [router, selectedCustomer]);
 

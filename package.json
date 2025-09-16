@@ -68,6 +68,8 @@
     "react-native-uuid": "^2.0.3",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "zustand": "^5.0.6"
   },
   "devDependencies": {

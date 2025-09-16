@@ -47,7 +47,7 @@ const CategoryProductScreen = memo(() => {
   const route = useRoute();
   const { groupCode, priceListNum } = route.params as { groupCode?: string, priceListNum?: string };
 
-  const addProduct = useAppStore(state => state.addProduct);
+  const addProductToCart = useAppStore(state => state.addProductToCart);
   const updateQuantity = useAppStore(state => state.updateQuantity);
   const productsInCart = useAppStore(state => state.products);
   const debouncedSearchText = useAppStore(state => state.debouncedSearchText);
@@ -218,11 +218,11 @@ const CategoryProductScreen = memo(() => {
         },
       ]);
     } else {
-      addProduct(productData);
+      addProductToCart(productData);
       console.log("Producto Agregado al carrito", productData)
       bottomSheetModalRef.current?.dismiss();
     }
-  }, [addProduct, productsInCart, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
+  }, [addProductToCart, productsInCart, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
 
   const filteredItems = useMemo(() => {
     const text = debouncedSearchText?.toLowerCase() || '';

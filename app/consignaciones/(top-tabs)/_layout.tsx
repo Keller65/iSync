@@ -1,14 +1,13 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { View, ActivityIndicator, Text, StyleSheet, Button } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import slugify from 'slugify';
 import { useAuth } from '@/context/auth';
-import { useAppStore } from '@/state';
 import api from '@/lib/api';
+import { useAppStore } from '@/state';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
+import slugify from 'slugify';
+import CategoryProductScreen from './category-product-list';
 
 const Tab = createMaterialTopTabNavigator();
-import CategoryProductScreen from './category-product-list';
 
 interface ProductCategory {
   code: string;
@@ -16,7 +15,7 @@ interface ProductCategory {
   slug: string;
 }
 
-interface SelectedClient {
+interface selectedClientConsignment {
   cardCode: string;
   cardName: string;
   federalTaxID?: string;
@@ -25,50 +24,20 @@ interface SelectedClient {
 
 export default function TopTabNavigatorLayout() {
   const { user } = useAuth();
-  const { selectedCustomer, fetchUrl } = useAppStore();
+  const { selectedCustomerConsignment, fetchUrl } = useAppStore();
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clientPriceList, setClientPriceList] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const storeAndLoadClientData = async () => {
-      if (selectedCustomer) {
-        try {
-          await AsyncStorage.setItem(
-            'selectedClient',
-            JSON.stringify({
-              cardCode: selectedCustomer.cardCode,
-              cardName: selectedCustomer.cardName,
-              federalTaxID: selectedCustomer.federalTaxID,
-              priceListNum: selectedCustomer.priceListNum?.toString()
-            })
-          );
-          console.log('Cliente guardado en AsyncStorage', selectedCustomer.cardName);
-          setClientPriceList(selectedCustomer.priceListNum?.toString());
-        } catch (err) {
-          console.error('Error al guardar cliente en AsyncStorage:', err);
-        }
-      } else {
-        try {
-          const cachedClientData = await AsyncStorage.getItem('selectedClient');
-          if (cachedClientData) {
-            const parsedClient: SelectedClient = JSON.parse(cachedClientData);
-            setClientPriceList(parsedClient.priceListNum);
-            console.log('Cliente cargado de AsyncStorage', parsedClient.cardName);
-          } else {
-            // Si no hay cliente guardado, set default priceListNum
-            setClientPriceList('1');
-          }
-        } catch (err) {
-          console.error('Error al cargar cliente de AsyncStorage:', err);
-          setClientPriceList('1');
-        }
-      }
-    };
-
-    storeAndLoadClientData();
-  }, [selectedCustomer]);
+    // Eliminado el uso de AsyncStorage para almacenar datos del cliente
+    if (selectedCustomerConsignment) {
+      setClientPriceList(selectedCustomerConsignment.priceListNum?.toString());
+    } else {
+      setClientPriceList('1');
+    }
+  }, [selectedCustomerConsignment]);
 
   const headers = useMemo(() => ({
     Authorization: `Bearer ${user?.token}`,
@@ -87,21 +56,11 @@ export default function TopTabNavigatorLayout() {
     setError(null);
 
     try {
-      const cached = await AsyncStorage.getItem('cachedCategories');
-      if (cached) {
-        setCategories(JSON.parse(cached));
-        setLoading(false);
-        return;
-      }
-
       const response = await api.get<Array<{ code: string, name: string }>>(
         '/api/Catalog/products/categories',
         {
           baseURL: fetchUrl,
           headers,
-          cache: {
-            ttl: 1000 * 60 * 60 * 24, // 24 horas
-          },
         }
       );
 
@@ -114,13 +73,6 @@ export default function TopTabNavigatorLayout() {
         slug: slugify(category.name, { lower: true, strict: true }),
       }));
 
-      formattedCategories.unshift({
-        code: '0000',
-        name: 'Ofertas',
-        slug: 'ofertas'
-      });
-
-      await AsyncStorage.setItem('cachedCategories', JSON.stringify(formattedCategories));
       setCategories(formattedCategories);
 
     } catch (err: any) {
@@ -200,7 +152,7 @@ export default function TopTabNavigatorLayout() {
     <View style={{ flex: 1 }}>
       {tabScreens ? (
         <Tab.Navigator
-          initialRouteName={categories[0]?.slug || 'todas'}
+          initialRouteName={categories[0]?.slug || 'N/D'}
           screenOptions={{
             tabBarActiveTintColor: '#000',
             tabBarInactiveTintColor: 'gray',
@@ -228,7 +180,7 @@ export default function TopTabNavigatorLayout() {
         </Tab.Navigator>
       ) : (
         <View style={styles.fullScreenCenter}>
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color="#333" />
           <Text style={styles.loadingText}>Cargando datos del cliente y categorías...</Text>
         </View>
       )}

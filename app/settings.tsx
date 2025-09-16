@@ -1,15 +1,16 @@
 import { useAuth } from '@/context/auth'
+import api from '@/lib/api'
 import { useAppStore } from '@/state/index'
 import { Picker } from '@react-native-picker/picker'
 import { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, ToastAndroid } from 'react-native'
-import api from '@/lib/api'
+import { ActivityIndicator, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native'
 
 const Settings = () => {
   const { appHost, appPort, setAppHost, setAppPort, fetchUrl } = useAppStore();
   const [protocol, setProtocol] = useState('http')
   const [ip, setIp] = useState('')
   const [port, setPort] = useState('')
+  const [almacen, setAlmacen] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [hasInvalidUrl, setHasInvalidUrl] = useState(false)
@@ -123,6 +124,7 @@ const Settings = () => {
       <View className="flex-row gap-3 items-center">
         <View className="w-[130px] h-[50px] justify-center border border-gray-300 rounded-xl overflow-hidden bg-white">
           <Picker
+            style={{ color: '#000' }}
             selectedValue={protocol}
             onValueChange={(value) => setProtocol(value)}
             mode="dropdown"
@@ -137,6 +139,7 @@ const Settings = () => {
           value={ip}
           onChangeText={setIp}
           placeholder="Ej: 192.168.0.1"
+          placeholderTextColor="#000"
           keyboardAppearance="light"
           className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white"
         />
@@ -147,6 +150,18 @@ const Settings = () => {
         value={port}
         onChangeText={setPort}
         placeholder="Puerto (ej: 3000)"
+        placeholderTextColor="#000"
+        keyboardAppearance="light"
+        keyboardType="numeric"
+        className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white"
+      />
+
+      {/* Almacén */}
+      <TextInput
+        value={almacen}
+        onChangeText={setAlmacen}
+        placeholder="Almacén (ej: 1)"
+        placeholderTextColor="#000"
         keyboardAppearance="light"
         keyboardType="numeric"
         className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white"

@@ -253,7 +253,6 @@ const BottomSheetClientDetails: React.FC<BottomSheetClientDetailsProps> = ({ map
       <BottomSheetModal
         ref={bottomSheetModalRef}
         // snapPoints={['50%']}
-        backgroundStyle={{ borderRadius: 30 }}
         backdropComponent={renderBackdrop}
       // enableDynamicSizing={false}
       >

@@ -330,7 +330,6 @@ const ProductScreen = () => {
 
       <BottomSheetModal
         ref={bottomSheetRef}
-        backgroundStyle={{ borderRadius: 30 }}
         backdropComponent={(props) => (
           <BottomSheetBackdrop
             {...props}

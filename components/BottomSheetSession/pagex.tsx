@@ -18,7 +18,6 @@ const BottomSheetSession = () => {
       ref={bottomSheetRef}
       enablePanDownToClose={false}
       enableDynamicSizing={true}
-      backgroundStyle={{ borderRadius: 16 }}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
           {...props}

@@ -1,6 +1,4 @@
-import NavigateOrder from '@/components/NavigateOrder/page';
 import { useAuth } from '@/context/auth';
-import api from '@/lib/api';
 import { useAppStore } from '@/state';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,6 +6,7 @@ import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native'
 import slugify from 'slugify';
 import CategoryProductScreen from './(top-tabs)/category-product-list';
 import BottomSheetConsignment from '@/components/BottomSheetConsignment/page';
+import axios from 'axios';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -19,11 +18,12 @@ interface ProductCategory {
 
 export default function TopTabNavigatorLayout() {
   const { user } = useAuth();
-  const { selectedCustomer, products } = useAppStore();
+  const { selectedCustomer } = useAppStore();
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { fetchUrl } = useAppStore();
+  const productsInConsignment = useAppStore((s) => s.productsInConsignment);
 
   const priceListNum = selectedCustomer?.priceListNum?.toString() || '1';
 
@@ -48,18 +48,15 @@ export default function TopTabNavigatorLayout() {
         categories: Array<{ code: number; name: string }>;
       };
 
-      const response = await api.get<ApiResponse>(
+      const response = await axios.get<ApiResponse>(
         '/api/Catalog/products/categories',
         {
           baseURL: fetchUrl,
           headers,
-          cache: {
-            ttl: 1000 * 60 * 60 * 24, // 24 horas
-          },
         }
       );
 
-      console.log('Respuesta completa:', response);
+      console.log('categorias', response.data);
 
       if (!response.data || !Array.isArray(response.data.categories)) {
         throw new Error('La respuesta no contiene un arreglo válido de categorías.');
@@ -178,8 +175,8 @@ export default function TopTabNavigatorLayout() {
         {tabScreens}
       </Tab.Navigator>
 
-      {products.length > 0 && (
-        <View className="absolute bottom-4 right-8 gap-3 items-end z-10">
+      {productsInConsignment.length > 0 && (
+        <View className="absolute bottom-4 right-8 gap-3 items-end z-50">
           <BottomSheetConsignment />
         </View>
       )}
@@ -197,12 +194,12 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
     fontFamily: 'Poppins-SemiBold',
   },
   errorText: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'red',
     textAlign: 'center',
     marginBottom: 5,

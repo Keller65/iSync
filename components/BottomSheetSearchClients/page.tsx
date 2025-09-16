@@ -96,7 +96,6 @@ const BottomSheetSearchClients = forwardRef<BottomSheetSearchClientsHandle, Prop
     <BottomSheetModal
       ref={modalRef}
       snapPoints={['90%']}
-      backgroundStyle={{ borderRadius: 30 }}
       enableDynamicSizing={false}
       backdropComponent={(props) => (
         <BottomSheetBackdrop

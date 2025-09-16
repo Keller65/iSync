@@ -15,13 +15,6 @@ interface ProductCategory {
   slug: string;
 }
 
-interface selectedClientConsignment {
-  cardCode: string;
-  cardName: string;
-  federalTaxID?: string;
-  priceListNum?: string;
-}
-
 export default function TopTabNavigatorLayout() {
   const { user } = useAuth();
   const { selectedCustomerConsignment, fetchUrl } = useAppStore();
@@ -63,9 +56,6 @@ export default function TopTabNavigatorLayout() {
           headers,
         }
       );
-
-      console.log(response.headers['content-encoding']);
-      console.log(response.cached ? 'Categorias cargadas desde CACHE' : 'Categorias cargadas desde RED');
 
       const formattedCategories: ProductCategory[] = response.data.map(category => ({
         code: category.code,
@@ -198,12 +188,12 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
     fontFamily: 'Poppins-SemiBold',
   },
   errorText: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'red',
     textAlign: 'center',
     marginBottom: 5,

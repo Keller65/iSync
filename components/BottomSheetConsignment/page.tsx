@@ -151,15 +151,12 @@ export default function BottomSheetConsignment() {
   const removeProduct = useAppStore((s) => s.removeProduct);
   const clearCart = useAppStore((s) => s.clearCart);
   const customerSelected = useAppStore((s) => s.selectedCustomerConsignment);
-  const setLastOrderDocEntry = useAppStore((s) => s.setLastOrderDocEntry);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { user } = useAuth();
-  const token = user?.token || '';
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { fetchUrl } = useAppStore();
-  const FETCH_URL_CREATE_ORDER = fetchUrl + "/sap/orders";
 
   // Pulse trail animation for the floating cart button
   const pulse = useSharedValue(0);
@@ -399,7 +396,6 @@ export default function BottomSheetConsignment() {
         onChange={handleSheetChanges}
         enableDynamicSizing={false}
         footerComponent={renderFooter}
-        backgroundStyle={{ borderRadius: 30 }}
         backdropComponent={(props: BottomSheetBackdropProps) => (
           <BottomSheetBackdrop
             {...props}
@@ -410,7 +406,7 @@ export default function BottomSheetConsignment() {
           />
         )}
       >
-        <View className='px-4'>
+        <View className='px-4 pb-2'>
           <Text className="text-lg text-start font-[Poppins-Bold] tracking-[-0.3px]">Resumen de Consignación</Text>
         </View>
         <MemoizedCommentInput comments={comments} onCommentsChange={setComments} />

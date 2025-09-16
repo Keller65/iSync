@@ -1,7 +1,7 @@
 import ConnectivityBanner from '@/components/ConnectivityBanner';
 import { useAuth } from '@/context/auth';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import { Platform, Text, View } from 'react-native';
+import { Platform, Text, View, TouchableOpacity } from 'react-native';
 
 import ProtectedLayout from '../ProtectedLayout';
 
@@ -24,14 +24,21 @@ import IndexScreen from './index';
 import InvoicesScreen from './invoices';
 import LocationScreen from './locations';
 import SettingsScreen from './setting';
-import FeedScreen from './feed';
 import Consignment from './consignment';
+import BottomSheetNotifications from '@/components/BottomSheetNotifications/page';
+
+import { useState } from 'react';
 
 const Drawer = createDrawerNavigator();
 
 export default function Layout() {
   const ActiveColor = '#1A3D59';
   const InActiveColor = '#c9c9c9';
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  function toggleNotifications() {
+    setNotificationsOpen(!notificationsOpen);
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -70,6 +77,15 @@ export default function Layout() {
               component={IndexScreen}
               options={{
                 title: 'Dashboard',
+                headerRight: () => (
+                  <TouchableOpacity onPress={toggleNotifications} style={{ marginRight: 16, position: 'relative' }}>
+                    <BottomSheetNotifications open={notificationsOpen} />
+                    <InboxIcon size={26} color='black' />
+                    <View className='bg-red-600 rounded-full h-5 w-5 items-center justify-center absolute -top-1 -right-1'>
+                      <Text className='text-white font-[Poppins-Regular] tracking-[-0.3px] text-xs'>3</Text>
+                    </View>
+                  </TouchableOpacity>
+                ),
                 drawerIcon: ({ focused }) => (
                   <HomeIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),
@@ -124,16 +140,6 @@ export default function Layout() {
                 title: 'Ubicaciones',
                 drawerIcon: ({ focused }) => (
                   <LocationIcon size={24} color={focused ? ActiveColor : InActiveColor} />
-                ),
-              }}
-            />
-            <Drawer.Screen
-              name="feed"
-              component={FeedScreen}
-              options={{
-                title: 'Notificaciones',
-                drawerIcon: ({ focused }) => (
-                  <InboxIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),
               }}
             />

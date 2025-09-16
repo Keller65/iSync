@@ -49,10 +49,9 @@ const CategoryProductScreen = memo(() => {
 
   const addProductToConsignment = useAppStore(state => state.addProductToConsignment);
   const updateQuantity = useAppStore(state => state.updateQuantity);
-  const productsInCart = useAppStore(state => state.products);
   const productsInConsignment = useAppStore(state => state.productsInConsignment);
   const debouncedSearchText = useAppStore(state => state.debouncedSearchText);
-  const { products, fetchUrl } = useAppStore()
+  const { fetchUrl } = useAppStore()
 
   const pagesCacheRef = useRef<Map<number, ProductDiscount[]>>(new Map());
   const [items, setItems] = useState<ProductDiscount[]>([]);

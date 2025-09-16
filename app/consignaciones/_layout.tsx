@@ -176,7 +176,7 @@ export default function TopTabNavigatorLayout() {
       </Tab.Navigator>
 
       {productsInConsignment.length > 0 && (
-        <View className="absolute bottom-4 right-8 gap-3 items-end z-50">
+        <View className="absolute bottom-4 right-8 gap-8 z-50 items-center">
           <BottomSheetConsignment />
         </View>
       )}

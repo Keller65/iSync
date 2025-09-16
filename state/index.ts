@@ -49,8 +49,7 @@ interface AppStoreState {
   setSelectedCustomerInvoices: (customer: Customer | null) => void;
   clearSelectedCustomerInvoices: () => void;
   products: CartItem[];
-  addProductToCart: (productToAdd: Omit<CartItem, 'total'>) => void;
-  addProductToConsignment: (productToAdd: Omit<CartItem, 'total'>) => void;
+  addProduct: (productToAdd: Omit<CartItem, 'total'>) => void;
   updateQuantity: (itemCode: string, quantity: number, newPrice?: number) => void;
   removeProduct: (itemCode: string) => void;
   clearCart: () => void;
@@ -111,11 +110,11 @@ interface AppStoreState {
   setSelectedCustomerConsignment: (customer: Customer | null) => void;
   clearSelectedCustomerConsignment: () => void;
 
+  selectedLayout: number;
+  setSelectedLayout: (layout: number) => void;
+
   productsInConsignment: CartItem[];
-  consignmentCart: CartItem[];
-  addProductToConsignmentCart: (product: CartItem) => void;
-  removeProductFromConsignmentCart: (itemCode: string) => void;
-  clearConsignmentCart: () => void;
+  addProductToConsignment: (productToAdd: Omit<CartItem, 'total'>) => void;
 }
 
 export const useAppStore = create<AppStoreState>()(
@@ -135,8 +134,8 @@ export const useAppStore = create<AppStoreState>()(
       selectedCustomerInvoices: null,
       userClickAcceptWelcome: false,
       selectedCustomerConsignment: null,
+      selectedLayout: 2,
       productsInConsignment: [],
-      consignmentCart: [],
       setUserClickAcceptWelcome: (value: boolean) => set({ userClickAcceptWelcome: value }),
       // Estado NO persistente para datos del formulario de pago
       paymentForm: {
@@ -174,7 +173,7 @@ export const useAppStore = create<AppStoreState>()(
         });
       },
 
-      addProductToCart: (productToAdd) => {
+      addProduct: (productToAdd) => {
         const products = get().products;
         const existingIndex = products.findIndex(p => p.itemCode === productToAdd.itemCode);
         const updatedProducts = [...products];
@@ -205,37 +204,6 @@ export const useAppStore = create<AppStoreState>()(
         set({ products: updatedProducts });
       },
 
-      addProductToConsignment: (productToAdd) => {
-        const productsInConsignment = get().productsInConsignment;
-        const existingIndex = productsInConsignment.findIndex(p => p.itemCode === productToAdd.itemCode);
-        const updatedConsignmentProducts = [...productsInConsignment];
-        const newQuantity = productToAdd.quantity;
-        const unitPrice = productToAdd.unitPrice;
-        const newTotal = unitPrice * newQuantity;
-
-        if (newQuantity <= 0) {
-          if (existingIndex > -1) {
-            updatedConsignmentProducts.splice(existingIndex, 1);
-          }
-        } else if (existingIndex > -1) {
-          updatedConsignmentProducts[existingIndex] = {
-            ...productsInConsignment[existingIndex],
-            ...productToAdd,
-            quantity: newQuantity,
-            unitPrice: unitPrice,
-            total: newTotal,
-          };
-        } else {
-          updatedConsignmentProducts.push({
-            ...productToAdd,
-            quantity: newQuantity,
-            unitPrice: unitPrice,
-            total: newTotal,
-          });
-        }
-        set({ productsInConsignment: updatedConsignmentProducts });
-      },
-
       updateQuantity: (itemCode, quantity, newPrice) => {
         const products = get().products;
         const index = products.findIndex(p => p.itemCode === itemCode);
@@ -260,9 +228,8 @@ export const useAppStore = create<AppStoreState>()(
       },
 
       removeProduct: (itemCode) => {
-        const updatedProducts = get().products.filter(p => p.itemCode !== itemCode);
-        const updatedConsignmentProducts = get().productsInConsignment.filter(p => p.itemCode !== itemCode);
-        set({ products: updatedProducts, productsInConsignment: updatedConsignmentProducts });
+        const updated = get().products.filter(p => p.itemCode !== itemCode);
+        set({ products: updated });
       },
 
       clearCart: () => set({ products: [] }),
@@ -345,26 +312,38 @@ export const useAppStore = create<AppStoreState>()(
       setSelectedCustomerConsignment: (customer) => set({ selectedCustomerConsignment: customer }),
       clearSelectedCustomerConsignment: () => set({ selectedCustomerConsignment: null }),
 
-      addProductToConsignmentCart: (product) => {
-        const updatedCart = [...get().consignmentCart];
-        const existingIndex = updatedCart.findIndex(p => p.itemCode === product.itemCode);
+      setSelectedLayout: (layout) => set({ selectedLayout: layout }),
 
-        if (existingIndex > -1) {
-          updatedCart[existingIndex] = {
-            ...updatedCart[existingIndex],
-            quantity: updatedCart[existingIndex].quantity + product.quantity,
+      addProductToConsignment: (productToAdd) => {
+        const productsInConsignment = get().productsInConsignment;
+        const existingIndex = productsInConsignment.findIndex(p => p.itemCode === productToAdd.itemCode);
+        const updatedConsignmentProducts = [...productsInConsignment];
+        const newQuantity = productToAdd.quantity;
+        const unitPrice = productToAdd.unitPrice;
+        const newTotal = unitPrice * newQuantity;
+
+        if (newQuantity <= 0) {
+          if (existingIndex > -1) {
+            updatedConsignmentProducts.splice(existingIndex, 1);
+          }
+        } else if (existingIndex > -1) {
+          updatedConsignmentProducts[existingIndex] = {
+            ...productsInConsignment[existingIndex],
+            ...productToAdd,
+            quantity: newQuantity,
+            unitPrice: unitPrice,
+            total: newTotal,
           };
         } else {
-          updatedCart.push(product);
+          updatedConsignmentProducts.push({
+            ...productToAdd,
+            quantity: newQuantity,
+            unitPrice: unitPrice,
+            total: newTotal,
+          });
         }
-
-        set({ consignmentCart: updatedCart });
+        set({ productsInConsignment: updatedConsignmentProducts });
       },
-      removeProductFromConsignmentCart: (itemCode) => {
-        const updatedCart = get().consignmentCart.filter(p => p.itemCode !== itemCode);
-        set({ consignmentCart: updatedCart });
-      },
-      clearConsignmentCart: () => set({ consignmentCart: [] }),
     }),
     {
       name: 'app-store',

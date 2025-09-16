@@ -224,34 +224,6 @@ const CategoryProductScreen = memo(() => {
     }
   }, [addProductToConsignment, productsInConsignment, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
 
-  const handleAddToConsignment = useCallback(() => {
-    const finalPriceForConsignment = editablePrice;
-
-    if (!selectedItem || quantity <= 0 || !isPriceValid || finalPriceForConsignment <= 0) {
-      Alert.alert('Error', 'Por favor, asegúrate de que la cantidad sea mayor a 0 y el precio sea válido.');
-      return;
-    }
-
-    const itemInConsignment = productsInConsignment.find(p => p.itemCode === selectedItem.itemCode);
-    const productData = { ...selectedItem, quantity, unitPrice: finalPriceForConsignment, tiers: editableTiers, originalPrice: selectedItem.price };
-
-    if (itemInConsignment) {
-      Alert.alert('Producto ya en consignación', `${selectedItem.itemName} ya está en consignación. ¿Actualizar cantidad y precio?`, [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Actualizar', onPress: () => {
-            updateQuantity(selectedItem.itemCode, quantity, finalPriceForConsignment);
-            bottomSheetModalRef.current?.dismiss();
-          }
-        },
-      ]);
-    } else {
-      addProductToConsignment(productData);
-      console.log("Producto Agregado a consignación", productData);
-      bottomSheetModalRef.current?.dismiss();
-    }
-  }, [addProductToConsignment, productsInConsignment, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
-
   const filteredItems = useMemo(() => {
     const text = debouncedSearchText?.toLowerCase() || '';
     return items.filter(item =>
@@ -363,7 +335,7 @@ const CategoryProductScreen = memo(() => {
         onEndReachedThreshold={0.2}
         ListFooterComponent={loadingMore ? <View className="py-4"><ActivityIndicator size="small" color="#000" /></View> : null}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3b82f6"]} tintColor="#3b82f6" />}
-        contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20 }}
+        contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 120 }}
         drawDistance={500}
         overrideItemLayout={(layout) => { layout.size = 100; }}
       />

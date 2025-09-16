@@ -307,11 +307,13 @@ export default function BottomSheetConsignment() {
           onPress: () => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             removeProduct(itemCode);
+            const updatedProducts = productsInConsignment.filter(p => p.itemCode !== itemCode);
+            useAppStore.setState({ productsInConsignment: updatedProducts });
           },
         },
       ]
     );
-  }, [removeProduct]);
+  }, [removeProduct, productsInConsignment]);
 
   const renderItem = useCallback(({ item }: { item: CartItemType }) => (
     <CartItem

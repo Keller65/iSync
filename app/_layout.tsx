@@ -75,7 +75,6 @@ export default function RootLayout() {
               >
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="login" options={{ headerShown: false }} />
-                <Stack.Screen name="client" options={{ headerShown: true, headerTitle: 'Seleccionar Cliente' }} />
                 <Stack.Screen name="InvoiceClient" options={{ headerShown: true, headerTitle: 'Seleccionar Cliente' }} />
                 <Stack.Screen name="consignmentClient" options={{ headerShown: true, headerTitle: 'Seleccionar Cliente' }} />
                 <Stack.Screen name="order" options={{ headerShown: true, headerTitle: 'Detalles del Pedido' }} />
@@ -89,8 +88,8 @@ export default function RootLayout() {
                   options={{
                     headerShown: true,
                     headerTitle: () => (
-                      <View className='flex-row items-center gap-4'>
-                        <View className='flex-row items-center bg-[#f0f0f0] rounded-[16px] relative overflow-hidden'>
+                      <View className='flex-row items-center gap-4 pr-4'>
+                        <View className='flex-row flex-1 items-center bg-[#f0f0f0] rounded-[16px] relative overflow-hidden'>
                           <TextInput
                             placeholder="Buscar Producto"
                             style={{
@@ -98,20 +97,20 @@ export default function RootLayout() {
                               paddingHorizontal: 18,
                               paddingVertical: 4,
                               borderRadius: 8,
-                              width: 300,
+                              // width: 300,
+                              flex: 1,
                               height: 36,
                               fontSize: 14,
                               fontFamily: 'Poppins-Regular',
-                              paddingRight: 30,
                             }}
-                            placeholderTextColor="#888"
+                            placeholderTextColor="#000"
                             value={rawSearchText}
                             onChangeText={setRawSearchText}
                             clearButtonMode="never"
                           />
                           {rawSearchText.length > 0 && (
                             <TouchableOpacity
-                              className='absolute right-2'
+                              className='absolute right-2 z-10'
                               onPress={clearSearch}
                               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                             >

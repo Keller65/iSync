@@ -9,7 +9,7 @@ import { useRoute } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 import axios from 'axios';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, RefreshControl, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void }) => {
   return (
@@ -50,7 +50,7 @@ const CategoryProductScreen = memo(() => {
   const updateQuantity = useAppStore(state => state.updateQuantity);
   const productsInConsignment = useAppStore(state => state.productsInConsignment);
   const debouncedSearchText = useAppStore(state => state.debouncedSearchText);
-  const { fetchUrl, selectedLayout } = useAppStore()
+  const { fetchUrl, selectedLayout } = useAppStore();
 
   const pagesCacheRef = useRef<Map<number, ProductDiscount[]>>(new Map());
   const [items, setItems] = useState<ProductDiscount[]>([]);
@@ -68,7 +68,6 @@ const CategoryProductScreen = memo(() => {
   const [isPriceManuallyEdited, setIsPriceManuallyEdited] = useState(false);
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const FETCH_URL = fetchUrl + "/api/Catalog/products/all";
@@ -113,7 +112,6 @@ const CategoryProductScreen = memo(() => {
       setItems([]);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, [user?.token, groupCode, priceListNum]);
 
@@ -182,7 +180,6 @@ const CategoryProductScreen = memo(() => {
   }, [editablePrice, quantity, selectedItem, applyTierDiscounts]);
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
     pagesCacheRef.current = new Map();
     setLoading(true);
     fetchProducts();
@@ -323,6 +320,8 @@ const CategoryProductScreen = memo(() => {
     );
   }
 
+  const numColumns = typeof selectedLayout === 'number' && selectedLayout > 0 ? selectedLayout : 1;
+
   return (
     <View className="flex-1 bg-white relative">
       <FlashList
@@ -330,11 +329,10 @@ const CategoryProductScreen = memo(() => {
         renderItem={renderItem}
         keyExtractor={(item) => item.itemCode}
         estimatedItemSize={200}
-        numColumns={selectedLayout}
+        numColumns={numColumns} // Validación aplicada
         onEndReachedThreshold={0.2}
         ListFooterComponent={loadingMore ? <View className="py-4"><ActivityIndicator size="small" color="#000" /></View> : null}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3b82f6"]} tintColor="#3b82f6" />}
-        contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 60 }}
         drawDistance={500}
         overrideItemLayout={(layout) => { layout.size = 100; }}
       />

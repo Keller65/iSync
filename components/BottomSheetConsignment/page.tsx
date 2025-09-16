@@ -1,4 +1,5 @@
 import CartIcon from '@/assets/icons/CartIcon';
+import ConsignmentIcon from '@/assets/icons/ConsignmentIcon';
 import TrashIcon from '@/assets/icons/TrashIcon';
 import { useAuth } from '@/context/auth';
 import { useAppStore } from '@/state/index';
@@ -164,9 +165,9 @@ export default function BottomSheetConsignment() {
   const pulse = useSharedValue(0);
   useEffect(() => {
     pulse.value = withRepeat(
-      withTiming(1, { duration: 1600, easing: Easing.linear }),
+      withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.ease) }),
       -1,
-      false
+      true // Cambié a true para alternar la dirección
     );
   }, [pulse]);
 
@@ -227,84 +228,51 @@ export default function BottomSheetConsignment() {
       return;
     }
 
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Tegucigalpa',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
+    const partidas = productsInConsignment.map((product) => ({
+      codigoProducto: product.itemCode,
+      cantidad: product.quantity,
+      precioUnitario: product.unitPrice,
+      observaciones: 'no hay',
+    }));
 
-    const [{ value: year }, , { value: month }, , { value: day }] = formatter.formatToParts(now);
-    const hondurasDate = `${year}-${month}-${day}`;
-
-    const lines = productsInConsignment.map(p => {
-      const price = p.unitPrice;
-
-      return {
-        itemCode: p.itemCode,
-        quantity: p.quantity,
-        priceList: p.originalPrice, // es el precio real de la lista
-        priceAfterVAT: price, // precio de descuento si existe
-        taxCode: p.taxType,
-      };
-    });
-
-    const payload = {
-      cardCode: customerSelected.cardCode,
-      docDate: hondurasDate,
-      docDueDate: hondurasDate,
-      comments: comments || '',
-      lines,
+    const data = {
+      codigoCliente: customerSelected.cardCode,
+      codigoConcepto: '3',
+      almacenSalida: '1',
+      fecha: new Date().toISOString(),
+      referencia: 'API',
+      partidas,
     };
-
-    console.log(payload)
 
     try {
       setIsLoading(true);
-      const res = await axios.post(FETCH_URL_CREATE_ORDER, payload, {
+      const response = await axios.post(`${fetchUrl}/api/Consignaciones/async`, data, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Prefer: 'respond-async',
+          Authorization: `Bearer ${user?.token}`,
+          'User-Agent': 'iSync-ERP',
         },
       });
 
-      closeCart();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      console.log("Pedido enviado", payload);
-      router.push({
-        pathname: '/modal/success',
-        params: {
-          OrderDetails: res.data.docEntry
-        }
-      });
+      console.log('✅ Respuesta exitosa:', response.data);
       clearCart();
       setComments('');
-      if (res.data.docEntry) {
-        setLastOrderDocEntry(res.data.docEntry);
-      }
-    } catch (err: any) {
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 404) {
-          Alert.alert('Error', 'No se encontró la ruta del servidor (Error 404). Por favor, verifica la dirección de la API.');
-        } else {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          Alert.alert('Error', `No se pudo enviar el pedido. Código: ${err.response?.status || 'Desconocido'}. Mensaje: ${err.response?.data?.message || 'Intenta nuevamente.'}`);
-        }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.push('/modal/success');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('❌ Error en la solicitud:', error.response?.data || error.message);
+        Alert.alert('Error', `No se pudo enviar el pedido. ${error.response?.data?.message || error.message}`);
       } else {
+        console.error('❌ Error desconocido:', (error as Error).message);
         Alert.alert('Error', 'No se pudo enviar el pedido. Intenta nuevamente.');
       }
-      router.push({
-        pathname: '/modal/error',
-        params: {
-          errorCode: '401',
-          errorMessage: 'Sesión expirada',
-        }
-      });
     } finally {
       setIsLoading(false);
     }
-  }, [productsInConsignment, customerSelected, token, comments, setLastOrderDocEntry, clearCart]);
+  }, [customerSelected, productsInConsignment, fetchUrl, user?.token, clearCart, setComments, router]);
 
   const total = useMemo(() => {
     return productsInConsignment.reduce((sum, item) => {
@@ -380,19 +348,19 @@ export default function BottomSheetConsignment() {
             {isLoading ? (
               <>
                 <ActivityIndicator color="white" size="small" />
-                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">Realizando Pedido...</Text>
+                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">Realizando Consignacion...</Text>
               </>
             ) : (
               <>
-                <CartIcon color="white" />
-                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">Realizar Pedido</Text>
+                <ConsignmentIcon color="white" />
+                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">Realizar Consignacion</Text>
               </>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => router.push({
-              pathname: '/shop',
+              pathname: '/consignaciones',
               params: (closeCart(), {})
             })}
             className='bg-primary items-center justify-center rounded-full h-[50px] w-[50px]'
@@ -416,7 +384,7 @@ export default function BottomSheetConsignment() {
             className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary shadow-lg shadow-[#09f]/30"
             onPress={openCart}
           >
-            <CartIcon color="white" />
+            <ConsignmentIcon color="white" />
             <View className="absolute -top-2 -right-2 bg-red-500 rounded-full w-6 h-6 items-center justify-center">
               <Text className="text-white text-xs font-bold">{productsInConsignment.length}</Text>
             </View>
@@ -429,6 +397,7 @@ export default function BottomSheetConsignment() {
         index={0}
         snapPoints={snapPoints}
         onChange={handleSheetChanges}
+        enableDynamicSizing={false}
         footerComponent={renderFooter}
         backgroundStyle={{ borderRadius: 30 }}
         backdropComponent={(props: BottomSheetBackdropProps) => (

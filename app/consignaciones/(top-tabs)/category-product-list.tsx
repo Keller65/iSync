@@ -8,13 +8,12 @@ import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal, BottomSheetSc
 import { useRoute } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 import axios from 'axios';
-// import { Image } from 'expo-image';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, RefreshControl, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void }) => {
   return (
-    <TouchableOpacity onPress={() => onPress(item)} className="mb-4 bg-white w-[190px] gap-3 p-2">
+    <TouchableOpacity onPress={() => onPress(item)} className="mb-4 bg-white flex-1 gap-3 p-2">
       <View className="rounded-2xl bg-white items-center justify-center h-[180px] relative overflow-hidden border border-gray-200">
         {item.hasDiscount && (
           <View className='absolute top-2 left-2 z-10'>
@@ -22,7 +21,7 @@ const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (
           </View>
         )}
         <Image
-          source={{ uri: `https://pub-266f56f2e24d4d3b8e8abdb612029f2f.r2.dev/${item.itemCode}.jpg` }}
+          source={{ uri: "https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png" }}
           style={{ height: 180, width: 180, objectFit: "contain", borderRadius: 16 }}
           onError={() => console.log("Error loading image for item:", item.itemCode)}
         />
@@ -51,7 +50,7 @@ const CategoryProductScreen = memo(() => {
   const updateQuantity = useAppStore(state => state.updateQuantity);
   const productsInConsignment = useAppStore(state => state.productsInConsignment);
   const debouncedSearchText = useAppStore(state => state.debouncedSearchText);
-  const { fetchUrl } = useAppStore()
+  const { fetchUrl, selectedLayout } = useAppStore()
 
   const pagesCacheRef = useRef<Map<number, ProductDiscount[]>>(new Map());
   const [items, setItems] = useState<ProductDiscount[]>([]);
@@ -331,7 +330,7 @@ const CategoryProductScreen = memo(() => {
         renderItem={renderItem}
         keyExtractor={(item) => item.itemCode}
         estimatedItemSize={200}
-        numColumns={2}
+        numColumns={selectedLayout}
         onEndReachedThreshold={0.2}
         ListFooterComponent={loadingMore ? <View className="py-4"><ActivityIndicator size="small" color="#000" /></View> : null}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#3b82f6"]} tintColor="#3b82f6" />}

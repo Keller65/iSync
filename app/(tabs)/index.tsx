@@ -1,5 +1,5 @@
 import { useLicense } from "@/auth/useLicense";
-import BottomSheetCart from '@/components/BottomSheetCart/page';
+import BottomSheetCart from '@/components/BottomSheetConsignment/page';
 import BottomSheetSession from "@/components/BottomSheetSession/pagex";
 import BottomSheetWelcome from '@/components/BottomSheetWelcome/page';
 import GoalDonut from '@/components/Dashboard/GoalDonut';
@@ -185,7 +185,7 @@ export default function App() {
   return (
     <View className='flex-1 bg-white relative'>
       <View className="absolute bottom-4 right-8 gap-3 items-end">
-        {products.length > 0 && (<BottomSheetCart />)}
+        <BottomSheetCart />
       </View>
 
       <FlatList

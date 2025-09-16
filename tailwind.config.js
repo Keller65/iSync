@@ -5,8 +5,6 @@ module.exports = {
     "./components/**/*.{js,jsx,ts,tsx}",
     "./app/**/*.{js,jsx,ts,tsx}",
     "./app/(tabs)/*.{js,jsx,ts,tsx}",
-    "./app/shop/*.{js,jsx,ts,tsx}",
-    "./app/shop/(top-tabs)/*.{js,jsx,ts,tsx}",
     "./app/modal/*.{js,jsx,ts,tsx}",
   ],
   presets: [require("nativewind/preset")],

@@ -14,44 +14,6 @@ const Consignment = () => {
   const wsRef = useRef<WebSocket | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
 
-  const handlePost = async () => {
-    const data = {
-      codigoCliente: '10203',
-      codigoConcepto: '3',
-      almacenSalida: '1',
-      fecha: new Date().toISOString(),
-      referencia: 'API',
-      partidas: [
-        {
-          codigoProducto: '0151276150828',
-          cantidad: 2,
-          precioUnitario: 590,
-          observaciones: 'no hay',
-        },
-      ],
-    };
-
-    try {
-      const response = await axios.post(`${fetchUrl}/api/Consignaciones/async`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Prefer: 'respond-async',
-          Authorization: `Bearer ${user?.token}`,
-          'User-Agent': 'iSync-ERP',
-        },
-      });
-
-      console.log('✅ Respuesta exitosa:', response.data);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('❌ Error en la solicitud:', error.response?.data || error.message);
-      } else {
-        console.error('❌ Error desconocido:', (error as Error).message);
-      }
-    }
-  };
-
   useEffect(() => {
     if (!user?.token) return;
 
@@ -82,10 +44,6 @@ const Consignment = () => {
 
   return (
     <View className="px-4 bg-white flex-1 relative gap-2">
-      <Text className="text-lg font-semibold mb-4">Consignment</Text>
-
-      <Button title="Enviar POST con Axios" onPress={handlePost} />
-
       <Text>
         Mensajes recibidos:
         {messages.length === 0 ? (

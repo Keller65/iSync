@@ -10,7 +10,6 @@ import ClientIcon from '@/assets/icons/ClientIcon';
 import HomeIcon from '@/assets/icons/HomeIcon';
 import InvoicesIcon from '@/assets/icons/InvoicesIcon';
 import LocationIcon from '@/assets/icons/Locations';
-import OrderIcon from '@/assets/icons/OrdeIcon';
 import SettingsIcon from '@/assets/icons/SettingsIcon';
 import InboxIcon from '@/assets/icons/InboxIcon';
 import ConsignmentIcon from '@/assets/icons/ConsignmentIcon';
@@ -19,7 +18,6 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import ProductScreen from './catalog';
-import ExploreScreen from './explore';
 import IndexScreen from './index';
 import InvoicesScreen from './invoices';
 import LocationScreen from './locations';
@@ -88,16 +86,6 @@ export default function Layout() {
                 ),
                 drawerIcon: ({ focused }) => (
                   <HomeIcon size={26} color={focused ? ActiveColor : InActiveColor} />
-                ),
-              }}
-            />
-            <Drawer.Screen
-              name="explore"
-              component={ExploreScreen}
-              options={{
-                title: 'Pedidos',
-                drawerIcon: ({ focused }) => (
-                  <OrderIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),
               }}
             />

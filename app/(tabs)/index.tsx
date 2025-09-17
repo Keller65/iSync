@@ -45,10 +45,10 @@ export default function App() {
           platform: brand ?? "null",
           appId: "com.aerley_adkins2.iSyncERP",
           appVersion: "1.0.0",
-          manufacturer: "Group iSync",
+          manufacturer: "iSync Group",
           model: modelName ?? "null",
           token: fcmToken ?? "null",
-          userId: user?.salesPersonCode ?? "null",
+          userId: uuid ?? "null",
         };
 
         try {

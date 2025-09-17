@@ -15,16 +15,16 @@ const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (
   const { selectedLayout } = useAppStore();
 
   return (
-    <TouchableOpacity onPress={() => onPress(item)} className="mb-4 bg-white flex-1 gap-3 p-2">
+    <TouchableOpacity onPress={() => onPress(item)} className={`mb-4 bg-white flex-1 gap-3 p-2 ${selectedLayout === 4 || selectedLayout === 6 ? 'items-center flex-row' : ''}`}>
       <View
         className={`rounded-2xl bg-white items-center justify-center relative overflow-hidden border border-gray-200 ${selectedLayout === 2
           ? 'h-[180px]'
           : selectedLayout === 4
             ? 'h-[140px]'
             : selectedLayout === 6
-              ? 'h-[120px]'
+              ? 'h-[100px]'
               : 'h-[180px]'
-          }`}
+          }`} // Ajuste aquí
       >
         {item.hasDiscount && (
           <View className='absolute top-2 left-2 z-10'>
@@ -38,12 +38,12 @@ const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (
         />
       </View>
 
-      <View>
-        <Text className="font-medium text-sm text-black">
-          L. {item.price.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </Text>
+      <View className='flex-1'>
         <Text className="font-medium text-sm leading-4" numberOfLines={2} ellipsizeMode="tail">
           {item.itemName.toLowerCase()}
+        </Text>
+        <Text className="font-medium text-sm text-black">
+          L. {item.price.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Text>
         <Text className="text-[10px] text-gray-400">{item.barCode}</Text>
         <Text className="text-[10px] text-gray-400">Stock: {item.inStock}</Text>
@@ -111,7 +111,6 @@ const CategoryProductScreen = memo(() => {
       let url = `${FETCH_URL}`;
       if (groupCode) url += `?groupCode=${groupCode}`;
       if (priceListNum) url += `&priceList=${priceListNum}`;
-      console.log("URL:", url);
 
       const itemsResponse = await axios.get(url, { headers });
       const newItems = itemsResponse.data.items;

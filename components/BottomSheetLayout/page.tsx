@@ -8,18 +8,26 @@ const BottomSheetLayout = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { selectedLayout, setSelectedLayout } = useAppStore();
   const [isSaving, setIsSaving] = useState(false);
+  const [localSelection, setLocalSelection] = useState<number | null>(selectedLayout ?? null);
 
   const openBottomSheet = () => {
+    // Inicializar la selección local con el valor actual global al abrir
+    setLocalSelection(selectedLayout ?? null);
     bottomSheetRef.current?.present();
   };
 
+  // Actualiza solo la selección local; el store se actualizará al salvar
   const handleSelectLayout = (layoutValue: number) => {
-    setSelectedLayout(layoutValue); // Actualiza el valor directamente con 2, 4 o 6
+    setLocalSelection(layoutValue);
   };
 
   const handleSaveSelection = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simula un retraso para guardar
+    // Simula un retraso para guardar y actualiza el estado global solo al confirmar
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (localSelection !== null && localSelection !== selectedLayout) {
+      setSelectedLayout(localSelection);
+    }
     bottomSheetRef.current?.dismiss();
     setIsSaving(false);
   };
@@ -52,7 +60,7 @@ const BottomSheetLayout = () => {
               <View className='flex-1 gap-2' key={layout}>
                 <TouchableOpacity
                   onPress={() => handleSelectLayout(layout)}
-                  className={`flex-1 gap-2 border-2 rounded-lg ${selectedLayout === layout ? 'border-primary' : 'border-transparent'}`}
+                  className={`flex-1 gap-2 border-2 rounded-lg ${localSelection === layout ? 'border-primary' : 'border-transparent'}`}
                 >
                   <View className='flex-1 h-[160px] bg-gray-200 p-3 gap-2 rounded-lg'>
                     {layout === 2 && (
@@ -84,14 +92,14 @@ const BottomSheetLayout = () => {
           </View>
 
           <TouchableOpacity
-            className={`rounded-full h-[50px] items-center justify-center ${selectedLayout === null || isSaving ? 'bg-gray-300' : 'bg-primary'}`}
-            disabled={selectedLayout === null || isSaving}
+            className={`rounded-full h-[50px] items-center justify-center ${localSelection === null || isSaving ? 'bg-gray-300' : 'bg-primary'}`}
+            disabled={localSelection === null || isSaving}
             onPress={handleSaveSelection}
           >
             {isSaving ? (
               <ActivityIndicator size="small" color="#444" />
             ) : (
-              <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] text-md ${selectedLayout === null ? 'text-gray-500' : 'text-white'}`}>
+              <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] text-md ${localSelection === null ? 'text-gray-500' : 'text-white'}`}>
                 Seleccionar
               </Text>
             )}

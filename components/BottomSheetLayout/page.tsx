@@ -13,8 +13,8 @@ const BottomSheetLayout = () => {
     bottomSheetRef.current?.present();
   };
 
-  const handleSelectLayout = (layoutIndex: number) => {
-    setSelectedLayout(layoutIndex);
+  const handleSelectLayout = (layoutValue: number) => {
+    setSelectedLayout(layoutValue); // Actualiza el valor directamente con 2, 4 o 6
   };
 
   const handleSaveSelection = async () => {
@@ -48,14 +48,21 @@ const BottomSheetLayout = () => {
       >
         <BottomSheetView className="flex-1 px-4 gap-6 pb-4">
           <View className='flex-1 flex-row gap-3'>
-            {[4, 6, 2].map((layout, index) => (
-              <View className='flex-1 gap-2' key={index}>
+            {[2, 4, 6].map((layout) => (
+              <View className='flex-1 gap-2' key={layout}>
                 <TouchableOpacity
-                  key={index}
-                  onPress={() => handleSelectLayout(index)}
-                  className={`flex-1 gap-2 border-2 rounded-lg ${selectedLayout === index ? 'border-primary' : 'border-transparent'}`}
+                  onPress={() => handleSelectLayout(layout)}
+                  className={`flex-1 gap-2 border-2 rounded-lg ${selectedLayout === layout ? 'border-primary' : 'border-transparent'}`}
                 >
                   <View className='flex-1 h-[160px] bg-gray-200 p-3 gap-2 rounded-lg'>
+                    {layout === 2 && (
+                      Array.from({ length: 3 }).map((_, i) => (
+                        <View key={i} className='gap-3 flex-row flex-1'>
+                          <View className='flex-1 bg-primary/30 rounded-md' />
+                          <View className='flex-1 bg-primary/30 rounded-md' />
+                        </View>
+                      ))
+                    )}
                     {layout === 4 && (
                       Array.from({ length: 4 }).map((_, i) => (
                         <View key={i} className='flex-1 bg-primary/30 rounded-md' />
@@ -66,19 +73,11 @@ const BottomSheetLayout = () => {
                         <View key={i} className='flex-1 bg-primary/30 rounded-md' />
                       ))
                     )}
-                    {layout === 2 && (
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <View key={i} className='gap-3 flex-row flex-1'>
-                          <View className='flex-1 bg-primary/30 rounded-md' />
-                          <View className='flex-1 bg-primary/30 rounded-md' />
-                        </View>
-                      ))
-                    )}
                   </View>
                 </TouchableOpacity>
 
                 <Text className='text-center font-[Poppins-SemiBold] tracking-[-0.3px] text-md text-gray-600'>
-                  {layout === 4 ? '4 Filas' : layout === 6 ? '6 Filas' : '2 x 2'}
+                  {layout === 2 ? '2 x 2' : layout === 4 ? '4 Filas' : '6 Filas'}
                 </Text>
               </View>
             ))}

@@ -12,9 +12,20 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void }) => {
+  const { selectedLayout } = useAppStore();
+
   return (
     <TouchableOpacity onPress={() => onPress(item)} className="mb-4 bg-white flex-1 gap-3 p-2">
-      <View className="rounded-2xl bg-white items-center justify-center h-[180px] relative overflow-hidden border border-gray-200">
+      <View
+        className={`rounded-2xl bg-white items-center justify-center relative overflow-hidden border border-gray-200 ${selectedLayout === 2
+          ? 'h-[180px]'
+          : selectedLayout === 4
+            ? 'h-[140px]'
+            : selectedLayout === 6
+              ? 'h-[120px]'
+              : 'h-[180px]'
+          }`}
+      >
         {item.hasDiscount && (
           <View className='absolute top-2 left-2 z-10'>
             <PercentIcon />
@@ -22,7 +33,7 @@ const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (
         )}
         <Image
           source={{ uri: "https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png" }}
-          style={{ height: 180, width: 180, objectFit: "contain", borderRadius: 16 }}
+          style={{ height: 140, width: 140, objectFit: "contain" }}
           onError={() => console.log("Error loading image for item:", item.itemCode)}
         />
       </View>
@@ -300,6 +311,17 @@ const CategoryProductScreen = memo(() => {
     setIsPriceValid(finalValue >= minimumAllowedPrice);
   };
 
+  const numColumns = typeof selectedLayout === 'number' && selectedLayout > 0 ? selectedLayout : 1;
+  const [columns, setColumns] = useState(2);
+
+  useEffect(() => {
+    setColumns(numColumns);
+    if (numColumns === 4 || numColumns === 6) {
+      setColumns(1);
+    }
+    console.log("Número de columnas actualizado:", columns);
+  }, [numColumns]);
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
@@ -320,8 +342,6 @@ const CategoryProductScreen = memo(() => {
     );
   }
 
-  const numColumns = typeof selectedLayout === 'number' && selectedLayout > 0 ? selectedLayout : 1;
-
   return (
     <View className="flex-1 bg-white relative">
       <FlashList
@@ -329,7 +349,7 @@ const CategoryProductScreen = memo(() => {
         renderItem={renderItem}
         keyExtractor={(item) => item.itemCode}
         estimatedItemSize={200}
-        numColumns={numColumns} // Validación aplicada
+        numColumns={columns}
         onEndReachedThreshold={0.2}
         ListFooterComponent={loadingMore ? <View className="py-4"><ActivityIndicator size="small" color="#000" /></View> : null}
         contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 60 }}

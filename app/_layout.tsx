@@ -88,7 +88,7 @@ export default function RootLayout() {
                   options={{
                     headerShown: true,
                     headerTitle: () => (
-                      <View className='flex-row items-center gap-4 pr-4'>
+                      <View className='flex-row items-center gap-4'>
                         <View className='flex-row flex-1 items-center bg-[#f0f0f0] rounded-[16px] relative overflow-hidden'>
                           <TextInput
                             placeholder="Buscar Producto"
@@ -97,8 +97,8 @@ export default function RootLayout() {
                               paddingHorizontal: 18,
                               paddingVertical: 4,
                               borderRadius: 8,
-                              // width: 300,
-                              flex: 1,
+                              width: '94%',
+                              // flex: 1,
                               height: 36,
                               fontSize: 14,
                               fontFamily: 'Poppins-Regular',

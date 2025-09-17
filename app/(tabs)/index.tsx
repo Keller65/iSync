@@ -1,4 +1,3 @@
-import { useLicense } from "@/auth/useLicense";
 import BottomSheetCart from '@/components/BottomSheetConsignment/page';
 import BottomSheetSession from "@/components/BottomSheetSession/pagex";
 import BottomSheetWelcome from '@/components/BottomSheetWelcome/page';
@@ -6,12 +5,16 @@ import GoalDonut from '@/components/Dashboard/GoalDonut';
 import KPICard from '@/components/Dashboard/KPICard';
 import UpdateBanner from '@/components/UpdateBanner';
 import { useAuth } from '@/context/auth';
+import { useLicense } from "@/auth/useLicense";
 import { useOtaUpdates } from "@/hooks/useOtaUpdates";
+import { usePushNotificationsFCM } from "@/hooks/usePushNotificationsFCM";
 import { useAppStore } from '@/state';
 import { GoalDonutType, SalesDataType, TableDataType } from "@/types/DasboardType";
-import axios from 'axios';
+import { DeviceInfo } from '@/types/types';
+import { brand, modelName } from 'expo-device';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
+import axios from 'axios';
 import "../../global.css";
 
 export default function App() {
@@ -22,6 +25,7 @@ export default function App() {
   const [goalError, setGoalError] = useState<string | null>(null);
   const [sales, setSales] = useState<SalesDataType | null>(null);
   const { valid, loading, uuid } = useLicense();
+  const { fcmToken } = usePushNotificationsFCM();
   const { isUpdating, error, isUpdateAvailable, checkAndUpdate } = useOtaUpdates();
   const [kpiData, setKpiData] = useState(null);
   const [loadingKpi, setLoadingKpi] = useState(true);
@@ -30,6 +34,35 @@ export default function App() {
   const [tableError, setTableError] = useState<string | null>(null);
   const [loadingSales, setLoadingSales] = useState(false);
   const [showSessionExpired, setShowSessionExpired] = useState(false);
+  const { deviceInfoSend, setDeviceInfoSend } = useAppStore();
+
+  useEffect(() => {
+    async function sendDeviceInfo() {
+      if (deviceInfoSend === true) {
+        console.log("Información de dispositivo ya enviada");
+      } else {
+        const deviceInfo: DeviceInfo = {
+          platform: brand ?? "null",
+          appId: "com.aerley_adkins2.iSyncERP",
+          appVersion: "1.0.0",
+          manufacturer: "Group iSync",
+          model: modelName ?? "null",
+          token: fcmToken ?? "null",
+          userId: user?.salesPersonCode ?? "null",
+        };
+
+        try {
+          const response = await axios.post(`${fetchUrl}/push/register`, deviceInfo);
+          console.log("Respuesta del servidor:", response.data);
+          setDeviceInfoSend(true);
+        } catch (error) {
+          console.error("Error al enviar información del dispositivo:", error);
+        }
+      }
+    }
+
+    sendDeviceInfo();
+  }, []);
 
   const fetchData = async () => {
     if (!user?.token) return;

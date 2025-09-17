@@ -10,9 +10,9 @@ async function getOrCreateUUID() {
     if (!id) {
       id = uuid.v4(); // Generar UUID usando react-native-uuid
       await SecureStore.setItemAsync(STORAGE_KEY, id);
-      console.log("Nuevo UUID generado y almacenado:", id);
+      // console.log("Nuevo UUID generado y almacenado:", id);
     } else {
-      console.log("UUID existente recuperado:", id);
+      // console.log("UUID existente recuperado:", id);
     }
     return id;
   } catch (error) {
@@ -32,7 +32,7 @@ export function useLicense() {
       const id = await getOrCreateUUID();
       setUuid(id);
       setValid(true);
-      console.log("UUID KEY generado:", id);
+      // console.log("UUID KEY generado:", id);
 
       setLoading(false);
     })();

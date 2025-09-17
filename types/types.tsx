@@ -262,3 +262,13 @@ export interface CustomerAddress {
   u_Latitud: string;
   u_Longitud: string;
 }
+
+export interface DeviceInfo {
+  platform: string;
+  appId: string;
+  appVersion: string;
+  manufacturer: string;
+  model: string;
+  token: string;
+  userId: number | string;
+}

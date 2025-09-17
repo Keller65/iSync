@@ -115,6 +115,10 @@ interface AppStoreState {
 
   productsInConsignment: CartItem[];
   addProductToConsignment: (productToAdd: Omit<CartItem, 'total'>) => void;
+
+  // Nuevo: estado para controlar si la información del dispositivo ya fue enviada
+  deviceInfoSend: boolean;
+  setDeviceInfoSend: (value: boolean) => void;
 }
 
 export const useAppStore = create<AppStoreState>()(
@@ -135,8 +139,10 @@ export const useAppStore = create<AppStoreState>()(
       userClickAcceptWelcome: false,
       selectedCustomerConsignment: null,
       selectedLayout: 2,
+      deviceInfoSend: false,
       productsInConsignment: [],
       setUserClickAcceptWelcome: (value: boolean) => set({ userClickAcceptWelcome: value }),
+      setDeviceInfoSend: (value: boolean) => set({ deviceInfoSend: value }),
       // Estado NO persistente para datos del formulario de pago
       paymentForm: {
         method: null,

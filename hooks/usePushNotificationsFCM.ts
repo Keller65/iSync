@@ -67,16 +67,16 @@ export function usePushNotificationsFCM(): UsePushReturn {
         return;
       }
 
-      console.log('Verificando permisos...');
+      // console.log('Verificando permisos...');
       // Android 13+ necesita permiso en tiempo de ejecución; esto lo gestiona expo-notifications
       const { status: existing } = await Notifications.getPermissionsAsync();
-      console.log('Estado de permisos existente:', existing);
+      // console.log('Estado de permisos existente:', existing);
       let status = existing;
       if (existing !== 'granted') {
-        console.log('Solicitando permisos...');
+        // console.log('Solicitando permisos...');
         const req = await Notifications.requestPermissionsAsync();
         status = req.status;
-        console.log('Estado de permisos después de solicitud:', status);
+        // console.log('Estado de permisos después de solicitud:', status);
       }
       const granted = status === 'granted';
       setPermissionGranted(granted);
@@ -85,12 +85,12 @@ export function usePushNotificationsFCM(): UsePushReturn {
         return;
       }
 
-      console.log('Obteniendo token FCM...');
+      // console.log('Obteniendo token FCM...');
       try {
         // IMPORTANTE: para FCM usa el token de dispositivo nativo (no ExpoPushToken)
         const tokenResult = await Notifications.getDevicePushTokenAsync();
         const nativeToken = tokenResult.data;
-        console.log('Token FCM obtenido:', nativeToken);
+        // console.log('Token FCM obtenido:', nativeToken);
         setFcmToken(nativeToken);
       } catch (error) {
         console.error('Error obteniendo token FCM:', error);

@@ -1,3 +1,4 @@
+import { useLicense } from "@/auth/useLicense";
 import BottomSheetCart from '@/components/BottomSheetConsignment/page';
 import BottomSheetSession from "@/components/BottomSheetSession/pagex";
 import BottomSheetWelcome from '@/components/BottomSheetWelcome/page';
@@ -5,16 +6,15 @@ import GoalDonut from '@/components/Dashboard/GoalDonut';
 import KPICard from '@/components/Dashboard/KPICard';
 import UpdateBanner from '@/components/UpdateBanner';
 import { useAuth } from '@/context/auth';
-import { useLicense } from "@/auth/useLicense";
 import { useOtaUpdates } from "@/hooks/useOtaUpdates";
 import { usePushNotificationsFCM } from "@/hooks/usePushNotificationsFCM";
 import { useAppStore } from '@/state';
 import { GoalDonutType, SalesDataType, TableDataType } from "@/types/DasboardType";
 import { DeviceInfo } from '@/types/types';
+import axios from 'axios';
 import { brand, modelName } from 'expo-device';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
-import axios from 'axios';
 import "../../global.css";
 
 export default function App() {

@@ -13,6 +13,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, { Easing, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import '../../global.css';
+import { useLicense } from "@/auth/useLicense";
 
 interface CartItemType {
   imageUrl: string | null;
@@ -157,6 +158,7 @@ export default function BottomSheetConsignment() {
   const [comments, setComments] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { fetchUrl } = useAppStore();
+  const { uuid } = useLicense();
 
   // Pulse trail animation for the floating cart button
   const pulse = useSharedValue(0);
@@ -226,7 +228,7 @@ export default function BottomSheetConsignment() {
     }
 
     const partidas = productsInConsignment.map((product) => ({
-      codigoProducto: product.itemCode,
+      codigoProducto: product.barCode,
       cantidad: product.quantity,
       precioUnitario: product.unitPrice,
       observaciones: 'no hay',
@@ -239,6 +241,7 @@ export default function BottomSheetConsignment() {
       fecha: new Date().toISOString(),
       referencia: 'API',
       partidas,
+      userId: uuid || 'unknown',
     };
 
     try {
@@ -254,11 +257,13 @@ export default function BottomSheetConsignment() {
       });
 
       console.log('✅ Respuesta exitosa:', response.data);
+      console.log('data', data);
       clearCart();
       setComments('');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.push('/modal/success');
     } catch (error) {
+      console.error('data', data);
       if (axios.isAxiosError(error)) {
         console.error('❌ Error en la solicitud:', error.response?.data || error.message);
         Alert.alert('Error', `No se pudo enviar el pedido. ${error.response?.data?.message || error.message}`);

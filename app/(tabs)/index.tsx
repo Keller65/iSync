@@ -37,33 +37,46 @@ export default function App() {
   const { deviceInfoSend, setDeviceInfoSend } = useAppStore();
 
   useEffect(() => {
+    // Enviar info de dispositivo solo cuando se haya obtenido el UUID y no se haya enviado antes
     async function sendDeviceInfo() {
       if (deviceInfoSend === true) {
         console.log("Información de dispositivo ya enviada");
-      } else {
-        const deviceInfo: DeviceInfo = {
-          platform: brand ?? "null",
-          appId: "com.aerley_adkins2.iSyncERP",
-          appVersion: "1.0.0",
-          manufacturer: "iSync Group",
-          model: modelName ?? "null",
-          token: fcmToken ?? "null",
-          userId: uuid ?? "null",
-        };
+        return;
+      }
 
-        try {
-          const response = await axios.post(`${fetchUrl}/push/register`, deviceInfo);
-          console.log("Respuesta del servidor:", response.data);
-          console.log("Info", deviceInfo);
-          setDeviceInfoSend(true);
-        } catch (error) {
-          console.error("Error al enviar información del dispositivo:", error);
-        }
+      if (loading) {
+        console.log("Aún inicializando licencia/UUID, esperando...");
+        return;
+      }
+
+      if (!uuid) {
+        console.warn("UUID no disponible. No se enviará información del dispositivo.");
+        return;
+      }
+
+      const deviceInfo: DeviceInfo = {
+        platform: brand ?? '',
+        appId: "com.aerley_adkins2.iSyncERP",
+        appVersion: "1.0.0",
+        manufacturer: "iSync Group",
+        model: modelName ?? '',
+        token: fcmToken ?? '',
+        userId: uuid,
+      };
+
+      try {
+        const response = await axios.post(`${fetchUrl}/push/register`, deviceInfo);
+        console.log("Respuesta del servidor:", response.data);
+        console.log("Info", deviceInfo);
+        setDeviceInfoSend(true);
+      } catch (error) {
+        console.error("Error al enviar información del dispositivo:", error);
       }
     }
 
     sendDeviceInfo();
-  }, []);
+    // Dependencias: reintentar cuando cambien estas variables
+  }, [deviceInfoSend, loading, uuid, fcmToken, fetchUrl, setDeviceInfoSend]);
 
   const fetchData = async () => {
     if (!user?.token) return;

@@ -28,7 +28,7 @@ const Success = () => {
     useCallback(() => {
       const onBackPress = () => {
         if (!message) {
-          router.replace('/explore');
+          router.replace('/consignment');
         }
         return true;
       };
@@ -56,10 +56,10 @@ const Success = () => {
       />
 
       <Text style={{ fontSize: 28, fontFamily: 'Poppins-SemiBold', color: '#1a753c', marginTop: 20, textAlign: 'center' }}>
-        {message ?? '¡Pedido realizado con exito!'}
+        {message ?? '¡Consignacion realizada con exito!'}
       </Text>
-      <Text style={{ fontSize: 16, color: '#333', marginTop: 10, marginBottom: 40, textAlign: 'center', fontFamily: 'Poppins-Regular' }}>
-        {message ? 'Acción realizada con éxito.' : 'Tu pedido se ha enviado correctamente.'}
+      <Text style={{ fontSize: 14, color: '#333', marginTop: 10, marginBottom: 40, textAlign: 'center', fontFamily: 'Poppins-Regular' }}>
+        {message ? 'Acción realizada con éxito.' : 'Pronto recibirás una notificación cuando esta sea procesada.'}
       </Text>
 
       {message ?
@@ -83,7 +83,7 @@ const Success = () => {
           style={{ backgroundColor: '#28a745', width: '100%', height: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 15 }}
         >
           <Text style={{ fontFamily: 'Poppins-Medium', color: '#fff', fontSize: 18 }}>
-            Ver Pedido
+            Ver Consignación
           </Text>
         </TouchableOpacity>
       }

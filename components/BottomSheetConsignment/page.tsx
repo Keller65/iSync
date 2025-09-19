@@ -11,7 +11,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import Animated, { Easing, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { Easing, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import '../../global.css';
 
 interface CartItemType {
@@ -35,7 +35,7 @@ interface CartItemProps {
   onRemove: (code: string, name: string) => void;
 }
 
-const snapPoints: string[] = ['60%', '85%'];
+const snapPoints: string[] = ['70%', '95%'];
 
 const areEqual = (prev: CartItemProps, next: CartItemProps) =>
   prev.item.itemCode === next.item.itemCode &&
@@ -146,7 +146,7 @@ const MemoizedCommentInput = memo(({ comments, onCommentsChange }: { comments: s
 
 export default function BottomSheetConsignment() {
   const router = useRouter();
-  const productsInConsignment = useAppStore((s) => s.productsInConsignment);
+  const products = useAppStore((s) => s.products);
   const updateQuantity = useAppStore((s) => s.updateQuantity);
   const removeProduct = useAppStore((s) => s.removeProduct);
   const clearCart = useAppStore((s) => s.clearCart);
@@ -156,77 +156,15 @@ export default function BottomSheetConsignment() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { fetchUrl } = useAppStore();
 
-  // Pulse trail animation for the floating cart button
-  const pulse = useSharedValue(0);
-  useEffect(() => {
-    pulse.value = withRepeat(
-      withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true // Cambié a true para alternar la dirección
-    );
-  }, [pulse]);
-
-  const PulsingCircle = ({ index }: { index: number }) => {
-    const style = useAnimatedStyle(() => {
-      const progress = (pulse.value + index * 0.25) % 1;
-      const scale = interpolate(progress, [0, 1], [1, 1.8]);
-      const opacity = interpolate(progress, [0, 1], [0.5, 0]);
-      return {
-        transform: [{ scale }],
-        opacity,
-      };
-    });
-
-    return (
-      <Animated.View
-        // Positioned behind the button, matching its size
-        pointerEvents="none"
-        style={[
-          {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            height: 50,
-            width: 50,
-            borderRadius: 9999,
-            backgroundColor: '#1A3D59',
-          },
-          style,
-        ]}
-      />
-    );
-  };
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-      }
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setKeyboardHeight(0);
-      }
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
   const handleSubmitOrder = useCallback(async () => {
-    if (!customerSelected || productsInConsignment.length === 0) {
+    if (!customerSelected || products.length === 0) {
       Alert.alert('Error', 'Faltan datos para enviar el pedido.');
       return;
     }
 
-    const partidas = productsInConsignment.map((product) => ({
+    const partidas = products.map((product) => ({
       codigoProducto: product.barCode,
       cantidad: product.quantity,
       precioUnitario: product.unitPrice,
@@ -273,15 +211,14 @@ export default function BottomSheetConsignment() {
     } finally {
       setIsLoading(false);
     }
-  }, [customerSelected, productsInConsignment, fetchUrl, user?.token, clearCart, setComments, router]);
+  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router]);
 
   const total = useMemo(() => {
-    return productsInConsignment.reduce((sum, item) => {
-      // Usamos item.unitPrice directamente para el cálculo del total
+    return products.reduce((sum, item) => {
       const price = item.unitPrice;
       return sum + item.quantity * price;
     }, 0);
-  }, [productsInConsignment]);
+  }, [products]);
 
   const openCart = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -311,13 +248,11 @@ export default function BottomSheetConsignment() {
           onPress: () => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             removeProduct(itemCode);
-            const updatedProducts = productsInConsignment.filter(p => p.itemCode !== itemCode);
-            useAppStore.setState({ productsInConsignment: updatedProducts });
           },
         },
       ]
     );
-  }, [removeProduct, productsInConsignment]);
+  }, [removeProduct]);
 
   const renderItem = useCallback(({ item }: { item: CartItemType }) => (
     <CartItem
@@ -377,19 +312,15 @@ export default function BottomSheetConsignment() {
 
   return (
     <View style={{ flex: 1, zIndex: 100 }}>
-      {productsInConsignment.length !== 0 && (
+      {products.length !== 0 && (
         <View style={{ position: 'relative', height: 50, width: 50, alignItems: 'center', justifyContent: 'center' }}>
-          {/* Pulsing trail behind the button */}
-          <PulsingCircle index={0} />
-          <PulsingCircle index={1} />
-
           <TouchableOpacity
             className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary shadow-lg shadow-[#09f]/30"
             onPress={openCart}
           >
             <ConsignmentIcon color="white" />
             <View className="absolute -top-2 -right-2 bg-red-500 rounded-full w-6 h-6 items-center justify-center">
-              <Text className="text-white text-xs font-bold">{productsInConsignment.length}</Text>
+              <Text className="text-white text-xs font-bold">{products.length}</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -417,11 +348,11 @@ export default function BottomSheetConsignment() {
         </View>
         <MemoizedCommentInput comments={comments} onCommentsChange={setComments} />
 
-        {productsInConsignment.length === 0 ? (
+        {products.length === 0 ? (
           <EmptyCart onClose={closeCart} onAddProducts={() => router.push('/consignaciones')} />
         ) : (
           <BottomSheetFlatList<CartItemType>
-            data={productsInConsignment}
+            data={products}
             keyExtractor={(item) => item.itemCode}
             renderItem={renderItem}
             getItemLayout={(_, index) => ({ length: 150, offset: 150 * index, index })}

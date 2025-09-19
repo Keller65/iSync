@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Text, TouchableOpacity, View } from 'react-native';
 
 const Consignment = () => {
-  const { fetchUrl, productsInConsignment } = useAppStore();
+  const { fetchUrl, productsInConsignment, products } = useAppStore();
   const { user } = useAuth();
   const router = useRouter();
   const wsRef = useRef<WebSocket | null>(null);
@@ -54,7 +54,7 @@ const Consignment = () => {
       </Text>
 
       <View className="absolute bottom-4 right-8 gap-3 items-end z-10">
-        {productsInConsignment.length > 0 ? (
+        {products.length > 0 ? (
           <BottomSheetConsignment />
         ) : (
           <TouchableOpacity

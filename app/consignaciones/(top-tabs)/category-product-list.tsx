@@ -57,9 +57,10 @@ const CategoryProductScreen = memo(() => {
   const route = useRoute();
   const { groupCode, priceListNum } = route.params as { groupCode?: string, priceListNum?: string };
 
-  const addProductToConsignment = useAppStore(state => state.addProductToConsignment);
+  // Use the normal cart (shared) instead of the consignation-specific cart
+  const addProduct = useAppStore(state => state.addProduct);
   const updateQuantity = useAppStore(state => state.updateQuantity);
-  const productsInConsignment = useAppStore(state => state.productsInConsignment);
+  const products = useAppStore(state => state.products);
   const debouncedSearchText = useAppStore(state => state.debouncedSearchText);
   const { fetchUrl, selectedLayout } = useAppStore();
 
@@ -210,25 +211,27 @@ const CategoryProductScreen = memo(() => {
       return;
     }
 
-    const itemInConsignment = productsInConsignment.find(p => p.itemCode === selectedItem.itemCode);
-    const productData = { ...selectedItem, quantity, unitPrice: finalPriceForCart, tiers: editableTiers, originalPrice: selectedItem.price };
+    const itemInCart = products.find(p => p.itemCode === selectedItem.itemCode);
+    const productData = { ...selectedItem, quantity, unitPrice: finalPriceForCart, tiers: editableTiers, total: finalPriceForCart * quantity };
 
-    if (itemInConsignment) {
-      Alert.alert('Producto ya en consignación', `${selectedItem.itemName} ya está en consignación. ¿Actualizar cantidad y precio?`, [
+    if (itemInCart) {
+      Alert.alert('Producto ya en carrito', `${selectedItem.itemName} ya está en el carrito. ¿Actualizar cantidad y precio?`, [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Actualizar', onPress: () => {
+            // updateQuantity uses the normal cart signature (itemCode, quantity, newPrice?)
             updateQuantity(selectedItem.itemCode, quantity, finalPriceForCart);
             bottomSheetModalRef.current?.dismiss();
           }
         },
       ]);
     } else {
-      addProductToConsignment(productData);
-      console.log("Producto Agregado a consignación", productData);
+      // addProduct expects an object without 'total' property in its parameter type but it will compute total
+      addProduct({ ...productData });
+      console.log("Producto agregado al carrito", productData);
       bottomSheetModalRef.current?.dismiss();
     }
-  }, [addProductToConsignment, productsInConsignment, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
+  }, [addProduct, products, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
 
   const filteredItems = useMemo(() => {
     const text = debouncedSearchText?.toLowerCase() || '';

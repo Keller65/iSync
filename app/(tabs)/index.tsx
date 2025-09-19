@@ -195,7 +195,7 @@ export default function App() {
 
   return (
     <View className='flex-1 bg-white relative'>
-      <View className="absolute bottom-4 right-8 gap-3 items-end">
+      <View className="absolute bottom-4 right-6 gap-3 items-end">
         <BottomSheetCart />
       </View>
 

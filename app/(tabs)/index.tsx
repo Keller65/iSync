@@ -1,4 +1,3 @@
-import { useLicense } from "@/auth/useLicense";
 import BottomSheetCart from '@/components/BottomSheetConsignment/page';
 import BottomSheetSession from "@/components/BottomSheetSession/pagex";
 import BottomSheetWelcome from '@/components/BottomSheetWelcome/page';
@@ -7,7 +6,6 @@ import KPICard from '@/components/Dashboard/KPICard';
 import UpdateBanner from '@/components/UpdateBanner';
 import { useAuth } from '@/context/auth';
 import { useOtaUpdates } from "@/hooks/useOtaUpdates";
-import { usePushNotificationsFCM } from "@/hooks/usePushNotificationsFCM";
 import { useAppStore } from '@/state';
 import { GoalDonutType, SalesDataType, TableDataType } from "@/types/DasboardType";
 import { DeviceInfo } from '@/types/types';
@@ -18,14 +16,11 @@ import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-n
 import "../../global.css";
 
 export default function App() {
-  const { fetchUrl } = useAppStore();
   const { user } = useAuth();
   const [goalData, setGoalData] = useState<GoalDonutType | null>(null);
   const [loadingGoal, setLoadingGoal] = useState(false);
   const [goalError, setGoalError] = useState<string | null>(null);
   const [sales, setSales] = useState<SalesDataType | null>(null);
-  const { valid, loading, uuid } = useLicense();
-  const { fcmToken } = usePushNotificationsFCM();
   const { isUpdating, error, isUpdateAvailable, checkAndUpdate } = useOtaUpdates();
   const [kpiData, setKpiData] = useState(null);
   const [loadingKpi, setLoadingKpi] = useState(true);
@@ -34,34 +29,23 @@ export default function App() {
   const [tableError, setTableError] = useState<string | null>(null);
   const [loadingSales, setLoadingSales] = useState(false);
   const [showSessionExpired, setShowSessionExpired] = useState(false);
-  const { deviceInfoSend, setDeviceInfoSend } = useAppStore();
+  const { deviceInfoSend, setDeviceInfoSend, deviceUUID, fetchUrl, fcmToken } = useAppStore();
 
   useEffect(() => {
-    // Enviar info de dispositivo solo cuando se haya obtenido el UUID y no se haya enviado antes
     async function sendDeviceInfo() {
       if (deviceInfoSend === true) {
         console.log("Información de dispositivo ya enviada");
         return;
       }
 
-      if (loading) {
-        console.log("Aún inicializando licencia/UUID, esperando...");
-        return;
-      }
-
-      if (!uuid) {
-        console.warn("UUID no disponible. No se enviará información del dispositivo.");
-        return;
-      }
-
       const deviceInfo: DeviceInfo = {
-        platform: brand ?? '',
+        platform: brand ?? 'N/D',
         appId: "com.aerley_adkins2.iSyncERP",
         appVersion: "1.0.0",
         manufacturer: "iSync Group",
-        model: modelName ?? '',
-        token: fcmToken ?? '',
-        userId: uuid,
+        model: modelName ?? 'N/D',
+        token: fcmToken ?? 'N/D',
+        userId: deviceUUID ?? 'N/D',
       };
 
       try {
@@ -75,8 +59,7 @@ export default function App() {
     }
 
     sendDeviceInfo();
-    // Dependencias: reintentar cuando cambien estas variables
-  }, [deviceInfoSend, loading, uuid, fcmToken, fetchUrl, setDeviceInfoSend]);
+  }, [deviceInfoSend, fcmToken, fetchUrl, setDeviceInfoSend, deviceUUID]);
 
   const fetchData = async () => {
     if (!user?.token) return;
@@ -209,25 +192,6 @@ export default function App() {
     { fecha: "2024-06-01", cliente: "Cliente A", monto: 12000 },
     { fecha: "2024-06-02", cliente: "Cliente B", monto: 8500 },
   ];
-
-  if (loading) {
-    return (
-      <View className="flex-1 bg-white items-center justify-center gap-2">
-        <ActivityIndicator size="large" color="#000" />
-        <Text className='font-[Poppins-SemiBold] tracking-[-0.3px]'>Validando Licencia...</Text>
-      </View>
-    );
-  }
-
-  if (!valid) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-red-500 font-[Poppins-SemiBold] tracking-[-0.3px]">
-          Licencia Expirada
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <View className='flex-1 bg-white relative'>

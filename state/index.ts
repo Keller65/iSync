@@ -119,6 +119,12 @@ interface AppStoreState {
   // Nuevo: estado para controlar si la información del dispositivo ya fue enviada
   deviceInfoSend: boolean;
   setDeviceInfoSend: (value: boolean) => void;
+  // UUID persistente del dispositivo
+  deviceUUID: string | null;
+  setDeviceUUID: (value: string | null) => void;
+  // Token persistente de notificaciones (FCM)
+  fcmToken: string | null;
+  setFcmToken: (value: string | null) => void;
 }
 
 export const useAppStore = create<AppStoreState>()(
@@ -140,7 +146,11 @@ export const useAppStore = create<AppStoreState>()(
       selectedCustomerConsignment: null,
       selectedLayout: 2,
       deviceInfoSend: false,
+      deviceUUID: null,
+      fcmToken: null,
       productsInConsignment: [],
+      setDeviceUUID: (value: string | null) => set({ deviceUUID: value }),
+      setFcmToken: (value: string | null) => set({ fcmToken: value }),
       setUserClickAcceptWelcome: (value: boolean) => set({ userClickAcceptWelcome: value }),
       setDeviceInfoSend: (value: boolean) => set({ deviceInfoSend: value }),
       // Estado NO persistente para datos del formulario de pago

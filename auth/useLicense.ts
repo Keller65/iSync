@@ -1,3 +1,4 @@
+import { useAppStore } from '@/state';
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import uuid from "react-native-uuid";
@@ -12,7 +13,7 @@ async function getOrCreateUUID() {
       await SecureStore.setItemAsync(STORAGE_KEY, id);
       // console.log("Nuevo UUID generado y almacenado:", id);
     } else {
-      console.log("UUID existente recuperado:", id);
+      // console.log("UUID existente recuperado:", id);
     }
     return id;
   } catch (error) {
@@ -31,6 +32,13 @@ export function useLicense() {
       setLoading(true);
       const id = await getOrCreateUUID();
       setUuid(id);
+      // Guardar en el store persistente
+      try {
+        useAppStore.setState({ deviceUUID: id });
+        console.info("deviceUUID guardado en el store:", id);
+      } catch (e) {
+        console.warn('No se pudo guardar deviceUUID en el store:', e);
+      }
       setValid(true);
       // console.log("UUID KEY generado:", id);
 

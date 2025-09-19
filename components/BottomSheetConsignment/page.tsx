@@ -1,7 +1,6 @@
 import CartIcon from '@/assets/icons/CartIcon';
 import ConsignmentIcon from '@/assets/icons/ConsignmentIcon';
 import TrashIcon from '@/assets/icons/TrashIcon';
-import { useLicense } from "@/auth/useLicense";
 import { useAuth } from '@/context/auth';
 import { useAppStore } from '@/state/index';
 import Feather from '@expo/vector-icons/Feather';
@@ -153,12 +152,12 @@ export default function BottomSheetConsignment() {
   const clearCart = useAppStore((s) => s.clearCart);
   const customerSelected = useAppStore((s) => s.selectedCustomerConsignment);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const { deviceUUID } = useAppStore();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { fetchUrl } = useAppStore();
-  const { uuid, loading: licenseLoading } = useLicense();
 
   // Pulse trail animation for the floating cart button
   const pulse = useSharedValue(0);
@@ -227,16 +226,6 @@ export default function BottomSheetConsignment() {
       return;
     }
 
-    if (licenseLoading) {
-      Alert.alert('Espera', 'Inicializando dispositivo. Intenta nuevamente en unos segundos.');
-      return;
-    }
-
-    if (!uuid) {
-      Alert.alert('Error', 'No se pudo obtener el identificador del dispositivo (UUID). Revisa la configuración.');
-      return;
-    }
-
     const partidas = productsInConsignment.map((product) => ({
       codigoProducto: product.barCode,
       cantidad: product.quantity,
@@ -251,7 +240,7 @@ export default function BottomSheetConsignment() {
       fecha: new Date().toISOString(),
       referencia: 'API',
       partidas,
-  userId: uuid, // UUID proporcionado por useLicense
+      userId: deviceUUID, // UUID proporcionado por useLicense
     };
 
     try {

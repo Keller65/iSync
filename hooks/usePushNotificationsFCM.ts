@@ -1,3 +1,4 @@
+import { useAppStore } from '@/state';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useCallback, useEffect, useState } from 'react';
@@ -74,6 +75,11 @@ export function usePushNotificationsFCM(): UsePushReturn {
         const nativeToken = tokenResult.data;
         console.log('Token FCM obtenido:', nativeToken);
         setFcmToken(nativeToken);
+        try {
+          useAppStore.setState({ fcmToken: nativeToken });
+        } catch (e) {
+          console.warn('No se pudo guardar fcmToken en el store:', e);
+        }
       } catch (error) {
         console.error('Error obteniendo token FCM:', error);
       }

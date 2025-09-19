@@ -54,6 +54,7 @@ export default function App() {
         try {
           const response = await axios.post(`${fetchUrl}/push/register`, deviceInfo);
           console.log("Respuesta del servidor:", response.data);
+          console.log("Info", deviceInfo);
           setDeviceInfoSend(true);
         } catch (error) {
           console.error("Error al enviar información del dispositivo:", error);

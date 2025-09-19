@@ -12,7 +12,7 @@ async function getOrCreateUUID() {
       await SecureStore.setItemAsync(STORAGE_KEY, id);
       // console.log("Nuevo UUID generado y almacenado:", id);
     } else {
-      // console.log("UUID existente recuperado:", id);
+      console.log("UUID existente recuperado:", id);
     }
     return id;
   } catch (error) {

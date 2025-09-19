@@ -1,6 +1,7 @@
 import CartIcon from '@/assets/icons/CartIcon';
 import ConsignmentIcon from '@/assets/icons/ConsignmentIcon';
 import TrashIcon from '@/assets/icons/TrashIcon';
+import { useLicense } from "@/auth/useLicense";
 import { useAuth } from '@/context/auth';
 import { useAppStore } from '@/state/index';
 import Feather from '@expo/vector-icons/Feather';
@@ -13,7 +14,6 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, { Easing, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import '../../global.css';
-import { useLicense } from "@/auth/useLicense";
 
 interface CartItemType {
   imageUrl: string | null;
@@ -158,7 +158,7 @@ export default function BottomSheetConsignment() {
   const [comments, setComments] = useState('');
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { fetchUrl } = useAppStore();
-  const { uuid } = useLicense();
+  const { uuid, loading: licenseLoading } = useLicense();
 
   // Pulse trail animation for the floating cart button
   const pulse = useSharedValue(0);
@@ -227,6 +227,16 @@ export default function BottomSheetConsignment() {
       return;
     }
 
+    if (licenseLoading) {
+      Alert.alert('Espera', 'Inicializando dispositivo. Intenta nuevamente en unos segundos.');
+      return;
+    }
+
+    if (!uuid) {
+      Alert.alert('Error', 'No se pudo obtener el identificador del dispositivo (UUID). Revisa la configuración.');
+      return;
+    }
+
     const partidas = productsInConsignment.map((product) => ({
       codigoProducto: product.barCode,
       cantidad: product.quantity,
@@ -241,7 +251,7 @@ export default function BottomSheetConsignment() {
       fecha: new Date().toISOString(),
       referencia: 'API',
       partidas,
-      userId: uuid || 'unknown',
+  userId: uuid, // UUID proporcionado por useLicense
     };
 
     try {

@@ -11,11 +11,11 @@ import axios from 'axios';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void }) => {
+const ProductItem = memo(({ item, onPress, onMeasure }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void, onMeasure?: (height: number) => void }) => {
   const { selectedLayout } = useAppStore();
 
   return (
-    <TouchableOpacity onPress={() => onPress(item)} className={`mb-4 bg-white flex-1 gap-3 p-2 ${selectedLayout === 4 || selectedLayout === 6 ? 'items-center flex-row' : ''}`}>
+    <TouchableOpacity onPress={() => onPress(item)} onLayout={(e) => onMeasure?.(e.nativeEvent.layout.height)} className={`mb-4 bg-white flex-1 gap-3 p-2 ${selectedLayout === 4 || selectedLayout === 6 ? 'items-center flex-row' : ''}`}>
       <View
         className={`rounded-2xl bg-white items-center justify-center relative overflow-hidden border border-gray-200 ${selectedLayout === 2
           ? 'h-[180px]'
@@ -66,8 +66,15 @@ const CategoryProductScreen = memo(() => {
 
   const pagesCacheRef = useRef<Map<number, ProductDiscount[]>>(new Map());
   const [items, setItems] = useState<ProductDiscount[]>([]);
+  // Measured heights and estimation for FlashList
+  const measuredHeights = useRef<Map<string, number>>(new Map());
+  const SAMPLE_MEASURE_COUNT = 8; // medir los primeros N ítems para calcular promedio
+  const initialEstimate = selectedLayout === 4 ? 160 : selectedLayout === 6 ? 120 : 220;
+  const [estimatedItemSize, setEstimatedItemSize] = useState<number>(initialEstimate);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ProductDiscount | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [unitPrice, setUnitPrice] = useState<number>(0);
@@ -93,14 +100,19 @@ const CategoryProductScreen = memo(() => {
     }
   }, []);
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (requestedPage: number = 1, append: boolean = false) => {
     if (!user?.token) {
       setLoading(false);
+      setLoadingMore(false);
       setError('No se ha iniciado sesión o el token no está disponible.');
       return;
     }
 
-    setLoading(true);
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     try {
       const headers = {
@@ -108,29 +120,58 @@ const CategoryProductScreen = memo(() => {
         'Content-Type': 'application/json',
         'Accept-Encoding': 'gzip'
       };
-
       let url = `${FETCH_URL}`;
-      if (groupCode) url += `?groupCode=${groupCode}`;
-      if (priceListNum) url += `&priceList=${priceListNum}`;
+      // build query params
+      const params: string[] = [];
+      if (groupCode) params.push(`groupCode=${encodeURIComponent(groupCode)}`);
+      if (priceListNum) params.push(`priceList=${encodeURIComponent(priceListNum)}`);
+      params.push(`page=${requestedPage}`);
+      params.push(`pageSize=${PAGE_SIZE}`);
+      if (params.length) url += `?${params.join('&')}`;
 
       const itemsResponse = await axios.get(url, { headers });
-      const newItems = itemsResponse.data.items;
+      const payload = itemsResponse.data;
+      // support APIs that return either an array directly or an object with 'items' or 'data'
+      const newItems: ProductDiscount[] = Array.isArray(payload)
+        ? payload
+        : (payload?.items || payload?.data || []);
 
-      setItems(newItems);
-      setTotalItems(newItems.length);
+      console.log("[CategoryProduct] fetch URL:", url);
+      console.log("[CategoryProduct] response data:", payload);
+      console.log("[CategoryProduct] newItems.length:", newItems.length, "requestedPage:", requestedPage);
+
+      if (append) {
+        setItems(prev => [...prev, ...newItems]);
+      } else {
+        setItems(newItems);
+      }
+      setTotalItems(prevTotal => append ? prevTotal + newItems.length : newItems.length);
+      // update page state if append succeeded
+      setPage(requestedPage);
+      // determine if there are more pages
+      if (newItems.length < PAGE_SIZE) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
     } catch (err: any) {
       setError(err?.message || 'Error inesperado');
-      setItems([]);
+      if (!append) setItems([]);
     } finally {
-      setLoading(false);
+      if (append) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, [user?.token, groupCode, priceListNum]);
 
   useEffect(() => {
     setItems([]);
-    setLoading(true);
-    fetchProducts();
-  }, [groupCode, priceListNum]);
+    setPage(1);
+    setHasMore(true);
+    fetchProducts(1, false);
+  }, [groupCode, priceListNum, fetchProducts]);
 
   useEffect(() => {
     if (!selectedItem) {
@@ -192,8 +233,9 @@ const CategoryProductScreen = memo(() => {
 
   const onRefresh = useCallback(() => {
     pagesCacheRef.current = new Map();
-    setLoading(true);
-    fetchProducts();
+    setPage(1);
+    // reload first page
+    fetchProducts(1, false);
   }, [fetchProducts]);
 
   const handleProductPress = useCallback((item: ProductDiscount) => {
@@ -234,23 +276,57 @@ const CategoryProductScreen = memo(() => {
   }, [addProduct, products, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
 
   const filteredItems = useMemo(() => {
-    const text = debouncedSearchText?.toLowerCase() || '';
+    const text = (debouncedSearchText || '').toLowerCase();
     return items.filter(item =>
-      item.barCode?.toLowerCase().includes(text) ||
-      item.itemName?.toLowerCase().includes(text) ||
-      item.groupName?.toLowerCase().includes(text)
+      (item.barCode || '').toLowerCase().includes(text) ||
+      (item.itemName || '').toLowerCase().includes(text) ||
+      (item.groupName || '').toLowerCase().includes(text)
     );
   }, [items, debouncedSearchText]);
 
+  // --- Pagination (server-side with append) ---
+  const PAGE_SIZE = 20; // items por página
+  const [page, setPage] = useState<number>(1);
+  const visibleItems = useMemo(() => filteredItems, [filteredItems]);
+
+  // Resetear página cuando cambian los resultados/filtrado
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchText, items]);
+
+  const handleEndReached = useCallback(() => {
+    if (loadingMore || loading) return;
+    if (!hasMore) return;
+
+    const nextPage = page + 1;
+    // trigger fetch for next page and append
+    fetchProducts(nextPage, true);
+  }, [loadingMore, loading, hasMore, page, fetchProducts]);
+
   const renderItem = useCallback(({ item }: { item: ProductDiscount }) => (
-    <ProductItem item={item} onPress={handleProductPress} />
+    <ProductItem item={item} onPress={handleProductPress} onMeasure={(h) => {
+      try {
+        const key = item.itemCode;
+        const map = measuredHeights.current;
+        if (map.get(key) !== h) {
+          map.set(key, h);
+          if (map.size <= SAMPLE_MEASURE_COUNT) {
+            const sum = Array.from(map.values()).reduce((s, v) => s + v, 0);
+            const avg = Math.max(1, Math.round(sum / map.size));
+            setEstimatedItemSize(avg);
+          }
+        }
+      } catch (err) {
+        // silent
+      }
+    }} />
   ), [handleProductPress]);
 
   const renderFooter = useCallback((props: any) => (
     selectedItem ? (
       <BottomSheetFooter {...props}>
         <View
-          className='w-full px-4 pt-4 pb-2 bg-white border-t border-gray-200'
+          className='w-full px-4 pt-4 pb-2 bg-white'
           onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
         >
           <View className="w-full flex-row justify-between items-end">
@@ -321,7 +397,6 @@ const CategoryProductScreen = memo(() => {
     if (numColumns === 4 || numColumns === 6) {
       setColumns(1);
     }
-    console.log("Número de columnas actualizado:", columns);
   }, [numColumns]);
 
   if (loading) {
@@ -346,26 +421,35 @@ const CategoryProductScreen = memo(() => {
 
   return (
     <View className="flex-1 bg-white relative">
-      <FlashList
-        data={filteredItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.itemCode}
-        estimatedItemSize={200}
-        numColumns={columns}
-        onEndReachedThreshold={0.2}
-        ListFooterComponent={loadingMore ? <View className="py-4"><ActivityIndicator size="small" color="#000" /></View> : null}
-        contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 60 }}
-        drawDistance={500}
-        overrideItemLayout={(layout) => { layout.size = 100; }}
-      />
+      {(!loading && visibleItems.length === 0 && !error) ? (
+        <View className="flex-1 items-center justify-center bg-white">
+          <Text className="text-gray-600">No se encontraron productos.</Text>
+          <Text className="text-xs text-gray-400 mt-2">items:{items.length} page:{page} hasMore:{hasMore ? 'yes' : 'no'} loadingMore:{loadingMore ? 'yes' : 'no'}</Text>
+          <Text className="text-xs text-gray-400 mt-1">fetchUrl: {FETCH_URL}</Text>
+        </View>
+      ) : (
+        <FlashList
+          data={visibleItems}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.itemCode}
+          estimatedItemSize={Math.max(1, estimatedItemSize)}
+          numColumns={columns}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.2}
+          ListFooterComponent={loadingMore ? <View className="py-4"><ActivityIndicator size="small" color="#000" /></View> : null}
+          contentContainerStyle={{ paddingHorizontal: 8 }}
+          drawDistance={500}
+        />
+      )}
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
         onChange={handleSheetChanges}
-        snapPoints={snapPoints}
+        // snapPoints={snapPoints}
         enablePanDownToClose={true}
         backdropComponent={(props) => (<BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.5} pressBehavior="close" />)}
         footerComponent={renderFooter}
+        enableDynamicSizing={true}
       >
         <BottomSheetScrollView
           className='flex-1'

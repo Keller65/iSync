@@ -8,7 +8,7 @@ import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal, BottomSheetSc
 import { useRoute } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 import axios from 'axios';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const ProductItem = memo(({ item, onPress, onMeasure }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void, onMeasure?: (height: number) => void }) => {
@@ -24,7 +24,7 @@ const ProductItem = memo(({ item, onPress, onMeasure }: { item: ProductDiscount,
             : selectedLayout === 6
               ? 'h-[100px]'
               : 'h-[180px]'
-          }`} // Ajuste aquí
+          }`}
       >
         {item.hasDiscount && (
           <View className='absolute top-2 left-2 z-10'>
@@ -57,7 +57,6 @@ const CategoryProductScreen = memo(() => {
   const route = useRoute();
   const { groupCode, priceListNum } = route.params as { groupCode?: string, priceListNum?: string };
 
-  // Use the normal cart (shared) instead of the consignation-specific cart
   const addProduct = useAppStore(state => state.addProduct);
   const updateQuantity = useAppStore(state => state.updateQuantity);
   const products = useAppStore(state => state.products);
@@ -66,9 +65,8 @@ const CategoryProductScreen = memo(() => {
 
   const pagesCacheRef = useRef<Map<number, ProductDiscount[]>>(new Map());
   const [items, setItems] = useState<ProductDiscount[]>([]);
-  // Measured heights and estimation for FlashList
   const measuredHeights = useRef<Map<string, number>>(new Map());
-  const SAMPLE_MEASURE_COUNT = 8; // medir los primeros N ítems para calcular promedio
+  const SAMPLE_MEASURE_COUNT = 8;
   const initialEstimate = selectedLayout === 4 ? 160 : selectedLayout === 6 ? 120 : 220;
   const [estimatedItemSize, setEstimatedItemSize] = useState<number>(initialEstimate);
 
@@ -87,11 +85,13 @@ const CategoryProductScreen = memo(() => {
   const [isPriceManuallyEdited, setIsPriceManuallyEdited] = useState(false);
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const [totalItems, setTotalItems] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const FETCH_URL = fetchUrl + "/api/Catalog/products/all";
-  const snapPoints = useMemo(() => ['85%', '100%'], []);
   const [footerHeight, setFooterHeight] = useState(0);
+
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState<number>(1);
+  const isFetchingRef = useRef(false);
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
@@ -101,6 +101,7 @@ const CategoryProductScreen = memo(() => {
   }, []);
 
   const fetchProducts = useCallback(async (requestedPage: number = 1, append: boolean = false) => {
+    if (isFetchingRef.current) return;
     if (!user?.token) {
       setLoading(false);
       setLoadingMore(false);
@@ -108,70 +109,91 @@ const CategoryProductScreen = memo(() => {
       return;
     }
 
+    isFetchingRef.current = true;
+
     if (append) {
       setLoadingMore(true);
     } else {
       setLoading(true);
     }
     setError(null);
+
     try {
       const headers = {
         Authorization: `Bearer ${user.token}`,
         'Content-Type': 'application/json',
         'Accept-Encoding': 'gzip'
       };
+
       let url = `${FETCH_URL}`;
-      // build query params
       const params: string[] = [];
+
       if (groupCode) params.push(`groupCode=${encodeURIComponent(groupCode)}`);
       if (priceListNum) params.push(`priceList=${encodeURIComponent(priceListNum)}`);
       params.push(`page=${requestedPage}`);
       params.push(`pageSize=${PAGE_SIZE}`);
+
+      if (debouncedSearchText) {
+        params.push(`search=${encodeURIComponent(debouncedSearchText)}`);
+      }
+
       if (params.length) url += `?${params.join('&')}`;
 
+      console.log("[CategoryProduct] Fetching:", url);
       const itemsResponse = await axios.get(url, { headers });
       const payload = itemsResponse.data;
-      // support APIs that return either an array directly or an object with 'items' or 'data'
-      const newItems: ProductDiscount[] = Array.isArray(payload)
-        ? payload
-        : (payload?.items || payload?.data || []);
 
-      console.log("[CategoryProduct] fetch URL:", url);
-      console.log("[CategoryProduct] response data:", payload);
-      console.log("[CategoryProduct] newItems.length:", newItems.length, "requestedPage:", requestedPage);
+      let newItems: ProductDiscount[] = [];
+
+      if (Array.isArray(payload)) {
+        newItems = payload;
+      } else if (payload?.items) {
+        newItems = payload.items;
+      } else if (payload?.data) {
+        newItems = payload.data;
+      } else {
+        newItems = [];
+      }
+
+      console.log("[CategoryProduct] New items:", newItems.length, "Page:", requestedPage);
 
       if (append) {
         setItems(prev => [...prev, ...newItems]);
       } else {
         setItems(newItems);
       }
-      setTotalItems(prevTotal => append ? prevTotal + newItems.length : newItems.length);
-      // update page state if append succeeded
+
+      // Lógica simplificada para determinar si hay más páginas
+      const hasMoreItems = newItems.length === PAGE_SIZE;
+      setHasMore(hasMoreItems);
+
       setPage(requestedPage);
-      // determine if there are more pages
-      if (newItems.length < PAGE_SIZE) {
-        setHasMore(false);
-      } else {
-        setHasMore(true);
-      }
+
     } catch (err: any) {
+      console.error("[CategoryProduct] Fetch error:", err);
       setError(err?.message || 'Error inesperado');
       if (!append) setItems([]);
+      setHasMore(false);
     } finally {
+      isFetchingRef.current = false;
       if (append) {
         setLoadingMore(false);
       } else {
         setLoading(false);
       }
     }
-  }, [user?.token, groupCode, priceListNum]);
+  }, [user?.token, groupCode, priceListNum, debouncedSearchText, PAGE_SIZE]);
 
   useEffect(() => {
-    setItems([]);
-    setPage(1);
-    setHasMore(true);
-    fetchProducts(1, false);
-  }, [groupCode, priceListNum, fetchProducts]);
+    const timer = setTimeout(() => {
+      setItems([]);
+      setPage(1);
+      setHasMore(true);
+      fetchProducts(1, false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [groupCode, priceListNum, debouncedSearchText, fetchProducts]);
 
   useEffect(() => {
     if (!selectedItem) {
@@ -234,7 +256,7 @@ const CategoryProductScreen = memo(() => {
   const onRefresh = useCallback(() => {
     pagesCacheRef.current = new Map();
     setPage(1);
-    // reload first page
+    setHasMore(true);
     fetchProducts(1, false);
   }, [fetchProducts]);
 
@@ -261,45 +283,23 @@ const CategoryProductScreen = memo(() => {
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Actualizar', onPress: () => {
-            // updateQuantity uses the normal cart signature (itemCode, quantity, newPrice?)
             updateQuantity(selectedItem.itemCode, quantity, finalPriceForCart);
             bottomSheetModalRef.current?.dismiss();
           }
         },
       ]);
     } else {
-      // addProduct expects an object without 'total' property in its parameter type but it will compute total
       addProduct({ ...productData });
       console.log("Producto agregado al carrito", productData);
       bottomSheetModalRef.current?.dismiss();
     }
   }, [addProduct, products, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
 
-  const filteredItems = useMemo(() => {
-    const text = (debouncedSearchText || '').toLowerCase();
-    return items.filter(item =>
-      (item.barCode || '').toLowerCase().includes(text) ||
-      (item.itemName || '').toLowerCase().includes(text) ||
-      (item.groupName || '').toLowerCase().includes(text)
-    );
-  }, [items, debouncedSearchText]);
-
-  // --- Pagination (server-side with append) ---
-  const PAGE_SIZE = 20; // items por página
-  const [page, setPage] = useState<number>(1);
-  const visibleItems = useMemo(() => filteredItems, [filteredItems]);
-
-  // Resetear página cuando cambian los resultados/filtrado
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearchText, items]);
-
   const handleEndReached = useCallback(() => {
-    if (loadingMore || loading) return;
-    if (!hasMore) return;
+    if (loadingMore || loading || !hasMore) return;
 
     const nextPage = page + 1;
-    // trigger fetch for next page and append
+    console.log("[CategoryProduct] Loading more, page:", nextPage);
     fetchProducts(nextPage, true);
   }, [loadingMore, loading, hasMore, page, fetchProducts]);
 
@@ -399,7 +399,7 @@ const CategoryProductScreen = memo(() => {
     }
   }, [numColumns]);
 
-  if (loading) {
+  if (loading && !loadingMore) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator size="large" color="#000" />
@@ -421,22 +421,32 @@ const CategoryProductScreen = memo(() => {
 
   return (
     <View className="flex-1 bg-white relative">
-      {(!loading && visibleItems.length === 0 && !error) ? (
+      {(!loading && items.length === 0 && !error) ? (
         <View className="flex-1 items-center justify-center bg-white">
-          <Text className="text-gray-600">No se encontraron productos.</Text>
-          <Text className="text-xs text-gray-400 mt-2">items:{items.length} page:{page} hasMore:{hasMore ? 'yes' : 'no'} loadingMore:{loadingMore ? 'yes' : 'no'}</Text>
-          <Text className="text-xs text-gray-400 mt-1">fetchUrl: {FETCH_URL}</Text>
+          <Text className="text-gray-600">
+            {debouncedSearchText ? 'No se encontraron productos para tu búsqueda' : 'No se encontraron productos'}
+          </Text>
         </View>
       ) : (
         <FlashList
-          data={visibleItems}
+          data={items}
           renderItem={renderItem}
           keyExtractor={(item) => item.itemCode}
           estimatedItemSize={Math.max(1, estimatedItemSize)}
           numColumns={columns}
           onEndReached={handleEndReached}
-          onEndReachedThreshold={0.2}
-          ListFooterComponent={loadingMore ? <View className="py-4"><ActivityIndicator size="small" color="#000" /></View> : null}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <View className="py-4">
+                <ActivityIndicator size="small" color="#000" />
+              </View>
+            ) : !hasMore && items.length > 0 ? (
+              <View className="py-4 items-center">
+                <Text className="text-gray-500 text-sm">No hay más productos</Text>
+              </View>
+            ) : null
+          }
           contentContainerStyle={{ paddingHorizontal: 8 }}
           drawDistance={500}
         />
@@ -445,14 +455,20 @@ const CategoryProductScreen = memo(() => {
       <BottomSheetModal
         ref={bottomSheetModalRef}
         onChange={handleSheetChanges}
-        // snapPoints={snapPoints}
         enablePanDownToClose={true}
-        backdropComponent={(props) => (<BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.5} pressBehavior="close" />)}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop
+            {...props}
+            appearsOnIndex={0}
+            disappearsOnIndex={-1}
+            pressBehavior="close"
+          />
+        )}
         footerComponent={renderFooter}
         enableDynamicSizing={true}
       >
         <BottomSheetScrollView
-          className='flex-1'
+          className="flex-1"
           contentContainerStyle={{ paddingBottom: footerHeight + 24 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator
@@ -463,27 +479,33 @@ const CategoryProductScreen = memo(() => {
                 <Image
                   source={{ uri: `https://pub-266f56f2e24d4d3b8e8abdb612029f2f.r2.dev/${selectedItem.itemCode}.jpg` }}
                   style={{ height: 230, width: 230, aspectRatio: 1, objectFit: "contain" }}
-                // contentFit="contain"
-                // transition={500}
                 />
               </View>
 
-              <View className='px-[16px]'>
-                <Text className="text-[18px] font-[Poppins-Bold] tracking-[-0.3px] text-gray-900">{selectedItem.itemName}</Text>
+              <View className="px-[16px]">
+                <Text className="text-[18px] font-[Poppins-Bold] tracking-[-0.3px] text-gray-900">
+                  {selectedItem.itemName}
+                </Text>
 
                 <View className="flex-1 flex-row w-full h-fit justify-between gap-2 mt-1">
-                  <View className='bg-gray-200 py-2 px-3 w-fit rounded-full'>
-                    <Text className="font-[Poppins-Regular] text-[12px] leading-3 tracking-[-0.3px] text-gray-700">{selectedItem.barCode}</Text>
+                  <View className="bg-gray-200 py-2 px-3 w-fit rounded-full">
+                    <Text className="font-[Poppins-Regular] text-[12px] leading-3 tracking-[-0.3px] text-gray-700">
+                      {selectedItem.barCode}
+                    </Text>
                   </View>
 
-                  <View className='bg-gray-200 py-2 px-3 w-fit rounded-full'>
-                    <Text className="font-[Poppins-Regular] text-[12px] leading-3 tracking-[-0.3px] text-gray-700">{selectedItem.salesUnit} x {selectedItem.salesItemsPerUnit}</Text>
+                  <View className="bg-gray-200 py-2 px-3 w-fit rounded-full">
+                    <Text className="font-[Poppins-Regular] text-[12px] leading-3 tracking-[-0.3px] text-gray-700">
+                      {selectedItem.salesUnit} x {selectedItem.salesItemsPerUnit}
+                    </Text>
                   </View>
                 </View>
 
-                <View className='flex-row items-start justify-between'>
+                <View className="flex-row items-start justify-between">
                   <View className="bg-white py-4 rounded-lg">
-                    <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 leading-3">Precio de Venta:</Text>
+                    <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 leading-3">
+                      Precio de Venta:
+                    </Text>
                     <View className="flex-row items-center">
                       <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
                       <TextInput
@@ -494,11 +516,16 @@ const CategoryProductScreen = memo(() => {
                         keyboardType="numeric"
                       />
                     </View>
-                    <Text className="text-xs text-gray-500 font-[Poppins-Regular] tracking-[-0.3px]">Precio base original: L.{selectedItem.price.toLocaleString()}</Text>
+                    <Text className="text-xs text-gray-500 font-[Poppins-Regular] tracking-[-0.3px]">
+                      Precio base original: L.{selectedItem.price.toLocaleString()}
+                    </Text>
                   </View>
 
                   <View className="flex-row items-center">
-                    <TouchableOpacity className="bg-gray-200 rounded-full p-2" onPress={() => setQuantity(q => Math.max(1, q - 1))}>
+                    <TouchableOpacity
+                      className="bg-gray-200 rounded-full p-2"
+                      onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+                    >
                       <MinusIcon size={20} />
                     </TouchableOpacity>
                     <TextInput
@@ -507,19 +534,28 @@ const CategoryProductScreen = memo(() => {
                       keyboardType="numeric"
                       className="mx-4 text-center text-lg text-black w-12"
                     />
-                    <TouchableOpacity className="bg-gray-200 rounded-full p-2" onPress={() => setQuantity(q => q + 1)}>
+                    <TouchableOpacity
+                      className="bg-gray-200 rounded-full p-2"
+                      onPress={() => setQuantity((q) => q + 1)}
+                    >
                       <PlusIcon size={20} />
                     </TouchableOpacity>
                   </View>
                 </View>
 
-                {!isPriceValid && <Text className="text-red-600 text-xs font-[Poppins-Regular] tracking-[-0.3px]">El precio no puede ser menor al mínimo permitido.</Text>}
+                {!isPriceValid && (
+                  <Text className="text-red-600 text-xs font-[Poppins-Regular] tracking-[-0.3px]">
+                    El precio no puede ser menor al mínimo permitido.
+                  </Text>
+                )}
 
                 {editableTiers && editableTiers.length > 0 && (
-                  <View className={`bg-gray-100 py-2 px-3 rounded-2xl ${!applyTierDiscounts && 'opacity-50'}`}>
+                  <View
+                    className={`bg-gray-100 py-2 px-3 rounded-2xl ${!applyTierDiscounts && 'opacity-50'}`}
+                  >
                     <TouchableOpacity
                       onPress={() => {
-                        setApplyTierDiscounts(prev => {
+                        setApplyTierDiscounts((prev) => {
                           const newValue = !prev;
                           if (newValue) {
                             setIsPriceManuallyEdited(false);
@@ -527,48 +563,72 @@ const CategoryProductScreen = memo(() => {
                           return newValue;
                         });
                       }}
-                      className='flex-row justify-between items-center mb-3'
+                      className="flex-row justify-between items-center mb-3"
                     >
-                      <Text className="font-[Poppins-Bold] text-base tracking-[-0.3px] text-gray-800">Precios por Cantidad:</Text>
-                      <Text className='font-[Poppins-SemiBold] text-blue-500'>{applyTierDiscounts ? 'Desactivar' : 'Activar'}</Text>
+                      <Text className="font-[Poppins-Bold] text-base tracking-[-0.3px] text-gray-800">
+                        Precios por Cantidad:
+                      </Text>
+                      <Text className="font-[Poppins-SemiBold] text-blue-500">
+                        {applyTierDiscounts ? 'Desactivar' : 'Activar'}
+                      </Text>
                     </TouchableOpacity>
                     {editableTiers.map((tier, index) => {
                       return (
                         <View key={index} className="mb-2">
-                          <View className='flex-row items-center justify-between'>
-                            <View className='items-start'>
-                              <Text className="font-[Poppins-SemiBold] text-sm tracking-[-0.3px] text-gray-700">Desde {tier.qty} unidades:</Text>
-                              {tier.percent > 0 && <Text className="text-green-600 text-xs">({tier.percent}% desc)</Text>}
+                          <View className="flex-row items-center justify-between">
+                            <View className="items-start">
+                              <Text className="font-[Poppins-SemiBold] text-sm tracking-[-0.3px] text-gray-700">
+                                Desde {tier.qty} unidades:
+                              </Text>
+                              {tier.percent > 0 && (
+                                <Text className="text-green-600 text-xs">({tier.percent}% desc)</Text>
+                              )}
                             </View>
                             <View className="flex-row items-center">
                               <Text className="font-[Poppins-Bold] text-base text-black mr-1">L.</Text>
-                              <Text className="font-[Poppins-Bold] text-base text-black">{tier.price.toFixed(2)}</Text>
+                              <Text className="font-[Poppins-Bold] text-base text-black">
+                                {tier.price.toFixed(2)}
+                              </Text>
                             </View>
                           </View>
                         </View>
-                      )
+                      );
                     })}
                   </View>
                 )}
 
                 <View className="flex-1 mt-2">
                   <View className="">
-                    <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mb-1">Inventario</Text>
+                    <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mb-1">
+                      Inventario
+                    </Text>
 
-                    <View className='flex-row gap-2 items-center justify-between'>
-                      <View className='bg-gray-100 px-3 py-1 rounded-lg flex-1'>
-                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">Disponible</Text>
-                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">{selectedItem.inStock.toLocaleString()}</Text>
+                    <View className="flex-row gap-2 items-center justify-between">
+                      <View className="bg-gray-100 px-3 py-1 rounded-lg flex-1">
+                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">
+                          Disponible
+                        </Text>
+                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">
+                          {selectedItem.inStock.toLocaleString()}
+                        </Text>
                       </View>
 
-                      <View className='bg-gray-100 px-3 py-1 rounded-lg flex-1'>
-                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">En Pedido</Text>
-                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">{selectedItem.ordered.toLocaleString()}</Text>
+                      <View className="bg-gray-100 px-3 py-1 rounded-lg flex-1">
+                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">
+                          En Pedido
+                        </Text>
+                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">
+                          {selectedItem.ordered.toLocaleString()}
+                        </Text>
                       </View>
 
-                      <View className='bg-gray-100 px-3 py-1 rounded-lg'>
-                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">Comprometido</Text>
-                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">{selectedItem.committed.toLocaleString()}</Text>
+                      <View className="bg-gray-100 px-3 py-1 rounded-lg">
+                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">
+                          Comprometido
+                        </Text>
+                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">
+                          {selectedItem.committed.toLocaleString()}
+                        </Text>
                       </View>
                     </View>
                   </View>
@@ -578,7 +638,7 @@ const CategoryProductScreen = memo(() => {
           )}
         </BottomSheetScrollView>
       </BottomSheetModal>
-    </View>
+    </View >
   );
 });
 

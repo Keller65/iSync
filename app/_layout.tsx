@@ -14,8 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { View, TouchableOpacity } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
-import LayoutIcon from '@/assets/icons/LayoutIcon';
-import BottomSheetLayout from '@/components/BottomSheetLayout/page';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -119,8 +117,6 @@ export default function RootLayout() {
                             </TouchableOpacity>
                           )}
                         </View>
-
-                        <BottomSheetLayout />
                       </View>
                     ),
                   }}

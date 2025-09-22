@@ -12,6 +12,8 @@ import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import Animated, { useAnimatedKeyboard, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useAuth } from "../context/auth";
+import { usePushNotificationsFCM } from '@/hooks/usePushNotificationsFCM'
+import { useLicense } from '@/auth/useLicense'
 import "../global.css";
 
 export default function Login() {
@@ -25,8 +27,10 @@ export default function Login() {
   const { fetchUrl } = useAppStore()
   const FETCH_URL = fetchUrl + "/auth/employee";
   const keyboard = useAnimatedKeyboard();
-
   const isFormValid = salesPersonCode !== "" && password !== "";
+
+  usePushNotificationsFCM();
+  useLicense();
 
   useEffect(() => {
     (async () => {
@@ -35,8 +39,6 @@ export default function Login() {
         console.log('Permiso de ubicación denegado');
         return;
       }
-      let location = await Location.getCurrentPositionAsync({});
-      console.log('Coordenadas:', location.coords);
     })();
   }, []);
 
@@ -206,7 +208,7 @@ export default function Login() {
               onChangeText={setSalesPersonCode}
               keyboardType="numeric"
               editable={!loading}
-              placeholderTextColor="#000"
+              placeholderTextColor={'#9ca3af'}
             />
           </View>
 
@@ -221,7 +223,7 @@ export default function Login() {
                 secureTextEntry={!showPassword}
                 keyboardType="numeric"
                 editable={!loading}
-                placeholderTextColor="#000"
+                placeholderTextColor={'#9ca3af'}
               />
               <TouchableOpacity
                 className="absolute right-4 top-4"
@@ -244,8 +246,8 @@ export default function Login() {
         >
           {loading ? (
             <View className="flex-row gap-2 items-center justify-center">
-              <ActivityIndicator color="black" size="small" />
-              <Text className="text-black text-center font-[Poppins-SemiBold]">Iniciando Sesión...</Text>
+              <ActivityIndicator color="#9ca3af" size="small" />
+              <Text className="text-[#9ca3af] text-center font-[Poppins-SemiBold]">Iniciando Sesión...</Text>
             </View>
           ) : (
             <Text className="text-white text-center font-[Poppins-SemiBold]">Iniciar Sesión</Text>

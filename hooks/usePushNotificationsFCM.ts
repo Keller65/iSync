@@ -46,7 +46,7 @@ export function usePushNotificationsFCM(): UsePushReturn {
       await ensureAndroidChannel();
 
       if (!Device.isDevice) {
-        console.log('No es un dispositivo físico, saltando obtención de token');
+        console.error('No es un dispositivo físico, saltando obtención de token');
         return;
       }
 
@@ -73,10 +73,11 @@ export function usePushNotificationsFCM(): UsePushReturn {
         // IMPORTANTE: para FCM usa el token de dispositivo nativo (no ExpoPushToken)
         const tokenResult = await Notifications.getDevicePushTokenAsync();
         const nativeToken = tokenResult.data;
-        console.log('Token FCM obtenido:', nativeToken);
+        // console.log('Token FCM obtenido:', nativeToken);
         setFcmToken(nativeToken);
         try {
           useAppStore.setState({ fcmToken: nativeToken });
+          console.info('Token FCM guardado en el store:', nativeToken);
         } catch (e) {
           console.warn('No se pudo guardar fcmToken en el store:', e);
         }

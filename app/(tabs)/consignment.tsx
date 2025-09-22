@@ -160,7 +160,7 @@ const Consignment = () => {
 
   return (
     <View className="px-4 bg-white flex-1 relative gap-2">
-      <View className="absolute bottom-4 right-8 gap-3 items-end z-10">
+      <View className="absolute bottom-4 right-6 gap-3 items-end z-10">
         {products.length > 0 ? (
           <BottomSheetConsignment />
         ) : (

@@ -313,7 +313,7 @@ export default function BottomSheetConsignment() {
 
   return (
     <View style={{ flex: 1, zIndex: 100 }}>
-      {products.length !== 0 && (
+      {products.length > 0 && (
         <View style={{ position: 'relative', height: 50, width: 50, alignItems: 'center', justifyContent: 'center' }}>
           <TouchableOpacity
             className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary shadow-lg shadow-[#09f]/30"

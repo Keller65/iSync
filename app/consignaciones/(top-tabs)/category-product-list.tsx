@@ -12,19 +12,14 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const ProductItem = memo(({ item, onPress, onMeasure }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void, onMeasure?: (height: number) => void }) => {
-  const { selectedLayout } = useAppStore();
-
   return (
-    <TouchableOpacity onPress={() => onPress(item)} onLayout={(e) => onMeasure?.(e.nativeEvent.layout.height)} className={`mb-4 bg-white flex-1 gap-3 p-2 ${selectedLayout === 4 || selectedLayout === 6 ? 'items-center flex-row' : ''}`}>
+    <TouchableOpacity
+      onPress={() => onPress(item)}
+      className="mb-4 gap-4 p-2 flex-row items-center"
+      onLayout={(e) => onMeasure?.(e.nativeEvent.layout.height)}
+    >
       <View
-        className={`rounded-2xl bg-white items-center justify-center relative overflow-hidden border border-gray-200 ${selectedLayout === 2
-          ? 'h-[180px]'
-          : selectedLayout === 4
-            ? 'h-[140px]'
-            : selectedLayout === 6
-              ? 'h-[100px]'
-              : 'h-[180px]'
-          }`}
+        className={`rounded-2xl bg-white justify-center relative overflow-hidden border border-gray-200 `}
       >
         {item.hasDiscount && (
           <View className='absolute top-2 left-2 z-10'>
@@ -33,16 +28,16 @@ const ProductItem = memo(({ item, onPress, onMeasure }: { item: ProductDiscount,
         )}
         <Image
           source={{ uri: "https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png" }}
-          style={{ height: 140, width: 140, objectFit: "contain" }}
+          style={{ height: 120, width: 140, objectFit: "contain" }}
           onError={() => console.log("Error loading image for item:", item.itemCode)}
         />
       </View>
 
-      <View className='flex-1'>
-        <Text className="font-medium text-sm leading-4" numberOfLines={2} ellipsizeMode="tail">
+      <View className='flex-1 justify-center h-full'>
+        <Text className="font-[Poppins-SemiBold] text-md tracking-[-0.3px]" numberOfLines={2} ellipsizeMode="tail">
           {item.itemName.toLowerCase()}
         </Text>
-        <Text className="font-medium text-sm text-black">
+        <Text className="font-[Poppins-Regular] text-md text-black">
           L. {item.price.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Text>
         <Text className="text-[10px] text-gray-400">{item.barCode}</Text>
@@ -89,7 +84,7 @@ const CategoryProductScreen = memo(() => {
   const FETCH_URL = fetchUrl + "/api/Catalog/products/all";
   const [footerHeight, setFooterHeight] = useState(0);
 
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 40;
   const [page, setPage] = useState<number>(1);
   const isFetchingRef = useRef(false);
 
@@ -389,16 +384,6 @@ const CategoryProductScreen = memo(() => {
     setIsPriceValid(finalValue >= minimumAllowedPrice);
   };
 
-  const numColumns = typeof selectedLayout === 'number' && selectedLayout > 0 ? selectedLayout : 1;
-  const [columns, setColumns] = useState(2);
-
-  useEffect(() => {
-    setColumns(numColumns);
-    if (numColumns === 4 || numColumns === 6) {
-      setColumns(1);
-    }
-  }, [numColumns]);
-
   if (loading && !loadingMore) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
@@ -433,7 +418,7 @@ const CategoryProductScreen = memo(() => {
           renderItem={renderItem}
           keyExtractor={(item) => item.itemCode}
           estimatedItemSize={Math.max(1, estimatedItemSize)}
-          numColumns={columns}
+          numColumns={1}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
@@ -465,7 +450,8 @@ const CategoryProductScreen = memo(() => {
           />
         )}
         footerComponent={renderFooter}
-        enableDynamicSizing={true}
+        enableDynamicSizing={false}
+        snapPoints={['85%', '90%']}
       >
         <BottomSheetScrollView
           className="flex-1"
@@ -503,43 +489,57 @@ const CategoryProductScreen = memo(() => {
 
                 <View className="flex-row items-start justify-between">
                   <View className="bg-white py-4 rounded-lg">
-                    <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 leading-3">
-                      Precio de Venta:
-                    </Text>
-                    <View className="flex-row items-center">
-                      <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
-                      <TextInput
-                        className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] ${!isPriceValid ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                        value={editablePriceText}
-                        onChangeText={handlePriceChange}
-                        onBlur={handlePriceBlur}
-                        keyboardType="numeric"
-                      />
-                    </View>
-                    <Text className="text-xs text-gray-500 font-[Poppins-Regular] tracking-[-0.3px]">
-                      Precio base original: L.{selectedItem.price.toLocaleString()}
-                    </Text>
-                  </View>
+                    <View className='items-start justify-between flex-row'>
+                      <View>
+                        <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 leading-3">
+                          Precio de Venta:
+                        </Text>
 
-                  <View className="flex-row items-center">
-                    <TouchableOpacity
-                      className="bg-gray-200 rounded-full p-2"
-                      onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-                    >
-                      <MinusIcon size={20} />
-                    </TouchableOpacity>
-                    <TextInput
-                      value={quantity.toString()}
-                      onChangeText={handleQuantityChange}
-                      keyboardType="numeric"
-                      className="mx-4 text-center text-lg text-black w-12"
-                    />
-                    <TouchableOpacity
-                      className="bg-gray-200 rounded-full p-2"
-                      onPress={() => setQuantity((q) => q + 1)}
-                    >
-                      <PlusIcon size={20} />
-                    </TouchableOpacity>
+                        <View className="flex-row items-center">
+                          <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
+                          <TextInput
+                            className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] ${!isPriceValid ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                            value={editablePriceText}
+                            onChangeText={handlePriceChange}
+                            onBlur={handlePriceBlur}
+                            keyboardType="numeric"
+                          />
+                        </View>
+                      </View>
+
+                      <View className="flex-row items-center">
+                        <TouchableOpacity
+                          className="bg-gray-200 rounded-full p-2"
+                          onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+                        >
+                          <MinusIcon size={20} />
+                        </TouchableOpacity>
+                        <TextInput
+                          value={quantity.toString()}
+                          onChangeText={handleQuantityChange}
+                          keyboardType="numeric"
+                          className="mx-4 text-center text-lg text-black w-12"
+                        />
+                        <TouchableOpacity
+                          className="bg-gray-200 rounded-full p-2"
+                          onPress={() => setQuantity((q) => q + 1)}
+                        >
+                          <PlusIcon size={20} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    <View className='flex-row items-center justify-between mt-1 w-full'>
+                      <Text className="text-xs text-gray-500 font-[Poppins-Regular] tracking-[-0.3px]">
+                        Precio base original: L.{selectedItem.price.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </Text>
+
+                      <View className="bg-gray-200 py-1 px-3 rounded-full w-[60px]">
+                        <Text className="font-[Poppins-Regular] text-[12px] tracking-[-0.3px] text-gray-700">
+                          {selectedItem.taxType}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
 

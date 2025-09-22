@@ -74,7 +74,7 @@ const Success = () => {
         </TouchableOpacity> :
         <TouchableOpacity
           onPress={() => router.push({
-            pathname: '/order',
+            pathname: '/consignment',
             params: {
               OrderDetails: OrderDetails
             }

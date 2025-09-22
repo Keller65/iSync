@@ -22,9 +22,7 @@ export default function TopTabNavigatorLayout() {
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { fetchUrl } = useAppStore();
-  const productsInConsignment = useAppStore((s) => s.productsInConsignment);
-
+  const { fetchUrl, products } = useAppStore();
   const priceListNum = selectedCustomer?.priceListNum?.toString() || '1';
 
   const headers = useMemo(() => ({
@@ -175,7 +173,7 @@ export default function TopTabNavigatorLayout() {
         {tabScreens}
       </Tab.Navigator>
 
-      {productsInConsignment.length > 0 && (
+      {products.length > 0 && (
         <View className="absolute bottom-4 right-8 gap-8 z-50 items-center">
           <BottomSheetConsignment />
         </View>

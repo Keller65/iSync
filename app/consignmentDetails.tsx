@@ -3,7 +3,7 @@ import { useAppStore } from '@/state';
 import { Consignment } from '@/types/ConsignmentTypes';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
-import * as FileSystem from 'expo-file-system';
+import * as Print from 'expo-print'; // Importa expo-print
 import { useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
@@ -25,29 +25,75 @@ const ConsignmentDetails = () => {
   }, [docEntry]);
 
   const shareAsPDF = async () => {
-    if (!consignment) return;
-
-    const htmlContent = generatePDFHtml(consignment);
-    const filePath = `${FileSystem.cacheDirectory}consignment.pdf`;
-
-    // Write the HTML content to a file
-    await FileSystem.writeAsStringAsync(filePath, htmlContent, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
-
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(filePath, {
-        mimeType: 'application/pdf',
-        dialogTitle: 'Compartir Consignación',
-      });
-    } else {
-      alert('La función de compartir no está disponible en este dispositivo.');
+    if (!consignment) {
+      alert('No hay datos de consignación disponibles para generar el PDF.');
+      console.error('El objeto consignment está vacío o es nulo.');
+      return;
     }
+
+    try {
+      const htmlContent = generatePDFHtml(consignment);
+
+      // Generar el PDF a partir del HTML
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+      });
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Compartir Consignación',
+        });
+      } else {
+        alert('La función de compartir no está disponible en este dispositivo.');
+      }
+    } catch (error) {
+      console.error('Error al generar o compartir el PDF:', error);
+      alert('Ocurrió un error al intentar generar el PDF.');
+    }
+  };
+
+  const generatePDFHtml = (consignment: Consignment) => {
+    return `
+      <html>
+        <head>
+          <style>
+            body { font-family: 'Poppins', sans-serif; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .details { margin: 20px 0; }
+            .details div { margin-bottom: 10px; }
+            .products { margin-top: 20px; }
+            .product { display: flex; justify-content: space-between; margin-bottom: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Detalles de Consignación</h1>
+            <p>${consignment.cardName} (${consignment.cardCode})</p>
+          </div>
+          <div class="details">
+            <div>RTN: ${consignment.federalTaxID}</div>
+            <div>Documento: ${consignment.docEntry}</div>
+            <div>Fecha: ${new Date(consignment.docDate).toLocaleDateString()}</div>
+            <div>Total: Lps. ${consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          </div>
+          <div class="products">
+            <h2>Productos</h2>
+            ${consignment.lines.map((line) => `
+              <div class="product">
+                <span>${line.itemDescription}</span>
+                <span>Cantidad: ${line.quantity}</span>
+                <span>Precio: Lps. ${(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            `).join('')}
+          </div>
+        </body>
+      </html>
+    `;
   };
 
   return (
     <ScrollView className='px-4 bg-white flex-1'>
-      {/* Encabezado de información del cliente */}
       {consignment && (
         <View className='flex-col items-center justify-between py-4 border-b border-gray-300'>
           <View className='flex-row items-start'>
@@ -66,7 +112,6 @@ const ConsignmentDetails = () => {
         </View>
       )}
 
-      {/* Detalles de consignación */}
       {consignment && (
         <View className='mt-4'>
           <Text className='text-xl mb-2 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>Detalles del Pedido</Text>
@@ -140,46 +185,6 @@ const ConsignmentDetails = () => {
       )}
     </ScrollView>
   );
-};
-
-// Function to generate HTML content for the PDF
-const generatePDFHtml = (consignment: Consignment) => {
-  return `
-    <html>
-      <head>
-        <style>
-          body { font-family: 'Poppins', sans-serif; }
-          .header { text-align: center; margin-bottom: 20px; }
-          .details { margin: 20px 0; }
-          .details div { margin-bottom: 10px; }
-          .products { margin-top: 20px; }
-          .product { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>Detalles de Consignación</h1>
-          <p>${consignment.cardName} (${consignment.cardCode})</p>
-        </div>
-        <div class="details">
-          <div>RTN: ${consignment.federalTaxID}</div>
-          <div>Documento: ${consignment.docEntry}</div>
-          <div>Fecha: ${new Date(consignment.docDate).toLocaleDateString()}</div>
-          <div>Total: Lps. ${consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-        </div>
-        <div class="products">
-          <h2>Productos</h2>
-          ${consignment.lines.map((line: { itemDescription: string; quantity: number; priceAfterVAT: number; }) => `
-            <div class="product">
-              <span>${line.itemDescription}</span>
-              <span>Cantidad: ${line.quantity}</span>
-              <span>Precio: Lps. ${(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-          `).join('')}
-        </div>
-      </body>
-    </html>
-  `;
 };
 
 export default ConsignmentDetails;

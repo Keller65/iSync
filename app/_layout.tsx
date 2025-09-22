@@ -102,7 +102,7 @@ export default function RootLayout() {
                               fontSize: 14,
                               fontFamily: 'Poppins-Regular',
                             }}
-                            placeholderTextColor="#000"
+                            placeholderTextColor="#9ca3af"
                             value={rawSearchText}
                             onChangeText={setRawSearchText}
                             clearButtonMode="never"

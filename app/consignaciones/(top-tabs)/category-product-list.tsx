@@ -11,12 +11,11 @@ import axios from 'axios';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-const ProductItem = memo(({ item, onPress, onMeasure }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void, onMeasure?: (height: number) => void }) => {
+const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void }) => {
   return (
     <TouchableOpacity
       onPress={() => onPress(item)}
       className="mb-4 gap-4 p-2 flex-row items-center"
-      onLayout={(e) => onMeasure?.(e.nativeEvent.layout.height)}
     >
       <View
         className={`rounded-2xl bg-white justify-center relative overflow-hidden border border-gray-200 `}
@@ -56,14 +55,10 @@ const CategoryProductScreen = memo(() => {
   const updateQuantity = useAppStore(state => state.updateQuantity);
   const products = useAppStore(state => state.products);
   const debouncedSearchText = useAppStore(state => state.debouncedSearchText);
-  const { fetchUrl, selectedLayout } = useAppStore();
+  const { fetchUrl } = useAppStore();
 
   const pagesCacheRef = useRef<Map<number, ProductDiscount[]>>(new Map());
   const [items, setItems] = useState<ProductDiscount[]>([]);
-  const measuredHeights = useRef<Map<string, number>>(new Map());
-  const SAMPLE_MEASURE_COUNT = 8;
-  const initialEstimate = selectedLayout === 4 ? 160 : selectedLayout === 6 ? 120 : 220;
-  const [estimatedItemSize, setEstimatedItemSize] = useState<number>(initialEstimate);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +79,7 @@ const CategoryProductScreen = memo(() => {
   const FETCH_URL = fetchUrl + "/api/Catalog/products/all";
   const [footerHeight, setFooterHeight] = useState(0);
 
-  const PAGE_SIZE = 40;
+  const PAGE_SIZE = 20;
   const [page, setPage] = useState<number>(1);
   const isFetchingRef = useRef(false);
 
@@ -299,22 +294,7 @@ const CategoryProductScreen = memo(() => {
   }, [loadingMore, loading, hasMore, page, fetchProducts]);
 
   const renderItem = useCallback(({ item }: { item: ProductDiscount }) => (
-    <ProductItem item={item} onPress={handleProductPress} onMeasure={(h) => {
-      try {
-        const key = item.itemCode;
-        const map = measuredHeights.current;
-        if (map.get(key) !== h) {
-          map.set(key, h);
-          if (map.size <= SAMPLE_MEASURE_COUNT) {
-            const sum = Array.from(map.values()).reduce((s, v) => s + v, 0);
-            const avg = Math.max(1, Math.round(sum / map.size));
-            setEstimatedItemSize(avg);
-          }
-        }
-      } catch (err) {
-        // silent
-      }
-    }} />
+    <ProductItem item={item} onPress={handleProductPress} />
   ), [handleProductPress]);
 
   const renderFooter = useCallback((props: any) => (
@@ -417,7 +397,7 @@ const CategoryProductScreen = memo(() => {
           data={items}
           renderItem={renderItem}
           keyExtractor={(item) => item.itemCode}
-          estimatedItemSize={Math.max(1, estimatedItemSize)}
+          estimatedItemSize={100}
           numColumns={1}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}

@@ -1,8 +1,6 @@
 import { useLicense } from '@/auth/useLicense';
 import { SettingItem, SettingsSection } from '@/components/SettingItem';
 import { useAuth } from '@/context/auth';
-import { usePushNotificationsFCM } from '@/hooks/usePushNotificationsFCM';
-import api from '@/lib/api';
 import { useAppStore } from '@/state';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,8 +14,11 @@ import * as Network from 'expo-network';
 import * as Notifications from 'expo-notifications';
 import * as Sharing from 'expo-sharing';
 import * as Updates from 'expo-updates';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, ScrollView, Text, View } from 'react-native';
+import { DeviceInfo } from '@/types/types';
+import { brand, modelName } from 'expo-device';
+import axios from 'axios';
 
 const SettingsScreen = () => {
   const { logout, user } = useAuth();
@@ -38,12 +39,8 @@ const SettingsScreen = () => {
   const [exportingLogs, setExportingLogs] = useState(false);
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
   const [macAddress, setMacAddress] = useState<string | null>(null);
-  const [pushToken, setPushToken] = useState<string | null>(null);
   const { uuid } = useLicense();
-  const { fetchUrl } = useAppStore();
-  const API_BASE_URL = fetchUrl;
-
-  const { fcmToken } = usePushNotificationsFCM();
+  const { setDeviceInfoSend, deviceUUID, fetchUrl, fcmToken } = useAppStore();
 
   useEffect(() => {
     const loadData = async () => {
@@ -144,58 +141,33 @@ const SettingsScreen = () => {
     ]);
   };
 
-  const fetchPaymentAccounts = useCallback(async () => {
-    if (syncLoading) return;
-    setSyncLoading(true);
+  async function sendDeviceInfo() {
+    const deviceInfo: DeviceInfo = {
+      platform: brand ?? 'N/D',
+      appId: "com.aerley_adkins2.iSyncERP",
+      appVersion: "1.0.0",
+      manufacturer: "iSync Group",
+      model: modelName ?? 'N/D',
+      token: fcmToken ?? 'N/D',
+      userId: deviceUUID ?? 'N/D',
+    };
 
     try {
-      const urls = [
-        '/api/BankAccounts/PayCheque',
-        '/api/BankAccounts/PayEfectivo',
-        '/api/BankAccounts/PayTranferencia',
-        '/api/BankAccounts/PayCreditCards',
-        '/sap/items/categories'
-      ];
-
-      const results = await Promise.allSettled(
-        urls.map(url =>
-          api.get(url, {
-            baseURL: API_BASE_URL,
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user?.token}`
-            },
-            cache: {
-              ttl: Infinity,    // cache infinito
-              override: true,   // siempre actualizar desde servidor
-            },
-          })
-        )
-      );
-
-      const chequeRes = results[0].status === 'fulfilled' ? results[0].value : null;
-      const efectivoRes = results[1].status === 'fulfilled' ? results[1].value : null;
-      const transfRes = results[2].status === 'fulfilled' ? results[2].value : null;
-      const creditCardRes = results[3].status === 'fulfilled' ? results[3].value : null;
-
-      if (!chequeRes || !efectivoRes || !transfRes || !creditCardRes) {
-        throw new Error('No se pudieron obtener los datos de una o más cuentas.');
-      }
-
-      const nowStr = new Date().toLocaleString();
-      setSyncTime(nowStr);
-      await AsyncStorage.setItem('lastSyncTime', nowStr);
-
-      console.log('Información de pago sincronizada (forzada)');
-      Alert.alert('Sincronización completa', 'Los datos se han actualizado.');
-
-    } catch (err) {
-      console.error('Error al cargar datos de cuentas:', err);
-      Alert.alert('Error', 'No se pudieron sincronizar los datos. Intenta nuevamente.');
+      setSyncLoading(true);
+      const response = await axios.post(`${fetchUrl}/push/register`, deviceInfo);
+      console.log("Respuesta del servidor:", response.data);
+      console.log("Info", deviceInfo);
+      setDeviceInfoSend(true);
+      setSyncTime(new Date().toISOString());
+      await AsyncStorage.setItem('lastSyncTime', new Date().toISOString());
+      Alert.alert('Sincronización exitosa', 'La información del dispositivo se envió correctamente.');
+    } catch (error) {
+      console.error("Error al enviar información del dispositivo:", error);
+      Alert.alert('Error', 'No se pudo enviar la información del dispositivo.');
     } finally {
       setSyncLoading(false);
     }
-  }, [API_BASE_URL, user?.token, syncLoading]);
+  }
 
   // Apariencia
   const toggleDarkMode = async () => {
@@ -375,7 +347,7 @@ const SettingsScreen = () => {
           kind="action"
           title="Sincronizar información"
           subtitle={syncLoading ? 'Sincronizando...' : syncTime ? `Última: ${syncTime}` : 'Nunca sincronizado'}
-          onPress={fetchPaymentAccounts}
+          onPress={sendDeviceInfo}
           iconLeft={<Feather name="refresh-cw" size={18} color="#4B5563" style={{ marginRight: 12 }} />}
           rightContent={syncLoading ? <ActivityIndicator size="small" /> : undefined}
           disabled={syncLoading}

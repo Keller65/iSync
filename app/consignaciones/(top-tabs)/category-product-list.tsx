@@ -477,7 +477,7 @@ const CategoryProductScreen = memo(() => {
             <View>
               <View className="w-full h-[230px] items-center justify-center bg-white overflow-hidden">
                 <Image
-                  source={{ uri: `https://pub-266f56f2e24d4d3b8e8abdb612029f2f.r2.dev/${selectedItem.itemCode}.jpg` }}
+                  source={{ uri: "https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png" }}
                   style={{ height: 230, width: 230, aspectRatio: 1, objectFit: "contain" }}
                 />
               </View>

@@ -61,7 +61,7 @@ const CartItem = memo(({ item, onRemove }: CartItemProps) => {
       <View className="flex-row gap-4 items-center">
         <View className="size-[120px] bg-white border overflow-hidden border-gray-200 rounded-lg items-center justify-center">
           <Image
-            source={{ uri: `https://pub-266f56f2e24d4d3b8e8abdb612029f2f.r2.dev/${item.itemCode}.jpg` }}
+            source={{ uri: "https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png" }}
             style={{ height: 120, width: 120, objectFit: "contain" }}
             contentFit="contain"
             transition={500}
@@ -139,6 +139,7 @@ const MemoizedCommentInput = memo(({ comments, onCommentsChange }: { comments: s
         textAlignVertical="top"
         autoCorrect={false}
         autoCapitalize="none"
+        placeholderTextColor="#999"
       />
     </View>
   );
@@ -264,7 +265,7 @@ export default function BottomSheetConsignment() {
 
   const renderFooter = useCallback((props: BottomSheetFooterProps) => (
     <BottomSheetFooter {...props} bottomInset={0}>
-      <View className="bg-white border-t border-gray-200 px-4 py-4">
+      <View className="bg-white px-4 py-4">
         <View className="flex-row justify-between items-center">
           <Text className='text-base text-gray-700 font-[Poppins-Medium] tracking-[-0.3px]'>Cliente</Text>
           <Text className='font-[Poppins-Bold] text-black tracking-[-0.3px]'>{customerSelected?.cardName}</Text>

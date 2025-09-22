@@ -272,3 +272,20 @@ export interface DeviceInfo {
   token: string;
   userId: number | string;
 }
+
+export interface ConsignmentType {
+  docEntry: number;
+  docNum: number;
+  idCurrency: number;
+  currencyName: string;
+  exchangeRate: number;
+  cardCode: string;
+  cardName: string;
+  federalTaxID: string;
+  address: string;
+  docDate: string;
+  vatSum: number;
+  docTotal: number;
+  comments: string;
+  salesPersonCode: number;
+}

@@ -206,7 +206,7 @@ export default function Login() {
               onChangeText={setSalesPersonCode}
               keyboardType="numeric"
               editable={!loading}
-              placeholderTextColor="#fff"
+              placeholderTextColor="#000"
             />
           </View>
 
@@ -221,7 +221,7 @@ export default function Login() {
                 secureTextEntry={!showPassword}
                 keyboardType="numeric"
                 editable={!loading}
-                placeholderTextColor="#fff"
+                placeholderTextColor="#000"
               />
               <TouchableOpacity
                 className="absolute right-4 top-4"

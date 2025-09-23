@@ -514,7 +514,7 @@ const CategoryProductScreen = memo(() => {
                         Precio base original: L.{selectedItem.price.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </Text>
 
-                      <View className="bg-gray-200 py-1 px-3 rounded-full w-[60px]">
+                      <View className="bg-gray-200 py-1 px-3 rounded-full w-[60px] items-center justify-center">
                         <Text className="font-[Poppins-Regular] text-[12px] tracking-[-0.3px] text-gray-700">
                           {selectedItem.taxType}
                         </Text>
@@ -578,41 +578,31 @@ const CategoryProductScreen = memo(() => {
                 )}
 
                 <View className="flex-1 mt-2">
-                  <View className="">
+                  <View>
                     <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mb-1">
-                      Inventario
+                      Inventario por almacén
                     </Text>
-
-                    <View className="flex-row gap-2 items-center justify-between">
-                      <View className="bg-gray-100 px-3 py-1 rounded-lg flex-1">
-                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">
-                          Disponible
-                        </Text>
-                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">
-                          {selectedItem.inStock.toLocaleString()}
-                        </Text>
-                      </View>
-
-                      <View className="bg-gray-100 px-3 py-1 rounded-lg flex-1">
-                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">
-                          En Pedido
-                        </Text>
-                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">
-                          {selectedItem.ordered.toLocaleString()}
-                        </Text>
-                      </View>
-
-                      <View className="bg-gray-100 px-3 py-1 rounded-lg">
-                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">
-                          Comprometido
-                        </Text>
-                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">
-                          {selectedItem.committed.toLocaleString()}
-                        </Text>
-                      </View>
+                    <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mb-1">
+                      Total: {selectedItem.inStock}
+                    </Text>
+                    <View className="flex-row flex-wrap gap-2 items-center justify-between">
+                      {(selectedItem.ws ?? []).map((warehouse, idx) => (
+                        <View
+                          key={idx}
+                          className="bg-gray-100 px-3 py-1 rounded-lg flex-1 min-w-[100px] mb-2"
+                        >
+                          <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">
+                            {warehouse.warehouseName}
+                          </Text>
+                          <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">
+                            {warehouse.inStock.toLocaleString()}
+                          </Text>
+                        </View>
+                      ))}
                     </View>
                   </View>
                 </View>
+
               </View>
             </View>
           )}

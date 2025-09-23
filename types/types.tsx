@@ -1,16 +1,22 @@
+export type WarehouseStock = {
+  warehouseName: string;
+  inStock: number;
+};
+
 export type Tier = {
   qty: number;
   price: number;
   percent: number;
-  expiry: string
+  expiry: string;
 };
 
 export type ProductDiscount = {
   itemCode: string;
   itemName: string;
-  groupCode: number;
+  groupCode: string;
   groupName: string;
   inStock: number;
+  ws: WarehouseStock[];
   committed: number;
   ordered: number;
   price: number;
@@ -18,13 +24,13 @@ export type ProductDiscount = {
   barCode: string | null;
   salesUnit: string | null;
   salesItemsPerUnit: number;
-  imageUrl: string | null;
-  taxType: "EXE" | "INA";
+  imageUrl?: string | null;
+  taxType: string;
   tiers: Tier[];
-  quantity: number;
-  unitPrice: number;
-  originalPrice: number;
-  categoryCode: string; // Código de la categoría del producto
+  quantity?: number;
+  unitPrice?: number;
+  originalPrice?: number;
+  categoryCode?: string;
 };
 
 export type CreateOrder = {

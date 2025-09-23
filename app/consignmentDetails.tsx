@@ -3,7 +3,7 @@ import { useAppStore } from '@/state';
 import { Consignment } from '@/types/ConsignmentTypes';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
-import * as Print from 'expo-print'; // Importa expo-print
+import * as Print from 'expo-print';
 import { useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';

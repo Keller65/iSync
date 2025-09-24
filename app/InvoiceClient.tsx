@@ -209,6 +209,7 @@ const InvoicesClientScreen = memo(() => {
             className="w-[86%] font-[Poppins-Medium] tracking-[-0.3px]"
             autoCapitalize="none"
             autoCorrect={false}
+            placeholderTextColor="#9ca3af"
           />
         </View>
       </View>

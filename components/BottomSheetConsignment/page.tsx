@@ -11,6 +11,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Animated, { Easing, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import '../../global.css';
 
 interface CartItemType {
@@ -157,6 +158,46 @@ export default function BottomSheetConsignment() {
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
   const { fetchUrl } = useAppStore();
+
+  const pulse = useSharedValue(0);
+  useEffect(() => {
+    pulse.value = withRepeat(
+      withTiming(1, { duration: 1600, easing: Easing.linear }),
+      -1,
+      false
+    );
+  }, [pulse]);
+
+  const PulsingCircle = ({ index }: { index: number }) => {
+    const style = useAnimatedStyle(() => {
+      const progress = (pulse.value + index * 0.25) % 1;
+      const scale = interpolate(progress, [0, 1], [1, 1.8]);
+      const opacity = interpolate(progress, [0, 1], [0.5, 0]);
+      return {
+        transform: [{ scale }],
+        opacity,
+      };
+    });
+
+    return (
+      <Animated.View
+        // Positioned behind the button, matching its size
+        pointerEvents="none"
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: 50,
+            width: 50,
+            borderRadius: 9999,
+            backgroundColor: '#1A3D59',
+          },
+          style,
+        ]}
+      />
+    );
+  };
 
   const handleSubmitOrder = useCallback(async () => {
     if (!customerSelected || products.length === 0) {
@@ -313,10 +354,13 @@ export default function BottomSheetConsignment() {
 
   return (
     <View style={{ flex: 1, zIndex: 100 }}>
-      {products.length > 0 && (
+      {products.length !== 0 && (
         <View style={{ position: 'relative', height: 50, width: 50, alignItems: 'center', justifyContent: 'center' }}>
+          <PulsingCircle index={0} />
+          <PulsingCircle index={1} />
+
           <TouchableOpacity
-            className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary shadow-lg shadow-[#09f]/30"
+            className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary shadow-lg"
             onPress={openCart}
           >
             <ConsignmentIcon color="white" />

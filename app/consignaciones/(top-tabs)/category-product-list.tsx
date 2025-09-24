@@ -302,7 +302,7 @@ const CategoryProductScreen = memo(() => {
       <BottomSheetFooter {...props}>
         <View
           className='w-full px-4 pt-4 pb-2 bg-white'
-          onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+          // onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
         >
           <View className="w-full flex-row justify-between items-end">
             <Text className="font-[Poppins-Bold] text-black tracking-[-0.3px]">Total</Text>
@@ -414,6 +414,8 @@ const CategoryProductScreen = memo(() => {
           }
           contentContainerStyle={{ paddingHorizontal: 8 }}
           drawDistance={500}
+          refreshing={loading && !loadingMore}
+          onRefresh={onRefresh}
         />
       )}
 
@@ -431,7 +433,7 @@ const CategoryProductScreen = memo(() => {
         )}
         footerComponent={renderFooter}
         enableDynamicSizing={false}
-        snapPoints={['85%', '90%']}
+        snapPoints={['85%', '100%']}
       >
         <BottomSheetScrollView
           className="flex-1"
@@ -577,24 +579,43 @@ const CategoryProductScreen = memo(() => {
                   </View>
                 )}
 
-                <View className="flex-1 mt-2">
+                <View className="flex-1 mt-2 gap-4">
+                  <View>
+                    <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mb-1">Inventario</Text>
+
+                    <View className='flex-row gap-2 items-center justify-between'>
+                      <View className='bg-gray-100 px-3 py-1 rounded-lg flex-1'>
+                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">Disponible</Text>
+                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">{selectedItem.inStock.toLocaleString()}</Text>
+                      </View>
+
+                      <View className='bg-gray-100 px-3 py-1 rounded-lg flex-1'>
+                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">En Pedido</Text>
+                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">{selectedItem.ordered.toLocaleString()}</Text>
+                      </View>
+
+                      <View className='bg-gray-100 px-3 py-1 rounded-lg'>
+                        <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">Comprometido</Text>
+                        <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">{selectedItem.committed.toLocaleString()}</Text>
+                      </View>
+                    </View>
+                  </View>
+
                   <View>
                     <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mb-1">
                       Inventario por almacén
                     </Text>
-                    <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mb-1">
-                      Total: {selectedItem.inStock}
-                    </Text>
-                    <View className="flex-row flex-wrap gap-2 items-center justify-between">
+
+                    <View className="gap-2 bg-gray-100 px-3 py-2 rounded-lg">
                       {(selectedItem.ws ?? []).map((warehouse, idx) => (
                         <View
                           key={idx}
-                          className="bg-gray-100 px-3 py-1 rounded-lg flex-1 min-w-[100px] mb-2"
+                          className="flex-1 flex-row items-center justify-between border-b border-gray-300"
                         >
-                          <Text className="font-[Poppins-Bold] text-sm text-gray-600 tracking-[-0.3px]">
+                          <Text className="font-[Poppins-SemiBold] text-sm text-gray-600 tracking-[-0.3px]">
                             {warehouse.warehouseName}
                           </Text>
-                          <Text className="font-[Poppins-Regular] text-xl text-gray-900 tracking-[-0.3px]">
+                          <Text className="font-[Poppins-SemiBold] text-sm text-gray-900 tracking-[-0.3px]">
                             {warehouse.inStock.toLocaleString()}
                           </Text>
                         </View>

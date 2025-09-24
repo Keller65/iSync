@@ -168,6 +168,7 @@ export default function TopTabNavigatorLayout() {
           },
           tabBarPressColor: 'transparent',
           tabBarScrollEnabled: true,
+          lazy: true,
         }}
       >
         {tabScreens}

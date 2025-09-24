@@ -142,7 +142,7 @@ export default function TopTabNavigatorLayout() {
     <View style={{ flex: 1 }}>
       {tabScreens ? (
         <Tab.Navigator
-          initialRouteName={categories[0]?.slug || 'N/D'}
+          initialRouteName={categories[0]?.slug || 'todas'}
           screenOptions={{
             tabBarActiveTintColor: '#000',
             tabBarInactiveTintColor: 'gray',
@@ -164,6 +164,7 @@ export default function TopTabNavigatorLayout() {
             },
             tabBarPressColor: 'transparent',
             tabBarScrollEnabled: true,
+            lazy: true, // Habilitar carga diferida
           }}
         >
           {tabScreens}

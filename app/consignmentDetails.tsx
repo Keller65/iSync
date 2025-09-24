@@ -7,11 +7,12 @@ import * as Print from 'expo-print';
 import { useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const ConsignmentDetails = () => {
   const { docEntry } = useLocalSearchParams();
   const [consignment, setConsignment] = useState<Consignment | null>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { fetchUrl } = useAppStore();
 
   useEffect(() => {
@@ -32,6 +33,7 @@ const ConsignmentDetails = () => {
     }
 
     try {
+      setIsGeneratingPDF(true); // Mostrar indicador de actividad
       const htmlContent = generatePDFHtml(consignment);
 
       // Generar el PDF a partir del HTML
@@ -50,6 +52,8 @@ const ConsignmentDetails = () => {
     } catch (error) {
       console.error('Error al generar o compartir el PDF:', error);
       alert('Ocurrió un error al intentar generar el PDF.');
+    } finally {
+      setIsGeneratingPDF(false); // Ocultar indicador de actividad
     }
   };
 
@@ -235,7 +239,16 @@ const ConsignmentDetails = () => {
             className='bg-primary py-3 h-[50px] rounded-full items-center justify-center flex-row'
             onPress={shareAsPDF}
           >
-            <Text className='text-white text-lg tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>Compartir como PDF</Text>
+            {isGeneratingPDF ? (
+              <View className='flex-row gap-2'>
+                <ActivityIndicator size='small' color='#fff' />
+                <Text className='text-white font-[Poppins-SemiBold] tracking-[-0.3px] text-lg'>Generando PDF...</Text>
+              </View>
+            ) : (
+              <Text className='text-white text-lg tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>
+                Compartir PDF
+              </Text>
+            )}
           </TouchableOpacity>
 
           <Text className='tracking-[-0.3px] mt-4' style={{ fontFamily: 'Poppins-SemiBold' }}>Productos</Text>

@@ -107,7 +107,7 @@ const Consignment = () => {
         pathname: '/consignmentDetails',
         params: { docEntry: item.docEntry.toString() }
       })}
-      className="p-4 bg-gray-100 my-1 rounded-2xl gap-4"
+      className="p-4 bg-gray-100 my-2 rounded-2xl gap-4"
     >
       <View className="flex-row items-center gap-2 mb-1">
         <View className="p-2 h-[40px] w-[40px] bg-primary rounded-full items-center justify-center">
@@ -175,7 +175,7 @@ const Consignment = () => {
 
       <FlashList
         data={consignments}
-        estimatedItemSize={80} // Ajusta según la altura estimada de cada item
+        estimatedItemSize={200}
         renderItem={renderItem}
         className='flex-1 gap-2'
         keyExtractor={(item: ConsignmentType) => item.docEntry.toString()}

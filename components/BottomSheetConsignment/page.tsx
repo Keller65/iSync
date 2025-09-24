@@ -10,8 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Easing, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import '../../global.css';
 
 interface CartItemType {
@@ -198,6 +197,7 @@ export default function BottomSheetConsignment() {
       console.log('data', data);
       clearCart();
       setComments('');
+      bottomSheetRef.current?.dismiss();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.push('/modal/success');
     } catch (error) {
@@ -353,7 +353,10 @@ export default function BottomSheetConsignment() {
           <EmptyCart onClose={closeCart} onAddProducts={() => router.push('/consignaciones')} />
         ) : (
           <BottomSheetFlatList<CartItemType>
-            data={products}
+            data={products.map((product) => ({
+              ...product,
+              imageUrl: product.imageUrl ?? null,
+            }))}
             keyExtractor={(item) => item.itemCode}
             renderItem={renderItem}
             getItemLayout={(_, index) => ({ length: 150, offset: 150 * index, index })}

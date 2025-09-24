@@ -56,38 +56,122 @@ const ConsignmentDetails = () => {
   const generatePDFHtml = (consignment: Consignment) => {
     return `
       <html>
-        <head>
-          <style>
-            body { font-family: 'Poppins', sans-serif; }
-            .header { text-align: center; margin-bottom: 20px; }
-            .details { margin: 20px 0; }
-            .details div { margin-bottom: 10px; }
-            .products { margin-top: 20px; }
-            .product { display: flex; justify-content: space-between; margin-bottom: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>Detalles de Consignación</h1>
-            <p>${consignment.cardName} (${consignment.cardCode})</p>
+      <head>
+        <meta charset="UTF-8" />
+        <style>
+        body {
+          font-family: 'Poppins', Arial, sans-serif;
+          background: #fff;
+          color: #222;
+          margin: 0;
+          padding: 32px 0;
+        }
+        .container {
+          width: 90%;
+          margin: auto;
+          background: #fff;
+          border-radius: 16px;  
+          padding: 32px 24px;
+        }
+        .header {
+          text-align: left;
+          margin-bottom: 24px;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 16px;
+        }
+        .title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin: 0 0 8px 0;
+          letter-spacing: -0.5px;
+        }
+        .subtitle {
+          font-size: 1rem;
+          color: #888;
+          margin: 0;
+        }
+        .details {
+          margin: 24px 0 0 0;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px 24px;
+          font-size: 0.98rem;
+        }
+        .details div {
+          color: #444;
+          background: #f6f7f9;
+          border-radius: 8px;
+          padding: 10px 14px;
+          font-weight: 500;
+        }
+        .products {
+          margin-top: 32px;
+        }
+        .products-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 12px;
+          letter-spacing: -0.3px;
+        }
+        .product-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .product {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #f6f7f9;
+          border-radius: 8px;
+          padding: 10px 14px;
+          font-size: 0.97rem;
+        }
+        .product-desc {
+          flex: 2;
+          font-weight: 500;
+          color: #222;
+          margin-right: 8px;
+        }
+        .product-meta {
+          flex: 1;
+          text-align: right;
+          color: #666;
+          font-size: 0.95rem;
+        }
+        .product-meta span {
+          display: block;
+        }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+        <div class="header">
+          <div class="title">Consignación</div>
+          <div class="subtitle">${consignment.cardName} (${consignment.cardCode})</div>
+        </div>
+        <div class="details">
+          <div>RTN:<br><strong>${consignment.federalTaxID}</strong></div>
+          <div>Documento:<br><strong>${consignment.docEntry}</strong></div>
+          <div>Fecha:<br><strong>${new Date(consignment.docDate).toLocaleDateString()}</strong></div>
+          <div>Total:<br><strong>Lps. ${consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></div>
+        </div>
+        <div class="products">
+          <div class="products-title">Productos</div>
+          <div class="product-list">
+          ${consignment.lines.map((line) => `
+            <div class="product">
+            <div class="product-desc">${line.itemDescription}</div>
+            <div class="product-meta">
+              <span>Cant: ${line.quantity}</span>
+              <span>Lps. ${(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            </div>
+          `).join('')}
           </div>
-          <div class="details">
-            <div>RTN: ${consignment.federalTaxID}</div>
-            <div>Documento: ${consignment.docEntry}</div>
-            <div>Fecha: ${new Date(consignment.docDate).toLocaleDateString()}</div>
-            <div>Total: Lps. ${consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          </div>
-          <div class="products">
-            <h2>Productos</h2>
-            ${consignment.lines.map((line) => `
-              <div class="product">
-                <span>${line.itemDescription}</span>
-                <span>Cantidad: ${line.quantity}</span>
-                <span>Precio: Lps. ${(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-            `).join('')}
-          </div>
-        </body>
+        </div>
+        </div>
+      </body>
       </html>
     `;
   };

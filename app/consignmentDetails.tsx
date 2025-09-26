@@ -1,10 +1,11 @@
 import ClientIcon from '@/assets/icons/ClientIcon';
 import { useAppStore } from '@/state';
 import { Consignment } from '@/types/ConsignmentTypes';
+import { Feather } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
 import * as Print from 'expo-print';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -14,6 +15,7 @@ const ConsignmentDetails = () => {
   const [consignment, setConsignment] = useState<Consignment | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { fetchUrl } = useAppStore();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchConsignment = async () => {
@@ -181,106 +183,132 @@ const ConsignmentDetails = () => {
   };
 
   return (
-    <ScrollView className='px-4 bg-white flex-1'>
-      {consignment && (
-        <View className='flex-col items-center justify-between py-4 border-b border-gray-300'>
-          <View className='flex-row items-start'>
-            <View className='bg-primary p-2 rounded-full h-[50px] w-[50px] items-center justify-center'>
-              <ClientIcon size={30} color='white' />
+    <View className='flex-1 bg-white relative'>
+      <ScrollView className='px-4 bg-white flex-1'>
+        {consignment && (
+          <View className='flex-col items-center justify-between py-4 border-b border-gray-300'>
+            <View className='flex-row items-start'>
+              <View className='bg-primary p-2 rounded-full h-[50px] w-[50px] items-center justify-center'>
+                <ClientIcon size={30} color='white' />
+              </View>
+              <View className='ml-4 flex-1'>
+                <Text className='text-lg tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>{consignment.cardName}</Text>
+                <Text className='text-gray-500 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-Regular' }}>{consignment.cardCode}</Text>
+              </View>
             </View>
-            <View className='ml-4 flex-1'>
-              <Text className='text-lg tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>{consignment.cardName}</Text>
-              <Text className='text-gray-500 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-Regular' }}>{consignment.cardCode}</Text>
+            <View className='w-full mt-4 flex-row justify-between gap-2'>
+              <Text className='text-sm text-gray-600 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-Regular' }}>RTN: {consignment.federalTaxID}</Text>
+              <Text className='text-sm text-gray-600 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-Regular' }}>Documento: {docEntry}</Text>
             </View>
           </View>
-          <View className='w-full mt-4 flex-row justify-between gap-2'>
-            <Text className='text-sm text-gray-600 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-Regular' }}>RTN: {consignment.federalTaxID}</Text>
-            <Text className='text-sm text-gray-600 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-Regular' }}>Documento: {docEntry}</Text>
-          </View>
-        </View>
-      )}
+        )}
 
-      {consignment && (
-        <View className='mt-4'>
-          <Text className='text-xl mb-2 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>Detalles del Pedido</Text>
+        {consignment && (
+          <View className='mt-4'>
+            <Text className='text-xl mb-2 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>Detalles del Pedido</Text>
 
-          <View className='flex-col gap-4 mb-4'>
-            <View className='flex-row gap-4 flex-1'>
-              <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
-                <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Estado</Text>
-                <View className='flex-row items-center'>
-                  <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
-                  <Text className='tracking-[-0.3px] text-lg text-green-500 ml-2' style={{ fontFamily: 'Poppins-SemiBold' }}>Completado</Text>
+            <View className='flex-col gap-4 mb-4'>
+              <View className='flex-row gap-4 flex-1'>
+                <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
+                  <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Estado</Text>
+                  <View className='flex-row items-center'>
+                    <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
+                    <Text className='tracking-[-0.3px] text-lg text-green-500 ml-2' style={{ fontFamily: 'Poppins-SemiBold' }}>Completado</Text>
+                  </View>
+                </View>
+
+                <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
+                  <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Fecha</Text>
+                  <Text className='tracking-[-0.3px] text-lg' style={{ fontFamily: 'Poppins-SemiBold' }}>{new Date(consignment.docDate).toLocaleDateString()}</Text>
                 </View>
               </View>
 
-              <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
-                <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Fecha</Text>
-                <Text className='tracking-[-0.3px] text-lg' style={{ fontFamily: 'Poppins-SemiBold' }}>{new Date(consignment.docDate).toLocaleDateString()}</Text>
+              <View className='flex-row gap-4 flex-1'>
+                <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
+                  <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Total del Pedido</Text>
+                  <Text className='tracking-[-0.3px] text-lg' style={{ fontFamily: 'Poppins-SemiBold' }}>
+                    Lps. {consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Text>
+                </View>
+
+                <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
+                  <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Items</Text>
+                  <Text className='tracking-[-0.3px] text-lg' style={{ fontFamily: 'Poppins-SemiBold' }}>{consignment.lines.length}</Text>
+                </View>
               </View>
             </View>
 
-            <View className='flex-row gap-4 flex-1'>
-              <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
-                <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Total del Pedido</Text>
-                <Text className='tracking-[-0.3px] text-lg' style={{ fontFamily: 'Poppins-SemiBold' }}>
-                  Lps. {consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </Text>
-              </View>
+            <View className='flex-1 flex-row gap-2'>
+              <TouchableOpacity
+                className='bg-primary py-3 h-[50px] rounded-full items-center justify-center flex-row flex-1'
+                onPress={shareAsPDF}
+              >
+                {isGeneratingPDF ? (
+                  <View className='flex-row gap-2'>
+                    <ActivityIndicator size='small' color='#fff' />
+                    <Text className='text-white font-[Poppins-SemiBold] tracking-[-0.3px] text-lg'>Generando PDF...</Text>
+                  </View>
+                ) : (
+                  <Text className='text-white text-lg tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>
+                    Compartir PDF
+                  </Text>
+                )}
+              </TouchableOpacity>
 
-              <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
-                <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Items</Text>
-                <Text className='tracking-[-0.3px] text-lg' style={{ fontFamily: 'Poppins-SemiBold' }}>{consignment.lines.length}</Text>
-              </View>
+              <TouchableOpacity
+                className='bg-primary py-3 h-[50px] w-[50px] rounded-full items-center justify-center flex-row'
+                onPress={() => {
+                  if (!consignment) return;
+                  
+                  // Configurar modo edición
+                  const { setEditMode, preloadCartWithConsignmentItems } = useAppStore.getState();
+                  setEditMode(true, docEntry.toString(), consignment);
+                  
+                  // Precargar productos al carrito
+                  preloadCartWithConsignmentItems(consignment.lines);
+                  
+                  // Navegar a la tienda con parámetro de edición
+                  router.push({
+                    pathname: '/consignaciones',
+                    params: { editConsignmentId: docEntry }
+                  });
+                }}
+              >
+                <Feather name="edit" size={20} color="white" />
+              </TouchableOpacity>
             </View>
+
+            <Text className='tracking-[-0.3px] mt-4' style={{ fontFamily: 'Poppins-SemiBold' }}>Productos</Text>
+            {consignment.lines.map((line, index) => (
+              <View key={index} className='py-2 gap-4 flex-row items-center'>
+                <Image
+                  source={{ uri: 'https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png' }}
+                  resizeMode='contain'
+                  height={100} width={100}
+                  className='border-2 border-gray-200 rounded-xl'
+                />
+                <View className='flex-1'>
+                  <Text className='tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>{line.itemDescription}</Text>
+                  <Text className='tracking-[-0.3px] text-sm text-gray-500' style={{ fontFamily: 'Poppins-Regular' }}>Cantidad: {line.quantity}</Text>
+                  <Text className='tracking-[-0.3px] text-sm text-gray-500' style={{ fontFamily: 'Poppins-Regular' }}>
+                    Precio Unitario: {line.priceAfterVAT.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Text>
+                </View>
+
+                <View className=''>
+                  <Text className='tracking-[-0.3px] text-sm text-gray-500' style={{ fontFamily: 'Poppins-Regular' }}>
+                    Total
+                  </Text>
+                  <Text className='tracking-[-0.3px] text-lg text-black' style={{ fontFamily: 'Poppins-SemiBold' }}>
+                    L. {(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
-
-          <TouchableOpacity
-            className='bg-primary py-3 h-[50px] rounded-full items-center justify-center flex-row'
-            onPress={shareAsPDF}
-          >
-            {isGeneratingPDF ? (
-              <View className='flex-row gap-2'>
-                <ActivityIndicator size='small' color='#fff' />
-                <Text className='text-white font-[Poppins-SemiBold] tracking-[-0.3px] text-lg'>Generando PDF...</Text>
-              </View>
-            ) : (
-              <Text className='text-white text-lg tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>
-                Compartir PDF
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <Text className='tracking-[-0.3px] mt-4' style={{ fontFamily: 'Poppins-SemiBold' }}>Productos</Text>
-          {consignment.lines.map((line, index) => (
-            <View key={index} className='py-2 gap-4 flex-row items-center'>
-              <Image
-                source={{ uri: 'https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png' }}
-                resizeMode='contain'
-                height={100} width={100}
-                className='border-2 border-gray-200 rounded-xl'
-              />
-              <View className='flex-1'>
-                <Text className='tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>{line.itemDescription}</Text>
-                <Text className='tracking-[-0.3px] text-sm text-gray-500' style={{ fontFamily: 'Poppins-Regular' }}>Cantidad: {line.quantity}</Text>
-                <Text className='tracking-[-0.3px] text-sm text-gray-500' style={{ fontFamily: 'Poppins-Regular' }}>
-                  Precio Unitario: {line.priceAfterVAT.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </Text>
-              </View>
-
-              <View className=''>
-                <Text className='tracking-[-0.3px] text-sm text-gray-500' style={{ fontFamily: 'Poppins-Regular' }}>
-                  Total
-                </Text>
-                <Text className='tracking-[-0.3px] text-lg text-black' style={{ fontFamily: 'Poppins-SemiBold' }}>
-                  L. {(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
-    </ScrollView>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 

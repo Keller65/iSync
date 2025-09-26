@@ -2,8 +2,10 @@ import CartIcon from '@/assets/icons/CartIcon';
 import ConsignmentIcon from '@/assets/icons/ConsignmentIcon';
 import TrashIcon from '@/assets/icons/TrashIcon';
 import { useAuth } from '@/context/auth';
+import '@/global.css';
 import { useAppStore } from '@/state/index';
 import Feather from '@expo/vector-icons/Feather';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFlatList, BottomSheetFooter, BottomSheetFooterProps, BottomSheetModal, } from '@gorhom/bottom-sheet';
 import axios from 'axios';
 import * as Haptics from 'expo-haptics';
@@ -12,7 +14,6 @@ import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, { Easing, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import '../../global.css';
 
 interface CartItemType {
   imageUrl: string | null;
@@ -152,6 +153,12 @@ export default function BottomSheetConsignment() {
   const removeProduct = useAppStore((s) => s.removeProduct);
   const clearCart = useAppStore((s) => s.clearCart);
   const customerSelected = useAppStore((s) => s.selectedCustomerConsignment);
+
+  // Estados de edición
+  const isEditingConsignment = useAppStore((s) => s.isEditingConsignment);
+  const editingConsignmentId = useAppStore((s) => s.editingConsignmentId);
+  const exitEditMode = useAppStore((s) => s.exitEditMode);
+
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { deviceUUID } = useAppStore();
   const { user } = useAuth();
@@ -224,28 +231,65 @@ export default function BottomSheetConsignment() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${fetchUrl}/api/Consignaciones/async`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Prefer: 'respond-async',
-          Authorization: `Bearer ${user?.token}`,
-          'User-Agent': 'iSync-ERP',
-        },
-      });
 
-      console.log('✅ Respuesta exitosa:', response.data);
-      console.log('data', data);
+      let response;
+      if (isEditingConsignment && editingConsignmentId) {
+        // Actualizar consignación existente con nueva estructura
+        const updateData = {
+          documentId: editingConsignmentId,
+          lines: products.map((product) => ({
+            itemCode: product.barCode,
+            quantity: product.quantity,
+            price: product.unitPrice,
+            warehouseId: 1,
+            remarks: comments || 'no hay',
+          })),
+          userId: deviceUUID,
+        };
+
+        response = await axios.put(`${fetchUrl}/api/Consignaciones/Edit`, updateData, {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${user?.token}`,
+            'User-Agent': 'iSync-ERP',
+          },
+        });
+        console.log('✅ Consignación actualizada exitosamente:', response.data);
+      } else {
+        // Crear nueva consignación
+        response = await axios.post(`${fetchUrl}/api/Consignaciones/async`, data, {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Prefer: 'respond-async',
+            Authorization: `Bearer ${user?.token}`,
+            'User-Agent': 'iSync-ERP',
+          },
+        });
+        console.log('✅ Nueva consignación creada exitosamente:', response.data);
+      }
+
+      console.log('data enviada:', data);
       clearCart();
       setComments('');
+
+      // Salir del modo edición si estaba activo
+      if (isEditingConsignment) {
+        exitEditMode();
+      }
+
       bottomSheetRef.current?.dismiss();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.push('/modal/success');
     } catch (error) {
-      console.error('data', data);
+      console.error('data enviada:', data);
       if (axios.isAxiosError(error)) {
         console.error('❌ Error en la solicitud:', error.response?.data || error.message);
-        Alert.alert('Error', `No se pudo enviar el pedido. ${error.response?.data?.message || error.message}`);
+        const errorMessage = isEditingConsignment
+          ? 'No se pudo actualizar la consignación.'
+          : 'No se pudo crear la consignación.';
+        Alert.alert('Error', `${errorMessage} ${error.response?.data?.message || error.message}`);
       } else {
         console.error('❌ Error desconocido:', (error as Error).message);
         Alert.alert('Error', 'No se pudo enviar el pedido. Intenta nuevamente.');
@@ -328,12 +372,16 @@ export default function BottomSheetConsignment() {
             {isLoading ? (
               <>
                 <ActivityIndicator color="white" size="small" />
-                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">Realizando Consignacion...</Text>
+                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">
+                  {isEditingConsignment ? 'Actualizando Consignación...' : 'Realizando Consignación...'}
+                </Text>
               </>
             ) : (
               <>
                 <ConsignmentIcon color="white" />
-                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">Realizar Consignacion</Text>
+                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">
+                  {isEditingConsignment ? 'Actualizar Consignación' : 'Realizar Consignación'}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -350,7 +398,7 @@ export default function BottomSheetConsignment() {
         </View>
       </View>
     </BottomSheetFooter>
-  ), [total, customerSelected?.cardName, handleSubmitOrder, isLoading, router]);
+  ), [total, customerSelected?.cardName, handleSubmitOrder, isLoading, isEditingConsignment, router]);
 
   return (
     <View style={{ flex: 1, zIndex: 100 }}>
@@ -363,7 +411,11 @@ export default function BottomSheetConsignment() {
             className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary shadow-lg"
             onPress={openCart}
           >
-            <ConsignmentIcon color="white" />
+            {isEditingConsignment ? (
+              <MaterialIcons name="edit-document" size={24} color="white" />
+            ) : (
+              <ConsignmentIcon color="white" />
+            )}
             <View className="absolute -top-2 -right-2 bg-red-500 rounded-full w-6 h-6 items-center justify-center">
               <Text className="text-white text-xs font-bold">{products.length}</Text>
             </View>
@@ -389,7 +441,9 @@ export default function BottomSheetConsignment() {
         )}
       >
         <View className='px-4 pb-2'>
-          <Text className="text-lg text-start font-[Poppins-Bold] tracking-[-0.3px]">Resumen de Consignación</Text>
+          <Text className="text-lg text-start font-[Poppins-Bold] tracking-[-0.3px]">
+            {isEditingConsignment ? 'Editar Consignación' : 'Resumen de Consignación'}
+          </Text>
         </View>
         <MemoizedCommentInput comments={comments} onCommentsChange={setComments} />
 

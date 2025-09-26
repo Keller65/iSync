@@ -1,3 +1,4 @@
+import { Consignment, ConsignmentLine } from '@/types/ConsignmentTypes';
 import { Customer, Invoice, ProductDiscount } from '@/types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
@@ -110,6 +111,14 @@ interface AppStoreState {
   setSelectedCustomerConsignment: (customer: Customer | null) => void;
   clearSelectedCustomerConsignment: () => void;
 
+  // Estados para edición de consignación
+  isEditingConsignment: boolean;
+  editingConsignmentId: string | null;
+  originalConsignmentData: Consignment | null;
+  setEditMode: (editing: boolean, id?: string, data?: Consignment) => void;
+  preloadCartWithConsignmentItems: (items: ConsignmentLine[]) => void;
+  exitEditMode: () => void;
+
   selectedLayout: number;
   setSelectedLayout: (layout: number) => void;
 
@@ -144,6 +153,12 @@ export const useAppStore = create<AppStoreState>()(
       selectedCustomerInvoices: null,
       userClickAcceptWelcome: false,
       selectedCustomerConsignment: null,
+      
+      // Estados de edición de consignación
+      isEditingConsignment: false,
+      editingConsignmentId: null,
+      originalConsignmentData: null,
+      
       selectedLayout: 2,
       deviceInfoSend: false,
       deviceUUID: null,
@@ -359,6 +374,57 @@ export const useAppStore = create<AppStoreState>()(
           });
         }
         set({ productsInConsignment: updatedConsignmentProducts });
+      },
+
+      // Funciones para edición de consignación
+      setEditMode: (editing, id, data) => {
+        set({ 
+          isEditingConsignment: editing, 
+          editingConsignmentId: id || null, 
+          originalConsignmentData: data || null 
+        });
+      },
+
+      preloadCartWithConsignmentItems: (items) => {
+        const cartItems: CartItem[] = items.map(line => ({
+          // Campos de ProductDiscount
+          itemCode: line.itemCode,
+          itemName: line.itemDescription,
+          groupCode: 'DEFAULT',
+          groupName: 'Productos',
+          inStock: line.quantity,
+          ws: [{
+            warehouseName: line.warehouseName,
+            inStock: line.quantity
+          }],
+          committed: 0,
+          ordered: 0,
+          price: line.priceAfterVAT,
+          hasDiscount: false,
+          barCode: line.barCode,
+          salesUnit: 'UND',
+          salesItemsPerUnit: 1,
+          imageUrl: null,
+          taxType: 'IVA',
+          tiers: [],
+          categoryCode: 'DEFAULT',
+          
+          // Campos específicos de CartItem
+          quantity: line.quantity,
+          unitPrice: line.priceAfterVAT,
+          total: line.priceAfterVAT * line.quantity,
+        }));
+        
+        // Limpiar carrito actual y cargar productos de la consignación
+        set({ products: cartItems });
+      },
+
+      exitEditMode: () => {
+        set({ 
+          isEditingConsignment: false, 
+          editingConsignmentId: null, 
+          originalConsignmentData: null 
+        });
       },
     }),
     {

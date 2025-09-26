@@ -1,12 +1,14 @@
+import BottomSheetConsignment from '@/components/BottomSheetConsignment/page';
 import { useAuth } from '@/context/auth';
 import { useAppStore } from '@/state';
+import { Consignment } from '@/types/ConsignmentTypes';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import axios from 'axios';
+import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
 import slugify from 'slugify';
 import CategoryProductScreen from './(top-tabs)/category-product-list';
-import BottomSheetConsignment from '@/components/BottomSheetConsignment/page';
-import axios from 'axios';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -18,12 +20,49 @@ interface ProductCategory {
 
 export default function TopTabNavigatorLayout() {
   const { user } = useAuth();
-  const { selectedCustomer } = useAppStore();
+  const { selectedCustomer, fetchUrl, products, setEditMode, preloadCartWithConsignmentItems, isEditingConsignment, exitEditMode, editingConsignmentId } = useAppStore();
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { fetchUrl, products } = useAppStore();
+  const { editConsignmentId } = useLocalSearchParams();
   const priceListNum = selectedCustomer?.priceListNum?.toString() || '1';
+
+  // Limpiar modo edición cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (isEditingConsignment) {
+        console.log('Saliendo del modo de edición de consignación');
+        // No limpiar el carrito aquí para permitir que el usuario mantenga los cambios
+        // exitEditMode();
+      }
+    };
+  }, []);
+
+  // Manejar edición de consignación
+  useEffect(() => {
+    if (editConsignmentId && typeof editConsignmentId === 'string') {
+      loadConsignmentForEdit(editConsignmentId);
+    }
+  }, [editConsignmentId]);
+
+  const loadConsignmentForEdit = async (id: string) => {
+    try {
+      console.log('Cargando consignación para editar:', id);
+      const response = await axios.get(`${fetchUrl}/api/Documentos/${id}`);
+      const consignmentData = response.data as Consignment;
+
+      // Configurar modo edición
+      setEditMode(true, id, consignmentData);
+
+      // Precargar productos al carrito
+      preloadCartWithConsignmentItems(consignmentData.lines);
+
+      console.log('Consignación cargada para editar:', consignmentData);
+    } catch (error) {
+      console.error('Error al cargar consignación para editar:', error);
+      setError('Error al cargar la consignación para editar');
+    }
+  };
 
   const headers = useMemo(() => ({
     Authorization: `Bearer ${user?.token}`,
@@ -145,6 +184,15 @@ export default function TopTabNavigatorLayout() {
 
   return (
     <View style={{ flex: 1, position: 'relative' }}>
+      {/* Banner de modo edición */}
+      {isEditingConsignment && (
+        <View className="bg-primary px-4 py-2">
+          <Text className="text-white text-sm text-center font-[Poppins-SemiBold] tracking-[-0.3px]">
+            Modo Edición - Modificando Consignación #{editingConsignmentId}
+          </Text>
+        </View>
+      )}
+
       <Tab.Navigator
         initialRouteName={categories[0]?.slug || 'todas'}
         screenOptions={{

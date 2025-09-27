@@ -1,6 +1,7 @@
 import ClientIcon from '@/assets/icons/ClientIcon';
 import { useAppStore } from '@/state';
 import { Consignment } from '@/types/ConsignmentTypes';
+import { Customer } from '@/types/types';
 import { Feather } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
@@ -261,11 +262,21 @@ const ConsignmentDetails = () => {
                   if (!consignment) return;
                   
                   // Configurar modo edición
-                  const { setEditMode, preloadCartWithConsignmentItems } = useAppStore.getState();
+                  const { setEditMode, preloadCartWithConsignmentItems, setSelectedCustomerConsignment } = useAppStore.getState();
                   setEditMode(true, docEntry.toString(), consignment);
+                  
+                  // Establecer el cliente de la consignación
+                  const customerData: Customer = {
+                    cardCode: consignment.cardCode,
+                    cardName: consignment.cardName,
+                    federalTaxID: consignment.federalTaxID,
+                    priceListNum: "1", // valor por defecto si no está disponible
+                  };
+                  setSelectedCustomerConsignment(customerData);
                   
                   // Precargar productos al carrito
                   preloadCartWithConsignmentItems(consignment.lines);
+                  
                   
                   // Navegar a la tienda con parámetro de edición
                   router.push({

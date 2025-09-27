@@ -6,7 +6,7 @@ import '@/global.css';
 import { useAppStore } from '@/state/index';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFlatList, BottomSheetFooter, BottomSheetFooterProps, BottomSheetModal, } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFlatList, BottomSheetFooter, BottomSheetFooterProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import axios from 'axios';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
@@ -256,6 +256,7 @@ export default function BottomSheetConsignment() {
           },
         });
         console.log('✅ Consignación actualizada exitosamente:', response.data);
+        console.log('data enviada:', updateData);
       } else {
         // Crear nueva consignación
         response = await axios.post(`${fetchUrl}/api/Consignaciones/async`, data, {
@@ -400,6 +401,17 @@ export default function BottomSheetConsignment() {
     </BottomSheetFooter>
   ), [total, customerSelected?.cardName, handleSubmitOrder, isLoading, isEditingConsignment, router]);
 
+  const CancelEdit = useCallback(() => {
+    Alert.alert(
+      'Cancelar edición',
+      '¿Estás seguro de que quieres cancelar la edición de la consignación? Se perderán los cambios no guardados.',
+      [
+        { text: 'No', style: 'cancel' },
+        { text: 'Sí', onPress: () => { exitEditMode(); clearCart(); } }
+      ]
+    );
+  }, [exitEditMode]);
+
   return (
     <View style={{ flex: 1, zIndex: 100 }}>
       {products.length !== 0 && (
@@ -440,31 +452,42 @@ export default function BottomSheetConsignment() {
           />
         )}
       >
-        <View className='px-4 pb-2'>
-          <Text className="text-lg text-start font-[Poppins-Bold] tracking-[-0.3px]">
-            {isEditingConsignment ? 'Editar Consignación' : 'Resumen de Consignación'}
-          </Text>
-        </View>
-        <MemoizedCommentInput comments={comments} onCommentsChange={setComments} />
+        <View className='flex-1'>
+          <View className='px-4 pb-2'>
+            <Text className="text-lg text-start font-[Poppins-Bold] tracking-[-0.3px]">
+              {isEditingConsignment ? 'Editar Consignación' : 'Resumen de Consignación'}
+            </Text>
+          </View>
+          <MemoizedCommentInput comments={comments} onCommentsChange={setComments} />
 
-        {products.length === 0 ? (
-          <EmptyCart onClose={closeCart} onAddProducts={() => router.push('/consignaciones')} />
-        ) : (
-          <BottomSheetFlatList<CartItemType>
-            data={products.map((product) => ({
-              ...product,
-              imageUrl: product.imageUrl ?? null,
-            }))}
-            keyExtractor={(item) => item.itemCode}
-            renderItem={renderItem}
-            getItemLayout={(_, index) => ({ length: 150, offset: 150 * index, index })}
-            initialNumToRender={5}
-            maxToRenderPerBatch={5}
-            windowSize={10}
-            contentContainerStyle={{ paddingBottom: 130 }}
-            ListHeaderComponent={<View className="pt-2" />}
-          />
-        )}
+          {isEditingConsignment && (
+            <View className="px-4 bg-red-200 mb-4 p-2 flex-row justify-between items-center gap-4">
+              <Text className="text-sm text-red-500 font-[Poppins-SemiBold]">Cancelar edición de consignación</Text>
+
+              <TouchableOpacity onPress={CancelEdit} className='bg-red-500 px-3 py-1 rounded-full items-center justify-center'>
+                <Text className="text-sm text-white font-[Poppins-SemiBold]">Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {products.length === 0 ? (
+            <EmptyCart onClose={closeCart} onAddProducts={() => router.push('/consignaciones')} />
+          ) : (
+            <BottomSheetFlatList<CartItemType>
+              data={products.map((product) => ({
+                ...product,
+                imageUrl: product.imageUrl ?? null,
+              }))}
+              keyExtractor={(item) => item.itemCode}
+              renderItem={renderItem}
+              getItemLayout={(_, index) => ({ length: 150, offset: 150 * index, index })}
+              initialNumToRender={5}
+              maxToRenderPerBatch={5}
+              windowSize={10}
+              contentContainerStyle={{ paddingBottom: 140 }}
+            />
+          )}
+        </View>
       </BottomSheetModal>
     </View>
   );

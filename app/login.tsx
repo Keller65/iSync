@@ -9,8 +9,8 @@ import { Redirect, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import 'react-native-gesture-handler';
-import 'react-native-reanimated';
 import Animated, { useAnimatedKeyboard, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+
 import { useAuth } from "../context/auth";
 import { usePushNotificationsFCM } from '@/hooks/usePushNotificationsFCM'
 import { useLicense } from '@/auth/useLicense'
@@ -67,7 +67,7 @@ export default function Login() {
         }
       }
     })();
-  }, [user]);
+  }, [user, setUser]);
 
   useEffect(() => {
     (async () => {

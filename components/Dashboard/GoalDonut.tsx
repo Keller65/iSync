@@ -28,14 +28,6 @@ export default function GoalDonut({
   const scale = useRef(new Animated.Value(0.94)).current;
   const [displayPercent, setDisplayPercent] = useState(0);
 
-  if (loading) {
-    return (
-      <View className="bg-white rounded-2xl px-4 py-3 border border-gray-100 w-full items-center justify-center">
-        <ActivityIndicator size="large" color="#6b7280" />
-      </View>
-    );
-  }
-
   const rawProgress = (() => {
     if (progressPct != null) return progressPct;
     if (!target) return 0;
@@ -65,6 +57,14 @@ export default function GoalDonut({
     }, 16);
     return () => clearInterval(id);
   }, [boundedProgress]);
+
+  if (loading) {
+    return (
+      <View className="bg-white rounded-2xl px-4 py-3 border border-gray-100 w-full items-center justify-center">
+        <ActivityIndicator size="large" color="#6b7280" />
+      </View>
+    );
+  }
 
   const outerRadius = 70;
   const strokeWidth = 20;

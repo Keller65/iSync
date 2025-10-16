@@ -3,7 +3,7 @@ import InvoicesIcon from '@/assets/icons/InvoicesIcon';
 import { useAuth } from '@/context/auth';
 import { SelectedInvoice, useAppStore } from '@/state';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { memo, useCallback, useState } from 'react';
@@ -26,6 +26,8 @@ const InvoiceItem = memo(({ item, formatDate, formatCurrency }: { item: Selected
     </View>
   </View>
 ));
+
+InvoiceItem.displayName = 'InvoiceItem';
 
 const Cobro = () => {
   const [loading, setLoading] = useState(false);
@@ -174,8 +176,8 @@ const Cobro = () => {
       route.push({
         pathname: '/modal/error',
         params: {
-          errorCode: axios.isAxiosError(error) && error.response ? String(error.response.status) : '500',
-          errorMessage: axios.isAxiosError(error) && error.response && error.response.data && typeof error.response.data === 'string'
+          errorCode: isAxiosError(error) && error.response ? String(error.response.status) : '500',
+          errorMessage: isAxiosError(error) && error.response && error.response.data && typeof error.response.data === 'string'
             ? error.response.data
             : 'Ocurrió un error inesperado al realizar el cobro. Por favor, inténtalo de nuevo.'
         }
@@ -304,5 +306,7 @@ const Cobro = () => {
     </View>
   );
 };
+
+Cobro.displayName = 'Cobro';
 
 export default Cobro;

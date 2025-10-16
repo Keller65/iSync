@@ -25,6 +25,8 @@ interface KPICardApiProps {
 }
 
 const KPICardApi: FC<KPICardApiProps> = ({ data, userName, loading }) => {
+  const animation = useRef<LottieView>(null);
+
   if (loading) {
     return (
       <View className="bg-white p-3 rounded-2xl w-full gap-3 border border-gray-100 relative">
@@ -44,7 +46,6 @@ const KPICardApi: FC<KPICardApiProps> = ({ data, userName, loading }) => {
   const isDeltaUp = ventas.deltaType === 'up';
   const deltaColor = isDeltaUp ? 'text-green-500' : 'text-[#ff7b72]';
   const arrowDirection = isDeltaUp ? '▲' : '▼';
-  const animation = useRef<LottieView>(null);
 
   return (
     <View className="bg-white p-3 rounded-2xl w-full gap-3 border border-gray-100 relative">

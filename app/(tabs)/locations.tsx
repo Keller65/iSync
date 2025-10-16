@@ -43,12 +43,12 @@ const LocationsScreen = () => {
   const bottomSheetRef = useRef<BottomSheetSearchClientsHandle>(null);
   const mapRef = useRef<MapView | null>(null);
 
-  const [query, setQuery] = useState('');
+  const [query] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<{ lat: number; lon: number; display_name: string } | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
   const [deviceLocation, setDeviceLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [routeCoords, setRouteCoords] = useState<Array<{ latitude: number; longitude: number }>>([]);
+  const [routeCoords, setRouteCoords] = useState<{ latitude: number; longitude: number }[]>([]);
   const GOOGLE_MAPS_API_KEY = 'AIzaSyAbBbz7aDcMYUrHDXMJ49XNylMthLh1v-Y';
 
   useEffect(() => {
@@ -185,7 +185,7 @@ const LocationsScreen = () => {
           } else {
             setRouteCoords([]);
           }
-        } catch (err) {
+        } catch {
           setRouteCoords([]);
         }
       } else {
@@ -219,7 +219,7 @@ const LocationsScreen = () => {
         setSuggestions([]);
         setRegion(null);
       };
-    }, [])
+    }, [clearSelectedCustomerLocation, selectedCustomerLocation, setUpdateCustomerLocation])
   );
 
   return (

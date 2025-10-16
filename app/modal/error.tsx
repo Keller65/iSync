@@ -27,7 +27,7 @@ const Error = () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       player.play();
     }, 350);
-  }, []);
+  }, [player]);
 
   const handleRetry = () => {
     if (errorCode === '401') {

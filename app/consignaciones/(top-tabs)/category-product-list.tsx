@@ -46,6 +46,8 @@ const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (
   );
 });
 
+ProductItem.displayName = 'ProductItem';
+
 const CategoryProductScreen = memo(() => {
   const { user } = useAuth();
   const route = useRoute();
@@ -77,7 +79,7 @@ const CategoryProductScreen = memo(() => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const FETCH_URL = fetchUrl + "/api/Catalog/products/all";
-  const [footerHeight, setFooterHeight] = useState(0);
+  const [footerHeight] = useState(0);
 
   const PAGE_SIZE = 20;
   const [page, setPage] = useState<number>(1);
@@ -632,5 +634,7 @@ const CategoryProductScreen = memo(() => {
     </View >
   );
 });
+
+CategoryProductScreen.displayName = 'CategoryProductScreen';
 
 export default CategoryProductScreen;

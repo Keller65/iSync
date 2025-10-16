@@ -18,16 +18,16 @@ import "../../global.css";
 export default function App() {
   const { user } = useAuth();
   const [goalData, setGoalData] = useState<GoalDonutType | null>(null);
-  const [loadingGoal, setLoadingGoal] = useState(false);
-  const [goalError, setGoalError] = useState<string | null>(null);
-  const [sales, setSales] = useState<SalesDataType | null>(null);
+  const [loadingGoal] = useState(false);
+  const [, setGoalError] = useState<string | null>(null);
+  const [, setSales] = useState<SalesDataType | null>(null);
   const { isUpdating, error, isUpdateAvailable, checkAndUpdate } = useOtaUpdates();
   const [kpiData, setKpiData] = useState(null);
   const [loadingKpi, setLoadingKpi] = useState(true);
   const [tableData, setTableData] = useState<TableDataType | null>(null);
-  const [loadingTableData, setLoadingTableData] = useState(false);
-  const [tableError, setTableError] = useState<string | null>(null);
-  const [loadingSales, setLoadingSales] = useState(false);
+  const [, setLoadingTableData] = useState(false);
+  const [, setTableError] = useState<string | null>(null);
+  const [, setLoadingSales] = useState(false);
   const [showSessionExpired, setShowSessionExpired] = useState(false);
   const { deviceInfoSend, setDeviceInfoSend, deviceUUID, fetchUrl, fcmToken } = useAppStore();
 
@@ -61,7 +61,7 @@ export default function App() {
     sendDeviceInfo();
   }, [deviceInfoSend, fcmToken, fetchUrl, setDeviceInfoSend, deviceUUID]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user?.token) return;
     const slpCode = user.salesPersonCode;
 
@@ -122,9 +122,9 @@ export default function App() {
       setLoadingKpi(false);
       setLoadingSales(false);
     }
-  };
+  }, [user?.token, user?.salesPersonCode, fetchUrl, setGoalData, setSales, setKpiData, setGoalError, setLoadingKpi, setLoadingSales]);
 
-  const fetchTableData = async () => {
+  const fetchTableData = useCallback(async () => {
     if (!user?.token) return;
     const slpCode = user.salesPersonCode;
 
@@ -154,18 +154,18 @@ export default function App() {
     } finally {
       setLoadingTableData(false);
     }
-  };
+  }, [user?.token, user?.salesPersonCode, fetchUrl, setShowSessionExpired, setTableData, setTableError, setLoadingTableData]);
 
   useEffect(() => {
     fetchData();
     fetchTableData();
-  }, [user?.token]);
+  }, [user?.token, fetchData, fetchTableData]);
 
   const goal = { current: goalData?.current || 0, target: goalData?.target || 0 };
   const products = useAppStore((s) => s.products);
 
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [, setRefreshKey] = useState(0);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -173,7 +173,7 @@ export default function App() {
       setRefreshKey((k) => k + 1);
       setRefreshing(false);
     });
-  }, []);
+  }, [fetchData]);
 
   if (isUpdating) {
     return (

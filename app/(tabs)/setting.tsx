@@ -2,11 +2,14 @@ import { useLicense } from '@/auth/useLicense';
 import { SettingItem, SettingsSection } from '@/components/SettingItem';
 import { useAuth } from '@/context/auth';
 import { useAppStore } from '@/state';
+import { DeviceInfo } from '@/types/types';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import { brand, modelName } from 'expo-device';
 import * as FileSystem from 'expo-file-system';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Location from 'expo-location';
@@ -16,14 +19,11 @@ import * as Sharing from 'expo-sharing';
 import * as Updates from 'expo-updates';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, ScrollView, Text, View } from 'react-native';
-import { DeviceInfo } from '@/types/types';
-import { brand, modelName } from 'expo-device';
-import axios from 'axios';
 
 const SettingsScreen = () => {
   const { logout, user } = useAuth();
   // Apariencia
-  const [darkMode, setDarkMode] = useState(false);
+  const [, setDarkMode] = useState(false);
   // Seguridad
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   // Sincronización
@@ -116,7 +116,7 @@ const SettingsScreen = () => {
             const toDelete = keys.filter(k => !preservePrefixes.some(p => k.startsWith(p)));
             if (toDelete.length) await AsyncStorage.multiRemove(toDelete);
             Alert.alert('Listo', 'Caché limpia.');
-          } catch (e) {
+          } catch {
             Alert.alert('Error', 'No se pudo limpiar la caché.');
           } finally {
             setLoading(false);
@@ -169,13 +169,6 @@ const SettingsScreen = () => {
     }
   }
 
-  // Apariencia
-  const toggleDarkMode = async () => {
-    const next = !darkMode;
-    setDarkMode(next);
-    await AsyncStorage.setItem('settings:darkMode', String(next));
-  };
-
   // Seguridad / Biometría
   const toggleBiometric = async () => {
     const next = !biometricEnabled;
@@ -195,7 +188,7 @@ const SettingsScreen = () => {
         if (!res.success) return;
         setBiometricEnabled(true);
         await AsyncStorage.setItem('settings:biometricEnabled', 'true');
-      } catch (e) {
+      } catch {
         Alert.alert('Error', 'No se pudo activar.');
       }
     } else {
@@ -219,7 +212,7 @@ const SettingsScreen = () => {
       } else {
         Alert.alert('Permiso denegado', 'No se habilitarán notificaciones.');
       }
-    } catch (e) {
+    } catch {
       Alert.alert('Error', 'No se pudo solicitar permiso.');
     }
   };
@@ -294,7 +287,7 @@ const SettingsScreen = () => {
       } else {
         Alert.alert('No soportado', 'La función de compartir no está disponible.');
       }
-    } catch (e) {
+    } catch {
       Alert.alert('Error', 'No se pudo exportar.');
     } finally {
       setExportingLogs(false);

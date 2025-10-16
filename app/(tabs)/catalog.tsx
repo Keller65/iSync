@@ -4,7 +4,7 @@ import { ProductDiscount } from '@/types/types';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import axios from 'axios';
-import Checkbox from 'expo-checkbox';
+import { Checkbox } from 'expo-checkbox';
 import * as FileSystem from 'expo-file-system';
 import { Image as ExpoImage } from 'expo-image';
 import * as Print from 'expo-print';
@@ -117,7 +117,7 @@ const ProductScreen = () => {
     if (categories.length > 0 && selectedCategories.length === 1 && selectedCategories[0] === 'all') {
       setSelectedCategories(['all', ...categories.map(c => String(c.code))]);
     }
-  }, [categories]);
+  }, [categories, selectedCategories]);
 
   // Generar PDF
   const handleGeneratePdf = async (htmlContent: string) => {

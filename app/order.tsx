@@ -74,7 +74,7 @@ const OrderDetails = () => {
     return () => {
       isMounted = false;
     };
-  }, [docEntryParam]);
+  }, [docEntryParam, fetchUrl, user?.token]);
 
   const totalItems = useMemo(() => {
     return orderData?.lines?.reduce((sum, line) => sum + (line.quantity ?? 0), 0) || 0;

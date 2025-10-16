@@ -49,7 +49,7 @@ const IndexScreen = () => {
     }, [])
   );
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     if (!user?.token || !cardCode) return;
     setLoading(true);
 
@@ -66,7 +66,7 @@ const IndexScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [FETCH_URL, cardCode, user?.token]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -76,7 +76,7 @@ const IndexScreen = () => {
 
   useEffect(() => {
     fetchInvoices();
-  }, [cardCode, user?.token]);
+  }, [cardCode, user?.token, fetchInvoices]);
 
   const formatDate = useCallback((isoDate: string): string => {
     const date = new Date(isoDate);

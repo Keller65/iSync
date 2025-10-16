@@ -20,7 +20,7 @@ interface ProductCategory {
 
 export default function TopTabNavigatorLayout() {
   const { user } = useAuth();
-  const { selectedCustomer, fetchUrl, products, setEditMode, preloadCartWithConsignmentItems, isEditingConsignment, exitEditMode, editingConsignmentId } = useAppStore();
+  const { selectedCustomer, fetchUrl, products, setEditMode, preloadCartWithConsignmentItems, isEditingConsignment, editingConsignmentId } = useAppStore();
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,16 +36,9 @@ export default function TopTabNavigatorLayout() {
         // exitEditMode();
       }
     };
-  }, []);
+  }, [isEditingConsignment]);
 
-  // Manejar edición de consignación
-  useEffect(() => {
-    if (editConsignmentId && typeof editConsignmentId === 'string') {
-      loadConsignmentForEdit(editConsignmentId);
-    }
-  }, [editConsignmentId]);
-
-  const loadConsignmentForEdit = async (id: string) => {
+  const loadConsignmentForEdit = useCallback(async (id: string) => {
     try {
       console.log('Cargando consignación para editar:', id);
       const response = await axios.get(`${fetchUrl}/api/Documentos/${id}`);
@@ -62,7 +55,14 @@ export default function TopTabNavigatorLayout() {
       console.error('Error al cargar consignación para editar:', error);
       setError('Error al cargar la consignación para editar');
     }
-  };
+  }, [fetchUrl, setEditMode, preloadCartWithConsignmentItems, setError]);
+
+  // Manejar edición de consignación
+  useEffect(() => {
+    if (editConsignmentId && typeof editConsignmentId === 'string') {
+      loadConsignmentForEdit(editConsignmentId);
+    }
+  }, [editConsignmentId, loadConsignmentForEdit]);
 
   const headers = useMemo(() => ({
     Authorization: `Bearer ${user?.token}`,
@@ -82,7 +82,7 @@ export default function TopTabNavigatorLayout() {
 
     try {
       type ApiResponse = {
-        categories: Array<{ code: number; name: string }>;
+        categories: { code: number; name: string }[];
       };
 
       const response = await axios.get<ApiResponse>(
@@ -123,7 +123,7 @@ export default function TopTabNavigatorLayout() {
     } finally {
       setLoading(false);
     }
-  }, [headers, user?.token]);
+  }, [headers, user?.token, fetchUrl]);
 
   useEffect(() => {
     fetchCategories();

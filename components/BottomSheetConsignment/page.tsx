@@ -7,7 +7,7 @@ import { useAppStore } from '@/state/index';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFlatList, BottomSheetFooter, BottomSheetFooterProps, BottomSheetModal } from '@gorhom/bottom-sheet';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -97,6 +97,8 @@ const CartItem = memo(({ item, onRemove }: CartItemProps) => {
   );
 }, areEqual);
 
+CartItem.displayName = 'CartItem';
+
 const EmptyCart: React.FC<{ onClose: () => void; onAddProducts: () => void }> = () => (
   <View className="flex-1 items-center justify-center pb-20 px-4">
     <View className="bg-gray-100 p-6 rounded-full mb-4">
@@ -145,6 +147,8 @@ const MemoizedCommentInput = memo(({ comments, onCommentsChange }: { comments: s
     </View>
   );
 });
+
+MemoizedCommentInput.displayName = 'MemoizedCommentInput';
 
 export default function BottomSheetConsignment() {
   const router = useRouter();
@@ -285,7 +289,7 @@ export default function BottomSheetConsignment() {
       router.push('/modal/success');
     } catch (error) {
       console.error('data enviada:', data);
-      if (axios.isAxiosError(error)) {
+      if (isAxiosError(error)) {
         console.error('❌ Error en la solicitud:', error.response?.data || error.message);
         const errorMessage = isEditingConsignment
           ? 'No se pudo actualizar la consignación.'
@@ -298,7 +302,7 @@ export default function BottomSheetConsignment() {
     } finally {
       setIsLoading(false);
     }
-  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router]);
+  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router, deviceUUID, isEditingConsignment, editingConsignmentId, exitEditMode, comments]);
 
   const total = useMemo(() => {
     return products.reduce((sum, item) => {
@@ -399,7 +403,7 @@ export default function BottomSheetConsignment() {
         </View>
       </View>
     </BottomSheetFooter>
-  ), [total, customerSelected?.cardName, handleSubmitOrder, isLoading, isEditingConsignment, router]);
+  ), [total, customerSelected?.cardName, handleSubmitOrder, isLoading, isEditingConsignment, router, closeCart]);
 
   const CancelEdit = useCallback(() => {
     Alert.alert(
@@ -410,7 +414,7 @@ export default function BottomSheetConsignment() {
         { text: 'Sí', onPress: () => { exitEditMode(); clearCart(); } }
       ]
     );
-  }, [exitEditMode]);
+  }, [exitEditMode, clearCart]);
 
   return (
     <View style={{ flex: 1, zIndex: 100 }}>

@@ -143,7 +143,7 @@ export default function PreviewInvoice() {
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [selectedPrinter, setSelectedPrinter] = useState<{ url?: string } | null>(null);
+  const [selectedPrinter] = useState<{ url?: string } | null>(null);
 
   const invoiceDetails = useMemo<PaymentData | null>(() => {
     const raw = Array.isArray(item) ? item[0] : item;

@@ -5,7 +5,7 @@ import { useAppStore } from '@/state';
 import { Customer } from '@/types/types';
 import Feather from '@expo/vector-icons/Feather';
 import { BottomSheetBackdrop, BottomSheetFlashList, BottomSheetModal } from '@gorhom/bottom-sheet';
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export interface Client {
@@ -26,8 +26,8 @@ interface Props {
 
 const BottomSheetSearchClients = forwardRef<BottomSheetSearchClientsHandle, Props>(({ onSelect }, ref) => {
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setLoading] = useState(false);
+  const [, setError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
   const modalRef = useRef<BottomSheetModal>(null);
   const fetchControllerRef = useRef<AbortController | null>(null);
@@ -35,7 +35,7 @@ const BottomSheetSearchClients = forwardRef<BottomSheetSearchClientsHandle, Prop
   const { fetchUrl } = useAppStore();
   const { user } = useAuth();
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       setError(null);
       setLoading(true);
@@ -68,7 +68,7 @@ const BottomSheetSearchClients = forwardRef<BottomSheetSearchClientsHandle, Prop
       setLoading(false);
       fetchControllerRef.current = null;
     }
-  };
+  }, [fetchUrl, user?.salesPersonCode, user?.token, setError, setLoading, setClients]);
 
   useImperativeHandle(ref, () => ({
     present: () => {
@@ -83,14 +83,13 @@ const BottomSheetSearchClients = forwardRef<BottomSheetSearchClientsHandle, Prop
       }
       modalRef.current?.close();
     },
-  }), []);
+  }), [fetchClients]);
 
   const filteredClients = clients.filter(client =>
     client.cardName.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const setSelectedCustomerLocation = useAppStore((s) => s.setSelectedCustomerLocation);
-  const clearSelectedCustomerLocation = useAppStore((s) => s.clearSelectedCustomerLocation);
 
   return (
     <BottomSheetModal
@@ -171,5 +170,7 @@ const BottomSheetSearchClients = forwardRef<BottomSheetSearchClientsHandle, Prop
     </BottomSheetModal>
   );
 });
+
+BottomSheetSearchClients.displayName = 'BottomSheetSearchClients';
 
 export default BottomSheetSearchClients;

@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const audioSource = require('@/assets/sound/success.mp3');
 
-const successCobro = () => {
+const SuccessCobro = () => {
   const animation = useRef<LottieView>(null);
   const router = useRouter();
 
@@ -48,7 +48,7 @@ const successCobro = () => {
       backSub.remove();
       navSub && navSub();
     }
-  }, []);
+  }, [navigation, player, router]);
 
   return (
     <SafeAreaView style={{ backgroundColor: '#e0ffe7', flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 }}>
@@ -89,4 +89,6 @@ const successCobro = () => {
   );
 };
 
-export default successCobro;
+SuccessCobro.displayName = 'SuccessCobro';
+
+export default SuccessCobro;

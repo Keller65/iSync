@@ -26,7 +26,7 @@ const ConsignmentDetails = () => {
     };
 
     fetchConsignment();
-  }, [docEntry]);
+  }, [docEntry, fetchUrl]);
 
   const shareAsPDF = async () => {
     if (!consignment) {

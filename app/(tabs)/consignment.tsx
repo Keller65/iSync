@@ -99,7 +99,7 @@ const Consignment = () => {
     }
 
     return null;
-  }, [loadingMore, hasMore, consignments.length]);
+  }, [loadingMore]);
 
   const renderItem = useCallback(({ item }: { item: ConsignmentType }) => (
     <TouchableOpacity
@@ -133,7 +133,7 @@ const Consignment = () => {
         </View>
       </View>
     </TouchableOpacity>
-  ), []);
+  ), [router]);
 
   if (loading && !loadingMore) {
     return (

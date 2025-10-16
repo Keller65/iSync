@@ -22,7 +22,7 @@ const Success = () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       player.play()
     }, 350);
-  }, []);
+  }, [player]);
 
   useFocusEffect(
     useCallback(() => {

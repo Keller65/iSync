@@ -110,7 +110,7 @@ const PaymentScreen = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [API_BASE_URL, user?.token]);
 
   useEffect(() => {
     fetchPaymentAccounts();
@@ -130,7 +130,7 @@ const PaymentScreen = () => {
       setReferenceNumber(paymentForm.reference || '');
       setSelectedBank(paymentForm.bank || '');
     }
-  }, [paymentForm]);
+  }, [paymentForm, setPaymentForm]);
 
   const getBankOptions = () => {
     switch (selectedMethod) {

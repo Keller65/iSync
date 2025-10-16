@@ -60,7 +60,7 @@ const Invoices = () => {
     } finally {
       setLoading(false);
     }
-  }, [salesPersonCode, fetchUrl, page, loading, hasMore]);
+  }, [salesPersonCode, fetchUrl, page, loading, hasMore, user?.token]);
 
   const handleRefresh = async () => {
     if (!salesPersonCode) return;
@@ -98,7 +98,7 @@ const Invoices = () => {
 
   useEffect(() => {
     fetchInvoices();
-  }, []);
+  }, [fetchInvoices]);
 
   const renderItem = ({ item }: { item: PaymentData }) => (
     <TouchableOpacity

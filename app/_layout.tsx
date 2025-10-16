@@ -1,17 +1,17 @@
-import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { AuthProvider } from '@/context/auth';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { TextInput } from 'react-native';
+import { TextInput , View, TouchableOpacity } from 'react-native';
 import { useAppStore } from '@/state/index';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { View, TouchableOpacity } from 'react-native';
+
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 

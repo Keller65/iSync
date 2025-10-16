@@ -1,6 +1,6 @@
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useEffect, useRef } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 const BottomSheetNotifications = ({ open }: { open: boolean }) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);

@@ -49,7 +49,7 @@ export default function TopTabNavigatorLayout() {
     setError(null);
 
     try {
-      const response = await api.get<Array<{ code: string, name: string }>>(
+      const response = await api.get<{ code: string, name: string }[]>(
         '/api/Catalog/products/categories',
         {
           baseURL: fetchUrl,
@@ -77,7 +77,7 @@ export default function TopTabNavigatorLayout() {
     } finally {
       setLoading(false);
     }
-  }, [headers, user?.token]);
+  }, [headers, user?.token, fetchUrl]);
 
   useEffect(() => {
     fetchCategories();

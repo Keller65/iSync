@@ -8,13 +8,13 @@ import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    RefreshControl,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 const InvoicesClientScreen = memo(() => {
@@ -238,5 +238,7 @@ const InvoicesClientScreen = memo(() => {
     </View>
   );
 });
+
+InvoicesClientScreen.displayName = 'InvoicesClientScreen';
 
 export default InvoicesClientScreen;

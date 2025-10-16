@@ -35,7 +35,7 @@ const Settings = () => {
         setHasInvalidUrl(true)
       }
       if (appPort) setPort(appPort)
-    } catch (e) {
+    } catch {
       setIp('')
       setHasInvalidUrl(true)
     }

@@ -11,6 +11,9 @@ buildscript {
     classpath('com.facebook.react:react-native-gradle-plugin')
     classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
   }
+  ext {
+    ndkVersion = "29.0.14206865"
+  }
 }
 
 def reactNativeAndroidDir = new File(

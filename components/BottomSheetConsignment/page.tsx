@@ -168,7 +168,7 @@ export default function BottomSheetConsignment() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
-  const { fetchUrl } = useAppStore();
+  const { fetchUrl, orderConfig } = useAppStore();
 
   const pulse = useSharedValue(0);
   useEffect(() => {
@@ -225,8 +225,8 @@ export default function BottomSheetConsignment() {
 
     const data = {
       codigoCliente: customerSelected.cardCode,
-      codigoConcepto: '3',
-      almacenSalida: '1',
+      codigoConcepto: orderConfig.codigoConcepto || '01',
+      almacenSalida: orderConfig.almacenSalida || '1',
       fecha: new Date().toISOString(),
       referencia: 'API',
       partidas,

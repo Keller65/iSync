@@ -6,11 +6,21 @@ import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native'
 
 const Settings = () => {
-  const { appHost, appPort, setAppHost, setAppPort, fetchUrl } = useAppStore();
+  const {
+    appHost,
+    appPort,
+    setAppHost,
+    setAppPort,
+    fetchUrl,
+    orderConfig,
+    setCodigoConcepto,
+    setAlmacenSalida
+  } = useAppStore();
   const [protocol, setProtocol] = useState('http')
   const [ip, setIp] = useState('')
   const [port, setPort] = useState('')
-  const [almacen, setAlmacen] = useState('')
+  const [codigoConcepto, setCodigoConceptoLocal] = useState('')
+  const [almacenSalida, setAlmacenSalidaLocal] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [hasInvalidUrl, setHasInvalidUrl] = useState(false)
@@ -39,7 +49,11 @@ const Settings = () => {
       setIp('')
       setHasInvalidUrl(true)
     }
-  }, [appHost, appPort])
+
+    // Cargar configuración de pedidos desde el estado
+    if (orderConfig.codigoConcepto) setCodigoConceptoLocal(orderConfig.codigoConcepto)
+    if (orderConfig.almacenSalida) setAlmacenSalidaLocal(orderConfig.almacenSalida)
+  }, [appHost, appPort, orderConfig])
 
   const fullUrl = `${protocol}://${ip}${port ? `:${port}` : ''}`
   const isUrlReady = !!ip && !!port && !hasInvalidUrl
@@ -52,10 +66,18 @@ const Settings = () => {
     setIsSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    // Guardar configuración de conexión
     setAppHost(`${protocol}://${ip}`);
     setAppPort(port);
 
-    console.log('Configuración guardada:', fullUrl);
+    // Guardar configuración de pedidos
+    setCodigoConcepto(codigoConcepto);
+    setAlmacenSalida(almacenSalida);
+
+    console.log('Configuración guardada:', {
+      url: fullUrl,
+      orderConfig: { codigoConcepto: codigoConcepto, almacenSalida: almacenSalida }
+    });
     ToastAndroid.show('Configuración guardada, es posible que necesites reiniciar la aplicación.', ToastAndroid.SHORT);
     setIsSaving(false);
   }
@@ -156,20 +178,47 @@ const Settings = () => {
         className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white"
       />
 
-      {/* Almacén */}
-      <TextInput
-        value={almacen}
-        onChangeText={setAlmacen}
-        placeholder="Almacén (ej: 1)"
-        placeholderTextColor="#000"
-        keyboardAppearance="light"
-        keyboardType="numeric"
-        className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white"
-      />
-
-      {/* Vista previa */}
+      {/* Vista previa URL */}
       <View className="border border-dashed border-gray-300 rounded-xl px-4 py-2 bg-gray-50">
-        <Text className="text-gray-600 text-sm">{fullUrl || 'Vista previa'}</Text>
+        <Text className="text-gray-600 text-sm">{fullUrl || 'Vista previa de conexión'}</Text>
+      </View>
+
+
+      {/* Configuración de Consignaciones - Título */}
+      <View className="pt-4">
+        <Text className="text-lg font-[Poppins-SemiBold] text-gray-800 tracking-[-0.3px]">Configuración de Consignaciones</Text>
+      </View>
+
+      <View className='flex-row gap-2'>
+        {/* Código Concepto */}
+        <TextInput
+          value={codigoConcepto}
+          onChangeText={setCodigoConceptoLocal}
+          placeholder="Código Concepto (ej: 3)"
+          placeholderTextColor="#000"
+          keyboardAppearance="light"
+          keyboardType="numeric"
+          className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white flex-1"
+        />
+
+        {/* Almacén Salida */}
+        <TextInput
+          value={almacenSalida}
+          onChangeText={setAlmacenSalidaLocal}
+          placeholder="Almacén Salida (ej: 1)"
+          placeholderTextColor="#000"
+          keyboardAppearance="light"
+          keyboardType="numeric"
+          className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white flex-1"
+        />
+      </View>
+
+      {/* Vista previa Configuración de Pedidos */}
+      <View className="border border-dashed border-blue-300 rounded-xl px-4 py-2 bg-blue-50">
+        <Text className="text-blue-600 text-sm font-medium mb-1">Configuración de Pedidos:</Text>
+        <Text className="text-blue-600 text-sm">
+          Código Concepto: {codigoConcepto || 'Sin configurar'} | Almacén Salida: {almacenSalida || 'Sin configurar'}
+        </Text>
       </View>
 
       {/* Botón de Guardar */}

@@ -1,29 +1,19 @@
 import ConnectivityBanner from '@/components/ConnectivityBanner';
 import { useAuth } from '@/context/auth';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import { Platform, Text, View, TouchableOpacity } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 import ProtectedLayout from '../ProtectedLayout';
 
-import CatalogIcon from '@/assets/icons/CatalogIcon';
 import ClientIcon from '@/assets/icons/ClientIcon';
-import HomeIcon from '@/assets/icons/HomeIcon';
-import InvoicesIcon from '@/assets/icons/InvoicesIcon';
-import LocationIcon from '@/assets/icons/Locations';
 import SettingsIcon from '@/assets/icons/SettingsIcon';
-import InboxIcon from '@/assets/icons/InboxIcon';
 import ConsignmentIcon from '@/assets/icons/ConsignmentIcon';
 
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import ProductScreen from './catalog';
-import IndexScreen from './index';
-import InvoicesScreen from './invoices';
-import LocationScreen from './locations';
 import SettingsScreen from './setting';
 import Consignment from './consignment';
-import BottomSheetNotifications from '@/components/BottomSheetNotifications/page';
 
 import { useState } from 'react';
 
@@ -33,11 +23,7 @@ export default function Layout() {
   const ActiveColor = '#1A3D59';
   const InActiveColor = '#c9c9c9';
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-
-  function toggleNotifications() {
-    setNotificationsOpen(!notificationsOpen);
-  }
-
+  
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
@@ -70,7 +56,7 @@ export default function Layout() {
             }}
             drawerContent={(props) => <CustomDrawerContent {...props} ActiveColor={ActiveColor} InActiveColor={InActiveColor} />}
           >
-            <Drawer.Screen
+            {/* <Drawer.Screen
               name="index"
               component={IndexScreen}
               options={{
@@ -88,8 +74,8 @@ export default function Layout() {
                   <HomeIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),
               }}
-            />
-            <Drawer.Screen
+            /> */}
+            {/* <Drawer.Screen
               name="invoices"
               component={InvoicesScreen}
               options={{
@@ -98,7 +84,7 @@ export default function Layout() {
                   <InvoicesIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),
               }}
-            />
+            /> */}
             <Drawer.Screen
               name="consignment"
               component={Consignment}
@@ -109,7 +95,7 @@ export default function Layout() {
                 ),
               }}
             />
-            <Drawer.Screen
+            {/* <Drawer.Screen
               name="catalog"
               component={ProductScreen}
               options={{
@@ -120,8 +106,8 @@ export default function Layout() {
                   <CatalogIcon size={24} color={focused ? ActiveColor : InActiveColor} />
                 ),
               }}
-            />
-            <Drawer.Screen
+            /> */}
+            {/* <Drawer.Screen
               name="location"
               component={LocationScreen}
               options={{
@@ -130,7 +116,7 @@ export default function Layout() {
                   <LocationIcon size={24} color={focused ? ActiveColor : InActiveColor} />
                 ),
               }}
-            />
+            /> */}
             <Drawer.Screen
               name="settings"
               component={SettingsScreen}

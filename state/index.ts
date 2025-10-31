@@ -85,6 +85,15 @@ interface AppStoreState {
   updateFetchUrl: () => void;
   clearAppConnection: () => void;
 
+  // Configuración de pedidos
+  orderConfig: {
+    codigoConcepto: string;
+    almacenSalida: string;
+  };
+  setCodigoConcepto: (codigoConcepto: string) => void;
+  setAlmacenSalida: (almacenSalida: string) => void;
+  clearOrderConfig: () => void;
+
   selectedInvoices: SelectedInvoice[];
   addInvoice: (invoice: Invoice, paidAmount: number) => void;
   removeInvoice: (invoiceId: string) => void;
@@ -164,6 +173,12 @@ export const useAppStore = create<AppStoreState>()(
       deviceUUID: null,
       fcmToken: null,
       productsInConsignment: [],
+      
+      // Configuración de pedidos
+      orderConfig: {
+        codigoConcepto: '',
+        almacenSalida: '',
+      },
       setDeviceUUID: (value: string | null) => set({ deviceUUID: value }),
       setFcmToken: (value: string | null) => set({ fcmToken: value }),
       setUserClickAcceptWelcome: (value: boolean) => set({ userClickAcceptWelcome: value }),
@@ -424,6 +439,34 @@ export const useAppStore = create<AppStoreState>()(
           isEditingConsignment: false, 
           editingConsignmentId: null, 
           originalConsignmentData: null 
+        });
+      },
+
+      // Funciones para configuración de pedidos
+      setCodigoConcepto: (codigoConcepto: string) => {
+        set((state) => ({
+          orderConfig: {
+            ...state.orderConfig,
+            codigoConcepto,
+          },
+        }));
+      },
+
+      setAlmacenSalida: (almacenSalida: string) => {
+        set((state) => ({
+          orderConfig: {
+            ...state.orderConfig,
+            almacenSalida,
+          },
+        }));
+      },
+
+      clearOrderConfig: () => {
+        set({
+          orderConfig: {
+            codigoConcepto: '',
+            almacenSalida: '',
+          },
         });
       },
     }),

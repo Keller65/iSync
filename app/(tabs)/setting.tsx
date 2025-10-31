@@ -40,7 +40,15 @@ const SettingsScreen = () => {
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
   const [macAddress, setMacAddress] = useState<string | null>(null);
   const { uuid } = useLicense();
-  const { setDeviceInfoSend, deviceUUID, fetchUrl, fcmToken } = useAppStore();
+  const { 
+    setDeviceInfoSend, 
+    deviceUUID, 
+    fetchUrl, 
+    fcmToken,
+    orderConfig,
+    setCodigoConcepto,
+    setAlmacenSalida
+  } = useAppStore();
 
   useEffect(() => {
     const loadData = async () => {
@@ -300,6 +308,85 @@ const SettingsScreen = () => {
     Alert.alert('Información del dispositivo', info);
   };
 
+  // Funciones para configuración de pedidos
+  const handleEditCodigoConcepto = () => {
+    if (Platform.OS === 'ios') {
+      Alert.prompt(
+        'Código Concepto',
+        'Ingresa el código concepto para pedidos:',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Guardar',
+            onPress: (value) => {
+              if (value !== undefined && value.trim() !== '') {
+                setCodigoConcepto(value.trim());
+                Alert.alert('Guardado', 'Código concepto actualizado correctamente.');
+              }
+            }
+          }
+        ],
+        'plain-text',
+        orderConfig.codigoConcepto
+      );
+    } else {
+      // Para Android, mostramos el valor actual y permitimos copiarlo
+      Alert.alert(
+        'Código Concepto',
+        `Valor actual: ${orderConfig.codigoConcepto || 'Sin configurar'}\n\nPara editar este valor, ve a la pantalla de Configuración principal en Settings.`,
+        [
+          { text: 'OK', style: 'default' },
+          {
+            text: 'Ir a Settings',
+            onPress: () => {
+              // Aquí podrías navegar a la pantalla de settings principal
+              Alert.alert('Navegar', 'Ve a la pestaña Settings para editar este valor.');
+            }
+          }
+        ]
+      );
+    }
+  };
+
+  const handleEditAlmacenSalida = () => {
+    if (Platform.OS === 'ios') {
+      Alert.prompt(
+        'Almacén Salida',
+        'Ingresa el almacén de salida para pedidos:',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Guardar',
+            onPress: (value) => {
+              if (value !== undefined && value.trim() !== '') {
+                setAlmacenSalida(value.trim());
+                Alert.alert('Guardado', 'Almacén de salida actualizado correctamente.');
+              }
+            }
+          }
+        ],
+        'plain-text',
+        orderConfig.almacenSalida
+      );
+    } else {
+      // Para Android, mostramos el valor actual y permitimos copiarlo
+      Alert.alert(
+        'Almacén Salida',
+        `Valor actual: ${orderConfig.almacenSalida || 'Sin configurar'}\n\nPara editar este valor, ve a la pantalla de Configuración principal en Settings.`,
+        [
+          { text: 'OK', style: 'default' },
+          {
+            text: 'Ir a Settings',
+            onPress: () => {
+              // Aquí podrías navegar a la pantalla de settings principal
+              Alert.alert('Navegar', 'Ve a la pestaña Settings para editar este valor.');
+            }
+          }
+        ]
+      );
+    }
+  };
+
 
   return (
     <ScrollView className="flex-1 bg-gray-50" contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
@@ -321,6 +408,34 @@ const SettingsScreen = () => {
           title="Dirección IP"
           subtitle={macAddress || 'Cargando...'}
           iconLeft={<Feather name="wifi" size={18} color="#4B5563" style={{ marginRight: 12 }} />}
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Configuración de Pedidos">
+        <SettingItem
+          kind="action"
+          title="Código Concepto"
+          subtitle={orderConfig.codigoConcepto || 'Sin configurar'}
+          onPress={handleEditCodigoConcepto}
+          iconLeft={<Feather name="hash" size={18} color="#4B5563" style={{ marginRight: 12 }} />}
+        />
+        <SettingItem
+          kind="action"
+          title="Almacén Salida"
+          subtitle={orderConfig.almacenSalida || 'Sin configurar'}
+          onPress={handleEditAlmacenSalida}
+          iconLeft={<Feather name="package" size={18} color="#4B5563" style={{ marginRight: 12 }} />}
+        />
+        <SettingItem
+          kind="action"
+          title="Copiar configuración"
+          subtitle="Copiar configuración de pedidos al portapapeles"
+          onPress={() => {
+            const config = `Código Concepto: ${orderConfig.codigoConcepto || 'Sin configurar'}\nAlmacén Salida: ${orderConfig.almacenSalida || 'Sin configurar'}`;
+            Clipboard.setStringAsync(config);
+            Alert.alert('Copiado', 'La configuración de pedidos ha sido copiada al portapapeles.');
+          }}
+          iconLeft={<Feather name="copy" size={18} color="#4B5563" style={{ marginRight: 12 }} />}
         />
       </SettingsSection>
 

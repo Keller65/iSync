@@ -15,6 +15,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import * as Location from 'expo-location';
 import * as Network from 'expo-network';
 import * as Notifications from 'expo-notifications';
+import { useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import * as Updates from 'expo-updates';
 import { useEffect, useState } from 'react';
@@ -40,10 +41,11 @@ const SettingsScreen = () => {
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
   const [macAddress, setMacAddress] = useState<string | null>(null);
   const { uuid } = useLicense();
-  const { 
-    setDeviceInfoSend, 
-    deviceUUID, 
-    fetchUrl, 
+  const router = useRouter();
+  const {
+    setDeviceInfoSend,
+    deviceUUID,
+    fetchUrl,
     fcmToken,
     orderConfig,
     setCodigoConcepto,
@@ -428,14 +430,12 @@ const SettingsScreen = () => {
         />
         <SettingItem
           kind="action"
-          title="Copiar configuración"
-          subtitle="Copiar configuración de pedidos al portapapeles"
+          title="Editar Configuración"
+          subtitle="editar la configuración de pedidos"
           onPress={() => {
-            const config = `Código Concepto: ${orderConfig.codigoConcepto || 'Sin configurar'}\nAlmacén Salida: ${orderConfig.almacenSalida || 'Sin configurar'}`;
-            Clipboard.setStringAsync(config);
-            Alert.alert('Copiado', 'La configuración de pedidos ha sido copiada al portapapeles.');
+            router.push('/settings');
           }}
-          iconLeft={<Feather name="copy" size={18} color="#4B5563" style={{ marginRight: 12 }} />}
+          iconLeft={<Feather name="settings" size={18} color="#4B5563" style={{ marginRight: 12 }} />}
         />
       </SettingsSection>
 

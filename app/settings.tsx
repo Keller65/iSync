@@ -87,12 +87,9 @@ const Settings = () => {
   const fetchPaymentAccounts = useCallback(async () => {
     try {
       const urls = [
-        `${API_BASE_URL}/api/BankAccounts/PayCheque`,
-        `${API_BASE_URL}/api/BankAccounts/PayEfectivo`,
-        `${API_BASE_URL}/api/BankAccounts/PayTranferencia`,
-        `${API_BASE_URL}/api/BankAccounts/PayCreditCards`,
-        `${API_BASE_URL}/sap/items/categories`
+        `${API_BASE_URL}/api/Catalog/products/categories`
       ];
+      
       const results = await Promise.allSettled(urls.map(url => api.get(url, {
         baseURL: API_BASE_URL,
         headers: {
@@ -105,21 +102,20 @@ const Settings = () => {
         },
       })));
 
-      const chequeRes = results[0].status === 'fulfilled' ? results[0].value : null;
-      const efectivoRes = results[1].status === 'fulfilled' ? results[1].value : null;
-      const transfRes = results[2].status === 'fulfilled' ? results[2].value : null;
-      const creditCardRes = results[3].status === 'fulfilled' ? results[3].value : null;
+      const categoriesRes = results[0].status === 'fulfilled' ? results[0].value : null;
 
-      console.log('Informacion de pago sincronizada');
+      console.log('Información de catálogo sincronizada');
 
-      if (!chequeRes || !efectivoRes || !transfRes || !creditCardRes) {
+      if (!categoriesRes) {
         ToastAndroid.show('Error al Sincronizar los datos.', ToastAndroid.SHORT);
-        throw new Error('No se pudieron obtener los datos de una o más cuentas.');
+        throw new Error('No se pudieron obtener los datos del catálogo.');
       }
 
+      ToastAndroid.show('Sincronización completada exitosamente.', ToastAndroid.SHORT);
       await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (err) {
       console.error('Error al Sincronizar los datos:', err);
+      ToastAndroid.show('Error al sincronizar. Verifica la conexión.', ToastAndroid.SHORT);
     }
   }, [API_BASE_URL, user?.token]);
 

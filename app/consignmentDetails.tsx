@@ -256,7 +256,7 @@ const ConsignmentDetails = () => {
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 className='bg-primary py-3 h-[50px] w-[50px] rounded-full items-center justify-center flex-row'
                 onPress={() => {
                   if (!consignment) return;
@@ -286,7 +286,7 @@ const ConsignmentDetails = () => {
                 }}
               >
                 <Feather name="edit" size={20} color="white" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <Text className='tracking-[-0.3px] mt-4' style={{ fontFamily: 'Poppins-SemiBold' }}>Productos</Text>

@@ -12,7 +12,7 @@ import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, { Easing, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 
 interface CartItemType {
@@ -169,6 +169,11 @@ export default function BottomSheetConsignment() {
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
   const { fetchUrl, orderConfig } = useAppStore();
+  
+  // Estados para el modal de RTN
+  const [showRtnModal, setShowRtnModal] = useState(false);
+  const [clientName, setClientName] = useState('');
+  const [rtnNumber, setRtnNumber] = useState('');
 
   const pulse = useSharedValue(0);
   useEffect(() => {
@@ -210,7 +215,30 @@ export default function BottomSheetConsignment() {
     );
   };
 
-  const handleSubmitOrder = useCallback(async () => {
+  const handleAskForRtn = useCallback(() => {
+    if (!customerSelected || products.length === 0) {
+      Alert.alert('Error', 'Faltan datos para enviar el pedido.');
+      return;
+    }
+
+    Alert.alert(
+      'Factura con RTN',
+      '¿Desea su Factura con RTN?',
+      [
+        {
+          text: 'No',
+          onPress: () => handleSubmitOrder(false),
+          style: 'cancel'
+        },
+        {
+          text: 'Sí',
+          onPress: () => setShowRtnModal(true)
+        }
+      ]
+    );
+  }, [customerSelected, products]);
+
+  const handleSubmitOrder = useCallback(async (withRtn: boolean = false, rtnData?: { clientName: string, rtnNumber: string }) => {
     if (!customerSelected || products.length === 0) {
       Alert.alert('Error', 'Faltan datos para enviar el pedido.');
       return;
@@ -231,6 +259,11 @@ export default function BottomSheetConsignment() {
       referencia: 'API',
       partidas,
       userId: deviceUUID, // UUID proporcionado por useLicense
+      ...(withRtn && rtnData && {
+        facturaConRtn: true,
+        nombreCliente: rtnData.clientName,
+        rtn: rtnData.rtnNumber
+      })
     };
 
     try {
@@ -278,6 +311,12 @@ export default function BottomSheetConsignment() {
       console.log('data enviada:', data);
       clearCart();
       setComments('');
+      
+      // Limpiar campos de RTN si se usaron
+      if (withRtn) {
+        setClientName('');
+        setRtnNumber('');
+      }
 
       // Salir del modo edición si estaba activo
       if (isEditingConsignment) {
@@ -371,7 +410,7 @@ export default function BottomSheetConsignment() {
         <View className='flex-row w-full gap-2 justify-between'>
           <TouchableOpacity
             className="flex-row flex-1 items-center justify-center h-[50px] bg-primary rounded-full"
-            onPress={handleSubmitOrder}
+            onPress={handleAskForRtn}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -415,6 +454,23 @@ export default function BottomSheetConsignment() {
       ]
     );
   }, [exitEditMode, clearCart]);
+
+  const handleSubmitWithRtn = useCallback(() => {
+    if (!clientName.trim() || !rtnNumber.trim()) {
+      Alert.alert('Error', 'Por favor, complete todos los campos.');
+      return;
+    }
+    setShowRtnModal(false);
+    handleSubmitOrder(true, { clientName: clientName.trim(), rtnNumber: rtnNumber.trim() });
+  }, [clientName, rtnNumber, handleSubmitOrder]);
+
+  const handleCloseRtnModal = useCallback(() => {
+    setShowRtnModal(false);
+    setClientName('');
+    setRtnNumber('');
+  }, []);
+
+  const isRtnFormValid = clientName.trim().length > 0 && rtnNumber.trim().length > 0;
 
   return (
     <View style={{ flex: 1, zIndex: 100 }}>
@@ -493,6 +549,91 @@ export default function BottomSheetConsignment() {
           )}
         </View>
       </BottomSheetModal>
+
+      {/* Modal para RTN */}
+      <Modal
+        visible={showRtnModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseRtnModal}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-4">
+          <View className="bg-white rounded-2xl p-6 w-full">
+            {/* Header con botón de cerrar */}
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-lg font-[Poppins-Bold] tracking-[-0.3px]">
+                Datos de Facturación
+              </Text>
+              <TouchableOpacity
+                onPress={handleCloseRtnModal}
+                className="p-1"
+              >
+                <Feather name="x" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            
+            {/* Descripción */}
+            <Text className="text-sm text-gray-600 mb-4 font-[Poppins-Regular]">
+              Complete los datos para generar la factura con RTN
+            </Text>
+
+            {/* Campo Nombre del Cliente */}
+            <View className="mb-4">
+              <Text className="text-sm font-[Poppins-Medium] text-gray-700 mb-2">
+                Nombre del Cliente
+              </Text>
+              <TextInput
+                value={clientName}
+                onChangeText={setClientName}
+                placeholder="Ingrese el nombre completo"
+                placeholderTextColor="#999"
+                className="border border-gray-300 rounded-xl px-4 py-3 text-base"
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
+            </View>
+
+            {/* Campo RTN */}
+            <View className="mb-6">
+              <Text className="text-sm font-[Poppins-Medium] text-gray-700 mb-2">
+                RTN (Registro Tributario Nacional)
+              </Text>
+              <TextInput
+                value={rtnNumber}
+                onChangeText={setRtnNumber}
+                placeholder="Ingrese el RTN"
+                placeholderTextColor="#999"
+                className="border border-gray-300 rounded-xl px-4 py-3 text-base"
+                keyboardType="numeric"
+              />
+            </View>
+
+            {/* Botón de envío */}
+            <TouchableOpacity
+              onPress={handleSubmitWithRtn}
+              disabled={!isRtnFormValid || isLoading}
+              className={`rounded-full py-3 items-center justify-center ${
+                isRtnFormValid && !isLoading ? 'bg-primary' : 'bg-gray-300'
+              }`}
+            >
+              {isLoading ? (
+                <View className="flex-row items-center">
+                  <ActivityIndicator color="white" size="small" />
+                  <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">
+                    Enviando...
+                  </Text>
+                </View>
+              ) : (
+                <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${
+                  isRtnFormValid ? 'text-white' : 'text-gray-500'
+                }`}>
+                  Enviar Consignación
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

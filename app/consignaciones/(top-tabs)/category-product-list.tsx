@@ -61,6 +61,34 @@ const CategoryProductScreen = memo(() => {
 
   const pagesCacheRef = useRef<Map<number, ProductDiscount[]>>(new Map());
   const [items, setItems] = useState<ProductDiscount[]>([]);
+  const [allItems, setAllItems] = useState<ProductDiscount[]>([]); // Para filtrado local
+  const [filteredItems, setFilteredItems] = useState<ProductDiscount[]>([]);
+
+  // Debug log para verificar cambios en debouncedSearchText
+  useEffect(() => {
+    console.log("[CategoryProduct] debouncedSearchText changed:", debouncedSearchText);
+  }, [debouncedSearchText]);
+
+  // Filtrado local de productos
+  useEffect(() => {
+    if (!debouncedSearchText || debouncedSearchText.trim() === '') {
+      console.log("[CategoryProduct] No search text, showing all items");
+      setFilteredItems(allItems);
+      return;
+    }
+
+    const searchLower = debouncedSearchText.toLowerCase().trim();
+    console.log("[CategoryProduct] Filtering with search term:", searchLower);
+    
+    const filtered = allItems.filter(item => 
+      item.itemName.toLowerCase().includes(searchLower) ||
+      item.itemCode.toLowerCase().includes(searchLower) ||
+      item.barCode?.toLowerCase().includes(searchLower)
+    );
+    
+    console.log("[CategoryProduct] Filtered results:", filtered.length, "from", allItems.length);
+    setFilteredItems(filtered);
+  }, [debouncedSearchText, allItems]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +119,76 @@ const CategoryProductScreen = memo(() => {
       setIsPriceManuallyEdited(false);
     }
   }, []);
+
+  // Función especializada para búsqueda que carga todos los productos
+  const fetchAllProductsForSearch = useCallback(async () => {
+    if (!user?.token || !debouncedSearchText?.trim()) return;
+    
+    console.log("[CategoryProduct] Fetching all products for search:", debouncedSearchText);
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const headers = {
+        Authorization: `Bearer ${user.token}`,
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip'
+      };
+
+      let allSearchResults: ProductDiscount[] = [];
+      let currentPage = 1;
+      let hasMorePages = true;
+
+      while (hasMorePages) {
+        const url = `${FETCH_URL}?${[
+          groupCode && `groupCode=${encodeURIComponent(groupCode)}`,
+          priceListNum && `priceList=${encodeURIComponent(priceListNum)}`,
+          `page=${currentPage}`,
+          `pageSize=100`,
+          `search=${encodeURIComponent(debouncedSearchText)}`
+        ].filter(Boolean).join('&')}`;
+
+        console.log(`[CategoryProduct] Searching page ${currentPage}:`, url);
+        const response = await axios.get(url, { headers });
+        const payload = response.data;
+
+        let newItems: ProductDiscount[] = [];
+        if (Array.isArray(payload)) {
+          newItems = payload;
+        } else if (payload?.items) {
+          newItems = payload.items;
+        } else if (payload?.data) {
+          newItems = payload.data;
+        }
+
+        allSearchResults = [...allSearchResults, ...newItems];
+        console.log(`[CategoryProduct] Page ${currentPage}: found ${newItems.length} items, total: ${allSearchResults.length}`);
+        
+        // Si la página devolvió menos de 100 items, no hay más páginas
+        hasMorePages = newItems.length === 100;
+        currentPage++;
+        
+        // Límite de seguridad para evitar bucles infinitos
+        if (currentPage > 50) {
+          console.warn("[CategoryProduct] Reached page limit for search");
+          break;
+        }
+      }
+
+      console.log(`[CategoryProduct] Search completed: ${allSearchResults.length} total results`);
+      setItems(allSearchResults);
+      setAllItems(allSearchResults);
+      setHasMore(false); // No hay más páginas en modo búsqueda
+      
+    } catch (err: any) {
+      console.error("[CategoryProduct] Search error:", err);
+      setError(err?.message || 'Error en la búsqueda');
+      setItems([]);
+      setAllItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.token, debouncedSearchText, groupCode, priceListNum, FETCH_URL]);
 
   const fetchProducts = useCallback(async (requestedPage: number = 1, append: boolean = false) => {
     if (isFetchingRef.current) return;
@@ -125,13 +223,17 @@ const CategoryProductScreen = memo(() => {
       params.push(`page=${requestedPage}`);
       params.push(`pageSize=${PAGE_SIZE}`);
 
-      if (debouncedSearchText) {
-        params.push(`search=${encodeURIComponent(debouncedSearchText)}`);
-      }
+      // Comentamos la búsqueda del servidor para hacer búsqueda local
+      // if (debouncedSearchText) {
+      //   params.push(`search=${encodeURIComponent(debouncedSearchText)}`);
+      //   console.log("[CategoryProduct] Adding search param:", debouncedSearchText);
+      // } else {
+        console.log("[CategoryProduct] Using local search, debouncedSearchText:", debouncedSearchText);
+      // }
 
       if (params.length) url += `?${params.join('&')}`;
 
-      console.log("[CategoryProduct] Fetching:", url);
+      console.log("[CategoryProduct] Final URL:", url);
       const itemsResponse = await axios.get(url, { headers });
       const payload = itemsResponse.data;
 
@@ -151,8 +253,10 @@ const CategoryProductScreen = memo(() => {
 
       if (append) {
         setItems(prev => [...prev, ...newItems]);
+        setAllItems(prev => [...prev, ...newItems]);
       } else {
         setItems(newItems);
+        setAllItems(newItems);
       }
 
       // Lógica simplificada para determinar si hay más páginas
@@ -164,7 +268,11 @@ const CategoryProductScreen = memo(() => {
     } catch (err: any) {
       console.error("[CategoryProduct] Fetch error:", err);
       setError(err?.message || 'Error inesperado');
-      if (!append) setItems([]);
+      if (!append) {
+        setItems([]);
+        setAllItems([]);
+        setFilteredItems([]);
+      }
       setHasMore(false);
     } finally {
       isFetchingRef.current = false;
@@ -174,11 +282,24 @@ const CategoryProductScreen = memo(() => {
         setLoading(false);
       }
     }
-  }, [user?.token, groupCode, priceListNum, debouncedSearchText, PAGE_SIZE]);
+  }, [user?.token, groupCode, priceListNum, PAGE_SIZE]);
 
   useEffect(() => {
+    console.log("[CategoryProduct] Category/PriceList effect triggered:", {
+      groupCode,
+      priceListNum,
+      hasSearch: !!debouncedSearchText?.trim()
+    });
+    
+    // Si hay búsqueda activa, no cargar productos normalmente
+    if (debouncedSearchText && debouncedSearchText.trim() !== '') {
+      console.log("[CategoryProduct] Skipping normal fetch due to active search");
+      return;
+    }
+    
     const timer = setTimeout(() => {
       setItems([]);
+      setAllItems([]);
       setPage(1);
       setHasMore(true);
       fetchProducts(1, false);
@@ -186,6 +307,22 @@ const CategoryProductScreen = memo(() => {
 
     return () => clearTimeout(timer);
   }, [groupCode, priceListNum, debouncedSearchText, fetchProducts]);
+
+  // UseEffect específico para búsqueda
+  useEffect(() => {
+    if (!debouncedSearchText || debouncedSearchText.trim() === '') {
+      // Si no hay búsqueda, no hacer nada aquí (la carga normal se maneja en el useEffect anterior)
+      return;
+    }
+
+    console.log("[CategoryProduct] Search effect triggered:", debouncedSearchText);
+    
+    const timer = setTimeout(() => {
+      fetchAllProductsForSearch();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [debouncedSearchText, fetchAllProductsForSearch]);
 
   useEffect(() => {
     if (!selectedItem) {
@@ -249,8 +386,16 @@ const CategoryProductScreen = memo(() => {
     pagesCacheRef.current = new Map();
     setPage(1);
     setHasMore(true);
-    fetchProducts(1, false);
-  }, [fetchProducts]);
+    setAllItems([]);
+    setFilteredItems([]);
+    
+    // Si hay búsqueda activa, usar función de búsqueda
+    if (debouncedSearchText && debouncedSearchText.trim() !== '') {
+      fetchAllProductsForSearch();
+    } else {
+      fetchProducts(1, false);
+    }
+  }, [debouncedSearchText, fetchAllProductsForSearch, fetchProducts]);
 
   const handleProductPress = useCallback((item: ProductDiscount) => {
     setSelectedItem(item);
@@ -288,12 +433,18 @@ const CategoryProductScreen = memo(() => {
   }, [addProduct, products, quantity, selectedItem, editablePrice, isPriceValid, updateQuantity, editableTiers]);
 
   const handleEndReached = useCallback(() => {
+    // No cargar más páginas si estamos en modo búsqueda
+    if (debouncedSearchText && debouncedSearchText.trim() !== '') {
+      console.log("[CategoryProduct] In search mode, not loading more pages");
+      return;
+    }
+    
     if (loadingMore || loading || !hasMore) return;
 
     const nextPage = page + 1;
     console.log("[CategoryProduct] Loading more, page:", nextPage);
     fetchProducts(nextPage, true);
-  }, [loadingMore, loading, hasMore, page, fetchProducts]);
+  }, [debouncedSearchText, loadingMore, loading, hasMore, page, fetchProducts]);
 
   const renderItem = useCallback(({ item }: { item: ProductDiscount }) => (
     <ProductItem item={item} onPress={handleProductPress} />
@@ -388,7 +539,7 @@ const CategoryProductScreen = memo(() => {
 
   return (
     <View className="flex-1 bg-white relative">
-      {(!loading && items.length === 0 && !error) ? (
+      {(!loading && filteredItems.length === 0 && !error) ? (
         <View className="flex-1 items-center justify-center bg-white">
           <Text className="text-gray-600">
             {debouncedSearchText ? 'No se encontraron productos para tu búsqueda' : 'No se encontraron productos'}
@@ -396,7 +547,7 @@ const CategoryProductScreen = memo(() => {
         </View>
       ) : (
         <FlashList
-          data={items}
+          data={filteredItems}
           renderItem={renderItem}
           keyExtractor={(item) => item.itemCode}
           estimatedItemSize={100}
@@ -408,7 +559,7 @@ const CategoryProductScreen = memo(() => {
               <View className="py-4">
                 <ActivityIndicator size="small" color="#000" />
               </View>
-            ) : !hasMore && items.length > 0 ? (
+            ) : !hasMore && filteredItems.length > 0 ? (
               <View className="py-4 items-center">
                 <Text className="text-gray-500 text-sm">No hay más productos</Text>
               </View>

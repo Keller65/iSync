@@ -1,19 +1,19 @@
+import { AuthProvider } from '@/context/auth';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
-import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
-import * as SplashScreen from 'expo-splash-screen';
-import { useFonts } from 'expo-font';
-import { AuthProvider } from '@/context/auth';
 
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { TextInput , View, TouchableOpacity } from 'react-native';
 import { useAppStore } from '@/state/index';
-import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { StatusBar } from 'expo-status-bar';
+import { TextInput, TouchableOpacity, View } from 'react-native';
 
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,7 +25,10 @@ export default function RootLayout() {
   const setDebouncedSearchText = useAppStore(state => state.setDebouncedSearchText);
 
   useEffect(() => {
+    console.log("[Layout] Raw search text changed:", rawSearchText);
+    
     const handler = setTimeout(() => {
+      console.log("[Layout] Setting debounced search text:", rawSearchText);
       setDebouncedSearchText(rawSearchText);
     }, 300);
 
@@ -35,6 +38,7 @@ export default function RootLayout() {
   }, [rawSearchText, setDebouncedSearchText]);
 
   const clearSearch = () => {
+    console.log("[Layout] Clearing search");
     setRawSearchText('');
     // Al limpiar, también actualiza el debouncedSearchText inmediatamente
     setDebouncedSearchText('');

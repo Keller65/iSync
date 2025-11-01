@@ -15,14 +15,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import SettingsScreen from './setting';
 import Consignment from './consignment';
 
-import { useState } from 'react';
-
 const Drawer = createDrawerNavigator();
 
 export default function Layout() {
   const ActiveColor = '#1A3D59';
   const InActiveColor = '#c9c9c9';
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

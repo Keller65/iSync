@@ -169,7 +169,7 @@ export default function BottomSheetConsignment() {
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
   const { fetchUrl, orderConfig } = useAppStore();
-  
+
   // Estados para el modal de RTN
   const [showRtnModal, setShowRtnModal] = useState(false);
   const [clientName, setClientName] = useState('');
@@ -214,29 +214,6 @@ export default function BottomSheetConsignment() {
       />
     );
   };
-
-  const handleAskForRtn = useCallback(() => {
-    if (!customerSelected || products.length === 0) {
-      Alert.alert('Error', 'Faltan datos para enviar el pedido.');
-      return;
-    }
-
-    Alert.alert(
-      'Factura con RTN',
-      '¿Desea su Factura con RTN?',
-      [
-        {
-          text: 'No',
-          onPress: () => handleSubmitOrder(false),
-          style: 'cancel'
-        },
-        {
-          text: 'Sí',
-          onPress: () => setShowRtnModal(true)
-        }
-      ]
-    );
-  }, [customerSelected, products]);
 
   const handleSubmitOrder = useCallback(async (withRtn: boolean = false, rtnData?: { clientName: string, rtnNumber: string }) => {
     if (!customerSelected || products.length === 0) {
@@ -311,7 +288,7 @@ export default function BottomSheetConsignment() {
       console.log('data enviada:', data);
       clearCart();
       setComments('');
-      
+
       // Limpiar campos de RTN si se usaron
       if (withRtn) {
         setClientName('');
@@ -341,7 +318,30 @@ export default function BottomSheetConsignment() {
     } finally {
       setIsLoading(false);
     }
-  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router, deviceUUID, isEditingConsignment, editingConsignmentId, exitEditMode, comments]);
+  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router, deviceUUID, isEditingConsignment, editingConsignmentId, exitEditMode, comments, orderConfig.almacenSalida, orderConfig.codigoConcepto]);
+
+  const handleAskForRtn = useCallback(() => {
+    if (!customerSelected || products.length === 0) {
+      Alert.alert('Error', 'Faltan datos para enviar el pedido.');
+      return;
+    }
+
+    Alert.alert(
+      'Factura con RTN',
+      '¿Desea su Factura con RTN?',
+      [
+        {
+          text: 'No',
+          onPress: () => handleSubmitOrder(false),
+          style: 'cancel'
+        },
+        {
+          text: 'Sí',
+          onPress: () => setShowRtnModal(true)
+        }
+      ]
+    );
+  }, [customerSelected, products, handleSubmitOrder]);
 
   const total = useMemo(() => {
     return products.reduce((sum, item) => {
@@ -442,7 +442,7 @@ export default function BottomSheetConsignment() {
         </View>
       </View>
     </BottomSheetFooter>
-  ), [total, customerSelected?.cardName, handleSubmitOrder, isLoading, isEditingConsignment, router, closeCart]);
+  ), [total, customerSelected?.cardName, isLoading, isEditingConsignment, router, closeCart, handleAskForRtn]);
 
   const CancelEdit = useCallback(() => {
     Alert.alert(
@@ -571,7 +571,7 @@ export default function BottomSheetConsignment() {
                 <Feather name="x" size={24} color="#666" />
               </TouchableOpacity>
             </View>
-            
+
             {/* Descripción */}
             <Text className="text-sm text-gray-600 mb-4 font-[Poppins-Regular]">
               Complete los datos para generar la factura con RTN
@@ -612,9 +612,8 @@ export default function BottomSheetConsignment() {
             <TouchableOpacity
               onPress={handleSubmitWithRtn}
               disabled={!isRtnFormValid || isLoading}
-              className={`rounded-full py-3 items-center justify-center ${
-                isRtnFormValid && !isLoading ? 'bg-primary' : 'bg-gray-300'
-              }`}
+              className={`rounded-full py-3 items-center justify-center ${isRtnFormValid && !isLoading ? 'bg-primary' : 'bg-gray-300'
+                }`}
             >
               {isLoading ? (
                 <View className="flex-row items-center">
@@ -624,9 +623,8 @@ export default function BottomSheetConsignment() {
                   </Text>
                 </View>
               ) : (
-                <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${
-                  isRtnFormValid ? 'text-white' : 'text-gray-500'
-                }`}>
+                <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${isRtnFormValid ? 'text-white' : 'text-gray-500'
+                  }`}>
                   Enviar Consignación
                 </Text>
               )}

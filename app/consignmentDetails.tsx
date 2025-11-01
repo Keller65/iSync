@@ -1,12 +1,10 @@
 import ClientIcon from '@/assets/icons/ClientIcon';
 import { useAppStore } from '@/state';
 import { Consignment } from '@/types/ConsignmentTypes';
-import { Customer } from '@/types/types';
-import { Feather } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
 import * as Print from 'expo-print';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -16,7 +14,6 @@ const ConsignmentDetails = () => {
   const [consignment, setConsignment] = useState<Consignment | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { fetchUrl } = useAppStore();
-  const router = useRouter();
 
   useEffect(() => {
     const fetchConsignment = async () => {

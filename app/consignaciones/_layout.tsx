@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
 import slugify from 'slugify';
 import CategoryProductScreen from './(top-tabs)/category-product-list';
+import GlobalSearchScreen from '@/components/GlobalSearch/global-search';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -20,12 +21,14 @@ interface ProductCategory {
 
 export default function TopTabNavigatorLayout() {
   const { user } = useAuth();
-  const { selectedCustomer, fetchUrl, products, setEditMode, preloadCartWithConsignmentItems, isEditingConsignment, editingConsignmentId } = useAppStore();
+  const { selectedCustomer, fetchUrl, products, setEditMode, preloadCartWithConsignmentItems, isEditingConsignment, editingConsignmentId, debouncedSearchText } = useAppStore();
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { editConsignmentId } = useLocalSearchParams();
   const priceListNum = selectedCustomer?.priceListNum?.toString() || '1';
+
+  const isGlobalSearch = debouncedSearchText.trim().length > 0;
 
   // Limpiar modo edición cuando el componente se desmonte
   useEffect(() => {
@@ -193,34 +196,38 @@ export default function TopTabNavigatorLayout() {
         </View>
       )}
 
-      <Tab.Navigator
-        initialRouteName={categories[0]?.slug || 'todas'}
-        screenOptions={{
-          tabBarActiveTintColor: '#000',
-          tabBarInactiveTintColor: 'gray',
-          tabBarIndicatorStyle: {
-            backgroundColor: '#000',
-            height: 2
-          },
-          tabBarStyle: {
-            backgroundColor: 'white',
-            elevation: 0,
-            shadowOpacity: 0,
-            borderBottomWidth: 0
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            width: 230,
-            fontFamily: 'Poppins-SemiBold',
-            letterSpacing: -0.3,
-          },
-          tabBarPressColor: 'transparent',
-          tabBarScrollEnabled: true,
-          lazy: true,
-        }}
-      >
-        {tabScreens}
-      </Tab.Navigator>
+      {isGlobalSearch ? (
+        <GlobalSearchScreen priceListNum={priceListNum} />
+      ) : (
+        <Tab.Navigator
+          initialRouteName={categories[0]?.slug || 'todas'}
+          screenOptions={{
+            tabBarActiveTintColor: '#1A3D59',
+            tabBarInactiveTintColor: 'gray',
+            tabBarIndicatorStyle: {
+              backgroundColor: '#1A3D59',
+              height: 2
+            },
+            tabBarStyle: {
+              backgroundColor: 'white',
+              elevation: 0,
+              shadowOpacity: 0,
+              borderBottomWidth: 0
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              width: 230,
+              fontFamily: 'Poppins-SemiBold',
+              letterSpacing: -0.3,
+            },
+            tabBarPressColor: 'transparent',
+            tabBarScrollEnabled: true,
+            lazy: true,
+          }}
+        >
+          {tabScreens}
+        </Tab.Navigator>
+      )}
 
       {products.length > 0 && (
         <View className="absolute bottom-4 right-8 gap-8 z-50 items-center">

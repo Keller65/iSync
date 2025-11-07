@@ -4,6 +4,7 @@ import { useAuth } from '@/context/auth';
 import { useAppStore } from '@/state';
 import { ConsignmentType } from '@/types/types';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useFocusEffect } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -12,6 +13,9 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 const Consignment = () => {
   const { products, fetchUrl } = useAppStore();
+  const rawSearchText = useAppStore((state) => state.rawSearchText);
+  const setRawSearchText = useAppStore((state) => state.setRawSearchText);
+  const setDebouncedSearchText = useAppStore((state) => state.setDebouncedSearchText);
   const { user } = useAuth();
   const router = useRouter();
   const [consignments, setConsignments] = useState<ConsignmentType[]>([]);
@@ -23,6 +27,17 @@ const Consignment = () => {
   const pageSize = 20;
   const [page, setPage] = useState(1);
   const isFetchingRef = useRef(false);
+
+  // Limpiar el input de búsqueda cuando la pantalla recibe el foco
+  useFocusEffect(
+    useCallback(() => {
+      if (rawSearchText && rawSearchText.trim().length > 0) {
+        console.log('Limpiando input de búsqueda al enfocar pantalla de consignaciones tab:', rawSearchText);
+        setRawSearchText('');
+        setDebouncedSearchText('');
+      }
+    }, [rawSearchText, setRawSearchText, setDebouncedSearchText])
+  );
 
   const fetchConsignments = useCallback(async (pageNumber: number = 1, append: boolean = false) => {
     if (isFetchingRef.current || !user?.token) return;

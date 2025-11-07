@@ -169,6 +169,8 @@ export default function BottomSheetConsignment() {
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
   const { fetchUrl, orderConfig } = useAppStore();
+  const setRawSearchText = useAppStore((state) => state.setRawSearchText);
+  const setDebouncedSearchText = useAppStore((state) => state.setDebouncedSearchText);
 
   // Estados para el modal de RTN
   const [showRtnModal, setShowRtnModal] = useState(false);
@@ -237,9 +239,8 @@ export default function BottomSheetConsignment() {
       partidas,
       userId: deviceUUID, // UUID proporcionado por useLicense
       ...(withRtn && rtnData && {
-        facturaConRtn: true,
-        nombreCliente: rtnData.clientName,
-        rtn: rtnData.rtnNumber
+        CRAZONSOCIAL: rtnData.clientName,
+        CRFC: rtnData.rtnNumber
       })
     };
 
@@ -289,6 +290,10 @@ export default function BottomSheetConsignment() {
       clearCart();
       setComments('');
 
+      // Limpiar el input de búsqueda
+      setRawSearchText('');
+      setDebouncedSearchText('');
+
       // Limpiar campos de RTN si se usaron
       if (withRtn) {
         setClientName('');
@@ -318,7 +323,7 @@ export default function BottomSheetConsignment() {
     } finally {
       setIsLoading(false);
     }
-  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router, deviceUUID, isEditingConsignment, editingConsignmentId, exitEditMode, comments, orderConfig.almacenSalida, orderConfig.codigoConcepto]);
+  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router, deviceUUID, isEditingConsignment, editingConsignmentId, exitEditMode, comments, orderConfig.almacenSalida, orderConfig.codigoConcepto, setRawSearchText, setDebouncedSearchText]);
 
   const handleAskForRtn = useCallback(() => {
     if (!customerSelected || products.length === 0) {
@@ -596,7 +601,7 @@ export default function BottomSheetConsignment() {
             {/* Campo RTN */}
             <View className="mb-6">
               <Text className="text-sm font-[Poppins-Medium] text-gray-700 mb-2">
-                RTN (Registro Tributario Nacional)
+                RTN (Registro Tributario Nacional) sin guiones
               </Text>
               <TextInput
                 value={rtnNumber}
@@ -605,6 +610,7 @@ export default function BottomSheetConsignment() {
                 placeholderTextColor="#999"
                 className="border border-gray-300 rounded-xl px-4 py-3 text-base"
                 keyboardType="numeric"
+                maxLength={14}
               />
             </View>
 

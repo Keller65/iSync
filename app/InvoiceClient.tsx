@@ -1,20 +1,20 @@
 import ClientIcon from '@/assets/icons/ClientIcon';
 import { useAuth } from '@/context/auth';
-import api from '@/lib/api';
 import { useAppStore } from '@/state/index';
 import { Customer } from '@/types/types';
 import Feather from '@expo/vector-icons/Feather';
 import { FlashList } from '@shopify/flash-list';
+import axios from 'axios';
 import { useRouter } from 'expo-router';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    RefreshControl,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const InvoicesClientScreen = memo(() => {
@@ -30,6 +30,8 @@ const InvoicesClientScreen = memo(() => {
   const setSelectedCustomerInvoices = useAppStore(
     (state) => state.setSelectedCustomerInvoices
   );
+  const selectedCustomerInvoices = useAppStore((state) => state.selectedCustomerInvoices);
+  const products = useAppStore((state) => state.products);
   const { fetchUrl } = useAppStore();
 
   const FETCH_URL = fetchUrl + '/api/customers/';
@@ -40,20 +42,13 @@ const InvoicesClientScreen = memo(() => {
     try {
       setLoading(true);
 
-      const res = await api.get(`by-sales-emp?slpCode=${user.salesPersonCode}`, {
+      const res = await axios.get(`by-sales-emp?slpCode=${user.salesPersonCode}`, {
         baseURL: FETCH_URL,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user.token}`,
-        },
-        cache: {
-          ttl: 1000 * 60 * 60 * 24,
-        },
+        }
       });
-
-      console.info(
-        res.cached ? 'Clientes cargados desde cache' : 'Clientes cargados desde red'
-      );
 
       const newCustomers = res.data || [];
       setCustomers(newCustomers);
@@ -93,6 +88,33 @@ const InvoicesClientScreen = memo(() => {
 
   const handleCustomerPress = useCallback(
     async (customer: Customer) => {
+      // Si hay productos en el carrito y es un cliente diferente, mostrar alerta
+      if (selectedCustomerInvoices && products.length >= 1 && selectedCustomerInvoices.cardCode !== customer.cardCode) {
+        Alert.alert(
+          'Pedido en progreso',
+          `Tienes ${products.length} producto(s) en el carrito para ${selectedCustomerInvoices.cardName}. ¿Qué deseas hacer?`,
+          [
+            {
+              text: 'Cancelar',
+              style: 'cancel'
+            },
+            {
+              text: 'Continuar con pedido actual',
+              onPress: () => {
+                router.push({
+                  pathname: '/modal',
+                  params: {
+                    cardCode: selectedCustomerInvoices.cardCode,
+                    cardName: selectedCustomerInvoices.cardName,
+                  },
+                });
+              }
+            }
+          ]
+        );
+        return;
+      }
+
       try {
         setSelectedCustomerInvoices(customer);
         router.push({
@@ -110,7 +132,7 @@ const InvoicesClientScreen = memo(() => {
         );
       }
     },
-    [router, setSelectedCustomerInvoices]
+    [router, setSelectedCustomerInvoices, selectedCustomerInvoices, products]
   );
 
   const onRefresh = useCallback(async () => {
@@ -118,43 +140,61 @@ const InvoicesClientScreen = memo(() => {
     await fetchCustomers();
   }, [fetchCustomers]);
 
-  // 👇 este hook ya no está después de returns condicionales
+  // Verificar si los clientes deben estar deshabilitados
+  const isClientsDisabled = useMemo(() => {
+    return selectedCustomerInvoices && products.length >= 1;
+  }, [selectedCustomerInvoices, products]);
+
   const renderCustomerItem = useCallback(
-    ({ item }: { item: Customer }) => (
-      <TouchableOpacity
-        onPress={() => handleCustomerPress(item)}
-        className="flex-row items-center gap-3 px-4 my-2"
-      >
-        <View className="bg-primary w-[50px] h-[50px] items-center justify-center rounded-full">
-          <ClientIcon size={24} color="#fff" />
-        </View>
+    ({ item }: { item: Customer }) => {
+      const isCurrentSelected = selectedCustomerInvoices?.cardCode === item.cardCode;
+      const isDisabled = isClientsDisabled && !isCurrentSelected;
 
-        <View className="flex-1 justify-center">
-          <Text className="font-[Poppins-SemiBold] text-lg text-black tracking-[-0.3px]">
-            {item.cardName}
-          </Text>
-
-          <View className="flex-row gap-2">
-            <Text className="text-gray-600 font-[Poppins-SemiBold] tracking-[-0.3px]">
-              Código:{' '}
-              <Text className="font-[Poppins-Regular]">{item.cardCode}</Text>
-            </Text>
-            <Text className="text-gray-600 font-[Poppins-SemiBold] tracking-[-0.3px]">
-              RTN:{' '}
-              <Text className="font-[Poppins-Regular] tracking-[-0.3px]">
-                {item.federalTaxID
-                  ? item.federalTaxID.replace(
-                      /^\d{4}(\d{4})(\d{6})$/,
-                      '$1-$2-$3'
-                    )
-                  : ''}
-              </Text>
-            </Text>
+      return (
+        <TouchableOpacity
+          onPress={() => !isDisabled && handleCustomerPress(item)}
+          disabled={isDisabled || false}
+          className={`flex-row items-center gap-3 px-4 my-2 ${isDisabled ? 'opacity-50' : 'opacity-100'}`}
+        >
+          <View className={`w-[50px] h-[50px] items-center justify-center rounded-full ${
+            isDisabled ? 'bg-gray-200' : 'bg-primary'
+          }`}>
+            <ClientIcon size={24} color={isDisabled ? "#6b7280" : "#fff"} />
           </View>
-        </View>
-      </TouchableOpacity>
-    ),
-    [handleCustomerPress]
+
+          <View className="flex-1 justify-center">
+            <Text className={`font-[Poppins-SemiBold] text-lg tracking-[-0.3px] ${
+              isDisabled ? 'text-gray-500' : 'text-black'
+            }`}>
+              {item.cardName}
+            </Text>
+
+            <View className="flex-row gap-2">
+              <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${
+                isDisabled ? 'text-gray-500' : 'text-gray-600'
+              }`}>
+                Código:{' '}
+                <Text className="font-[Poppins-Regular]">{item.cardCode}</Text>
+              </Text>
+              <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${
+                isDisabled ? 'text-gray-500' : 'text-gray-600'
+              }`}>
+                RTN:{' '}
+                <Text className="font-[Poppins-Regular] tracking-[-0.3px]">
+                  {item.federalTaxID
+                    ? item.federalTaxID.replace(
+                        /^(\d{4})(\d{4})(\d{6})$/,
+                        '$1-$2-$3'
+                      )
+                    : ''}
+                </Text>
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [handleCustomerPress, selectedCustomerInvoices, isClientsDisabled]
   );
 
   if (!user?.token) {
@@ -199,6 +239,22 @@ const InvoicesClientScreen = memo(() => {
 
   return (
     <View className="flex-1 bg-white">
+      {/* Banner informativo cuando hay cliente y productos */}
+      {isClientsDisabled && (
+        <View className="bg-amber-50 border-l-4 border-amber-400 px-4 py-3 mx-4 my-2 rounded-r-lg">
+          <View className="flex-row items-center">
+            <Feather name="info" size={16} color="#f59e0b" />
+            <Text className="ml-2 text-amber-800 font-[Poppins-SemiBold] text-sm">
+              Pedido en progreso
+            </Text>
+          </View>
+          <Text className="text-amber-700 font-[Poppins-Regular] text-xs mt-1">
+            Ya tienes productos en el carrito para {selectedCustomerInvoices?.cardName}.
+            Completa o cancela el pedido actual para seleccionar otro cliente.
+          </Text>
+        </View>
+      )}
+
       <View className="px-4">
         <View className="bg-gray-200 rounded-2xl px-4 mb-2 text-base font-[Poppins-Regular] text-black flex-row items-center gap-2">
           <Feather name="search" size={20} color="#9ca3af" />
@@ -218,6 +274,7 @@ const InvoicesClientScreen = memo(() => {
         data={filteredCustomers}
         renderItem={renderCustomerItem}
         keyExtractor={(item) => item.cardCode}
+        extraData={{ productsCount: products.length, selectedCustomerId: selectedCustomerInvoices?.cardCode, isClientsDisabled }}
         estimatedItemSize={80}
         refreshControl={
           <RefreshControl

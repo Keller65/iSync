@@ -158,7 +158,7 @@ const Consignment = () => {
     return (
       <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator size="large" color="#000" />
-        <Text className="mt-4 text-gray-600">Cargando consignaciones...</Text>
+        <Text className="mt-4 text-gray-600">Cargando cotizaciones...</Text>
       </View>
     );
   }

@@ -19,6 +19,7 @@ interface CartItemType {
   imageUrl: string | null;
   itemCode: string;
   itemName: string;
+  groupCode: string;
   unitPrice: number;
   quantity: number;
   tiers: {
@@ -62,7 +63,7 @@ const CartItem = memo(({ item, onRemove }: CartItemProps) => {
       <View className="flex-row gap-4 items-center">
         <View className="size-[120px] bg-white border overflow-hidden border-gray-200 rounded-lg items-center justify-center">
           <Image
-            source={{ uri: "https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png" }}
+            source={{ uri: `https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/${item.groupCode}.jpg` }}
             style={{ height: 120, width: 120, objectFit: "contain" }}
             contentFit="contain"
             transition={500}

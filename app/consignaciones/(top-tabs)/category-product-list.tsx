@@ -26,7 +26,7 @@ const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (
           </View>
         )}
         <Image
-          source={{ uri: "https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/BlurImage.png" }}
+          source={{ uri: `https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/${item.groupCode}.jpg` }}
           style={{ height: 120, width: 140, objectFit: "contain" }}
           onError={() => console.log("Error loading image for item:", item.itemCode)}
         />
@@ -598,7 +598,7 @@ const CategoryProductScreen = memo(() => {
             <View>
               <View className="w-full h-[230px] items-center justify-center bg-white overflow-hidden">
                 <Image
-                  source={{ uri: "https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/BlurImage.png" }}
+                  source={{ uri: `https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/${selectedItem.groupCode}.jpg` }}
                   style={{ height: 230, width: 230, aspectRatio: 1, objectFit: "contain" }}
                 />
               </View>

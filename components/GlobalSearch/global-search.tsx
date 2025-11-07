@@ -29,7 +29,7 @@ const ProductItem = memo(function ProductItem({ item, onPress }: { item: Product
           </View>
         )}
         <Image
-          source={{ uri: `https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/BlurImage.png` }}
+          source={{ uri: `https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/${item.groupCode}.jpg` }}
           style={{ height: 180, width: 180, objectFit: "contain", borderRadius: 16 }}
           onError={() => console.log("Error loading image for item:", item.itemCode)}
         />
@@ -478,7 +478,7 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
             <View>
               <View className="w-full h-[230px] items-center justify-center bg-white overflow-hidden">
                 <Image
-                  source={{ uri: `https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/BlurImage.png` }}
+                  source={{ uri: `https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/${selectedItem.groupCode}.jpg` }}
                   style={{ height: 230, width: 230, aspectRatio: 1, objectFit: "contain" }}
                 />
               </View>

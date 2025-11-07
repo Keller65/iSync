@@ -25,8 +25,6 @@ export default function RootLayout() {
   const setDebouncedSearchText = useAppStore(state => state.setDebouncedSearchText);
 
   useEffect(() => {
-    console.log("[Layout] Raw search text changed:", rawSearchText);
-    
     const handler = setTimeout(() => {
       console.log("[Layout] Setting debounced search text:", rawSearchText);
       setDebouncedSearchText(rawSearchText);

@@ -151,7 +151,7 @@ const ConsignmentDetails = () => {
       <body>
         <div class="container">
         <div class="header">
-          <div class="title">Consignación</div>
+          <div class="title">Cotización</div>
           <div class="subtitle">${consignment.cardName} (${consignment.cardCode})</div>
         </div>
         <div class="details">
@@ -203,7 +203,7 @@ const ConsignmentDetails = () => {
 
         {consignment && (
           <View className='mt-4'>
-            <Text className='text-xl mb-2 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>Detalles del Pedido</Text>
+            <Text className='text-xl mb-2 tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>Detalles</Text>
 
             <View className='flex-col gap-4 mb-4'>
               <View className='flex-row gap-4 flex-1'>
@@ -223,7 +223,7 @@ const ConsignmentDetails = () => {
 
               <View className='flex-row gap-4 flex-1'>
                 <View className='flex-1 bg-gray-100 px-4 py-2 rounded-2xl flex-col items-start'>
-                  <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Total del Pedido</Text>
+                  <Text className='tracking-[-0.3px] text-gray-400 text-md' style={{ fontFamily: 'Poppins-Regular' }}>Total</Text>
                   <Text className='tracking-[-0.3px] text-lg' style={{ fontFamily: 'Poppins-SemiBold' }}>
                     Lps. {consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </Text>

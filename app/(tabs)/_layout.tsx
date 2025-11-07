@@ -20,7 +20,7 @@ const Drawer = createDrawerNavigator();
 export default function Layout() {
   const ActiveColor = '#1A3D59';
   const InActiveColor = '#c9c9c9';
-  
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
@@ -86,7 +86,7 @@ export default function Layout() {
               name="consignment"
               component={Consignment}
               options={{
-                title: 'Consignaciones',
+                title: 'Cotizaciones',
                 drawerIcon: ({ focused }) => (
                   <ConsignmentIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),

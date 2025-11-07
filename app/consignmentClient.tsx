@@ -1,21 +1,13 @@
 import ClientIcon from '@/assets/icons/ClientIcon';
 import { useAuth } from '@/context/auth';
-import api from '@/lib/api';
+import axios from 'axios';
 import { useAppStore } from '@/state/index';
 import { Customer } from '@/types/types';
 import Feather from '@expo/vector-icons/Feather';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, RefreshControl, Text, TextInput, TouchableOpacity, View, } from 'react-native';
 
 const InvoicesClientScreen = memo(() => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -58,20 +50,13 @@ const InvoicesClientScreen = memo(() => {
     try {
       setLoading(true);
 
-      const res = await api.get(`by-sales-emp?slpCode=${user.salesPersonCode}`, {
+      const res = await axios.get(`by-sales-emp?slpCode=${user.salesPersonCode}`, {
         baseURL: FETCH_URL,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user.token}`,
-        },
-        cache: {
-          ttl: 1000 * 60 * 60 * 24,
-        },
+        }
       });
-
-      console.info(
-        res.cached ? 'Clientes cargados desde cache' : 'Clientes cargados desde red'
-      );
 
       const newCustomers = res.data || [];
       setCustomers(newCustomers);

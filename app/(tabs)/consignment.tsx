@@ -10,6 +10,8 @@ import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import UpdateBanner from '@/components/UpdateBanner';
+import { useOtaUpdates } from "@/hooks/useOtaUpdates";
 
 const Consignment = () => {
   const { products, fetchUrl } = useAppStore();
@@ -27,6 +29,8 @@ const Consignment = () => {
   const pageSize = 20;
   const [page, setPage] = useState(1);
   const isFetchingRef = useRef(false);
+
+  const { isUpdateAvailable, checkAndUpdate } = useOtaUpdates();
 
   // Limpiar el input de búsqueda cuando la pantalla recibe el foco
   useFocusEffect(
@@ -130,7 +134,7 @@ const Consignment = () => {
         </View>
         <View className="flex-1">
           <Text className="text-base font-[Poppins-SemiBold] tracking-[-0.3px]">{item.cardName}</Text>
-          <Text className="text-base font-[Poppins-Regular] tracking-[-0.3px]">Consignación N°: {item.docNum.toLocaleString()}</Text>
+          <Text className="text-base font-[Poppins-Regular] tracking-[-0.3px]">Cotización N°: {item.docNum.toLocaleString()}</Text>
         </View>
       </View>
 
@@ -174,34 +178,42 @@ const Consignment = () => {
   }
 
   return (
-    <View className="px-4 bg-white flex-1 relative gap-2">
-      <View className="absolute bottom-4 right-6 gap-3 items-end z-10">
-        {products.length > 0 ? (
-          <BottomSheetConsignment />
-        ) : (
-          <TouchableOpacity
-            className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary"
-            onPress={() => router.push('/consignmentClient')}
-          >
-            <PlusIcon color="white" />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <FlashList
-        data={consignments}
-        estimatedItemSize={200}
-        renderItem={renderItem}
-        className='flex-1 gap-2'
-        keyExtractor={(item: ConsignmentType) => item.docEntry.toString()}
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        refreshing={loading && !loadingMore}
-        onRefresh={handleRefresh}
-        contentContainerStyle={{ paddingBottom: 80 }} // Espacio para el botón flotante
+    <>
+      <UpdateBanner
+        visible={isUpdateAvailable}
+        onReload={checkAndUpdate}
+        message="Actualización disponible"
       />
-    </View>
+
+      <View className="px-4 bg-white flex-1 relative gap-2">
+        <View className="absolute bottom-4 right-6 gap-3 items-end z-10">
+          {products.length > 0 ? (
+            <BottomSheetConsignment />
+          ) : (
+            <TouchableOpacity
+              className="rounded-full flex items-center justify-center h-[50px] w-[50px] bg-primary"
+              onPress={() => router.push('/consignmentClient')}
+            >
+              <PlusIcon color="white" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <FlashList
+          data={consignments}
+          estimatedItemSize={200}
+          renderItem={renderItem}
+          className='flex-1 gap-2'
+          keyExtractor={(item: ConsignmentType) => item.docEntry.toString()}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          refreshing={loading && !loadingMore}
+          onRefresh={handleRefresh}
+          contentContainerStyle={{ paddingBottom: 80 }} // Espacio para el botón flotante
+        />
+      </View>
+    </>
   );
 };
 

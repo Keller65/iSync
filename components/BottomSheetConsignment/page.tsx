@@ -249,7 +249,7 @@ export default function BottomSheetConsignment() {
 
       let response;
       if (isEditingConsignment && editingConsignmentId) {
-        // Actualizar consignación existente con nueva estructura
+        // Actualizar Cotización existente con nueva estructura
         const updateData = {
           documentId: editingConsignmentId,
           lines: products.map((product) => ({
@@ -270,10 +270,10 @@ export default function BottomSheetConsignment() {
             'User-Agent': 'iSync-ERP',
           },
         });
-        console.log('✅ Consignación actualizada exitosamente:', response.data);
+        console.log('✅ Cotización actualizada exitosamente:', response.data);
         console.log('data enviada:', updateData);
       } else {
-        // Crear nueva consignación
+        // Crear nueva Cotización
         response = await axios.post(`${fetchUrl}/api/Consignaciones/async`, data, {
           headers: {
             'Content-Type': 'application/json',
@@ -283,7 +283,7 @@ export default function BottomSheetConsignment() {
             'User-Agent': 'iSync-ERP',
           },
         });
-        console.log('✅ Nueva consignación creada exitosamente:', response.data);
+        console.log('✅ Nueva Cotización creada exitosamente:', response.data);
       }
 
       console.log('data enviada:', data);
@@ -313,8 +313,8 @@ export default function BottomSheetConsignment() {
       if (isAxiosError(error)) {
         console.error('❌ Error en la solicitud:', error.response?.data || error.message);
         const errorMessage = isEditingConsignment
-          ? 'No se pudo actualizar la consignación.'
-          : 'No se pudo crear la consignación.';
+          ? 'No se pudo actualizar la Cotización.'
+          : 'No se pudo crear la Cotización.';
         Alert.alert('Error', `${errorMessage} ${error.response?.data?.message || error.message}`);
       } else {
         console.error('❌ Error desconocido:', (error as Error).message);
@@ -422,14 +422,14 @@ export default function BottomSheetConsignment() {
               <>
                 <ActivityIndicator color="white" size="small" />
                 <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">
-                  {isEditingConsignment ? 'Actualizando Consignación...' : 'Realizando Consignación...'}
+                  {isEditingConsignment ? 'Actualizando Cotización...' : 'Realizando Cotización...'}
                 </Text>
               </>
             ) : (
               <>
                 <ConsignmentIcon color="white" />
                 <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">
-                  {isEditingConsignment ? 'Actualizar Consignación' : 'Realizar Consignación'}
+                  {isEditingConsignment ? 'Actualizar Cotización' : 'Realizar Cotización'}
                 </Text>
               </>
             )}
@@ -452,7 +452,7 @@ export default function BottomSheetConsignment() {
   const CancelEdit = useCallback(() => {
     Alert.alert(
       'Cancelar edición',
-      '¿Estás seguro de que quieres cancelar la edición de la consignación? Se perderán los cambios no guardados.',
+      '¿Estás seguro de que quieres cancelar la edición de la Cotización? Se perderán los cambios no guardados.',
       [
         { text: 'No', style: 'cancel' },
         { text: 'Sí', onPress: () => { exitEditMode(); clearCart(); } }
@@ -520,14 +520,14 @@ export default function BottomSheetConsignment() {
         <View className='flex-1'>
           <View className='px-4 pb-2'>
             <Text className="text-lg text-start font-[Poppins-Bold] tracking-[-0.3px]">
-              {isEditingConsignment ? 'Editar Consignación' : 'Resumen de Consignación'}
+              {isEditingConsignment ? 'Editar Cotización' : 'Resumen de Cotización'}
             </Text>
           </View>
           <MemoizedCommentInput comments={comments} onCommentsChange={setComments} />
 
           {isEditingConsignment && (
             <View className="px-4 bg-red-200 mb-4 p-2 flex-row justify-between items-center gap-4">
-              <Text className="text-sm text-red-500 font-[Poppins-SemiBold]">Cancelar edición de consignación</Text>
+              <Text className="text-sm text-red-500 font-[Poppins-SemiBold]">Cancelar edición de Cotización</Text>
 
               <TouchableOpacity onPress={CancelEdit} className='bg-red-500 px-3 py-1 rounded-full items-center justify-center'>
                 <Text className="text-sm text-white font-[Poppins-SemiBold]">Cancelar</Text>
@@ -631,7 +631,7 @@ export default function BottomSheetConsignment() {
               ) : (
                 <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${isRtnFormValid && rtnNumber.trim().length === 14 ? 'text-white' : 'text-gray-500'
                   }`}>
-                  Enviar Consignación
+                  Enviar Cotización
                 </Text>
               )}
             </TouchableOpacity>

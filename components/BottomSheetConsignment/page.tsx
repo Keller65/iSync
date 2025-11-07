@@ -617,8 +617,8 @@ export default function BottomSheetConsignment() {
             {/* Botón de envío */}
             <TouchableOpacity
               onPress={handleSubmitWithRtn}
-              disabled={!isRtnFormValid || isLoading}
-              className={`rounded-full py-3 items-center justify-center ${isRtnFormValid && !isLoading ? 'bg-primary' : 'bg-gray-300'
+              disabled={!isRtnFormValid || isLoading || rtnNumber.trim().length !== 14}
+              className={`rounded-full py-3 items-center justify-center ${isRtnFormValid && !isLoading && rtnNumber.trim().length === 14 ? 'bg-primary' : 'bg-gray-300'
                 }`}
             >
               {isLoading ? (
@@ -629,7 +629,7 @@ export default function BottomSheetConsignment() {
                   </Text>
                 </View>
               ) : (
-                <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${isRtnFormValid ? 'text-white' : 'text-gray-500'
+                <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${isRtnFormValid && rtnNumber.trim().length === 14 ? 'text-white' : 'text-gray-500'
                   }`}>
                   Enviar Consignación
                 </Text>

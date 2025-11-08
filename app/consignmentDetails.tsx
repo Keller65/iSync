@@ -64,116 +64,233 @@ const ConsignmentDetails = () => {
         <meta charset="UTF-8" />
         <style>
         body {
-          font-family: 'Poppins', Arial, sans-serif;
+          font-family: 'Arial', sans-serif;
           background: #fff;
-          color: #222;
+          color: #333;
           margin: 0;
-          padding: 32px 0;
+          font-size: 11px;
+          line-height: 1.4;
         }
         .container {
-          width: 90%;
-          margin: auto;
+          width: 100%;
+          max-width: 800px;
+          margin: 0 auto;
           background: #fff;
-          border-radius: 16px;  
-          padding: 32px 24px;
+          box-shadow: 0 0 20px rgba(0,0,0,0.1);
+          border-radius: 8px;
+          overflow: hidden;
         }
         .header {
-          text-align: left;
-          margin-bottom: 24px;
-          border-bottom: 1px solid #eee;
-          padding-bottom: 16px;
+          background: linear-gradient(135deg, #374151, #1f2937);
+          color: #fff;
+          padding: 12px;
+          text-align: center;
+          font-weight: bold;
+          font-size: 11px;
+          letter-spacing: 0.5px;
         }
-        .title {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin: 0 0 8px 0;
-          letter-spacing: -0.5px;
+        .company-info {
+          padding: 25px;
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
         }
-        .subtitle {
-          font-size: 1rem;
-          color: #888;
-          margin: 0;
+        .company-name {
+          font-size: 22px;
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 8px;
+          color: #1e293b;
         }
-        .details {
-          margin: 24px 0 0 0;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px 24px;
-          font-size: 0.98rem;
+        .company-details {
+          text-align: center;
+          font-size: 10px;
+          line-height: 1.5;
+          color: #64748b;
         }
-        .details div {
-          color: #444;
-          background: #f6f7f9;
-          border-radius: 8px;
-          padding: 10px 14px;
-          font-weight: 500;
-        }
-        .products {
-          margin-top: 32px;
-        }
-        .products-title {
-          font-size: 1.1rem;
-          font-weight: 600;
-          margin-bottom: 12px;
-          letter-spacing: -0.3px;
-        }
-        .product-list {
+        .document-info {
           display: flex;
-          flex-direction: column;
-          gap: 10px;
+          padding: 20px 25px;
+          border-bottom: 1px solid #e2e8f0;
+          background: #ffffff;
         }
-        .product {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background: #f6f7f9;
-          border-radius: 8px;
-          padding: 10px 14px;
-          font-size: 0.97rem;
+        .doc-left {
+          flex: 1;
+          font-size: 11px;
+          color: #374151;
         }
-        .product-desc {
-          flex: 2;
-          font-weight: 500;
-          color: #222;
-          margin-right: 8px;
-        }
-        .product-meta {
+        .doc-right {
           flex: 1;
           text-align: right;
-          color: #666;
-          font-size: 0.95rem;
+          font-size: 11px;
+          color: #374151;
         }
-        .product-meta span {
-          display: block;
+        .client-info {
+          padding: 20px 25px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .client-label {
+          font-weight: bold;
+          margin-bottom: 8px;
+          color: #1e293b;
+        }
+        .table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 0;
+        }
+        .table th {
+          background: linear-gradient(135deg, #374151, #1f2937);
+          color: #fff;
+          padding: 12px 8px;
+          text-align: center;
+          font-weight: bold;
+          font-size: 10px;
+          border-bottom: 2px solid #e2e8f0;
+        }
+        .table td {
+          padding: 10px 8px;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 10px;
+          text-align: center;
+          color: #374151;
+        }
+        .table td.desc {
+          text-align: left;
+        }
+        .table td.amount {
+          text-align: right;
+          font-weight: 500;
+        }
+        .table tbody tr:hover {
+          background: #f8fafc;
+        }
+        .totals {
+          margin-top: 0;
+          padding: 25px;
+          background: #f8fafc;
+        }
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 11px;
+          color: #374151;
+        }
+        .total-row.final {
+          font-weight: bold;
+          font-size: 14px;
+          border-bottom: 2px solid #374151;
+          padding: 10px 0;
+          margin-top: 8px;
+          color: #1e293b;
+        }
+        .footer {
+          padding: 20px 25px;
+          text-align: center;
+          font-size: 9px;
+          background: linear-gradient(135deg, #374151, #1f2937);
+          color: #fff;
+          line-height: 1.4;
         }
         </style>
       </head>
       <body>
         <div class="container">
-        <div class="header">
-          <div class="title">Cotización</div>
-          <div class="subtitle">${consignment.cardName} (${consignment.cardCode})</div>
-        </div>
-        <div class="details">
-          <div>RTN:<br><strong>${consignment.federalTaxID}</strong></div>
-          <div>Documento:<br><strong>${consignment.docEntry}</strong></div>
-          <div>Fecha:<br><strong>${new Date(consignment.docDate).toLocaleDateString()}</strong></div>
-          <div>Total:<br><strong>Lps. ${consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></div>
-        </div>
-        <div class="products">
-          <div class="products-title">Productos</div>
-          <div class="product-list">
-          ${consignment.lines.map((line) => `
-            <div class="product">
-            <div class="product-desc">${line.itemDescription}</div>
-            <div class="product-meta">
-              <span>Cant: ${line.quantity}</span>
-              <span>Lps. ${(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            </div>
-          `).join('')}
+          <div class="header">
+            ORIGINAL • CLIENTE • 1ERA. COPIA • OBLIGADO TRIBUTARIO EMISOR • 2DA. COPIA • CONTABILIDAD
           </div>
-        </div>
+          
+          <div class="company-info">
+            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+              <img src="https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/logo.jpg" alt="Logo" style="height: 60px; width: auto; margin-right: 15px;" />
+              <div class="company-name" style="margin-bottom: 0;">iSync ERP</div>
+            </div>
+            <div class="company-details">
+              ELECTRO LLANTAS S. DE R.L.<br>
+              RTN: 08011962810019<br>
+              COL. GODOY, BLVD PASEO AL SUR FRENTE A DIVISION DE SEGURIDAD PORTUARIA CASA 1237<br>
+              DISTRITO CENTRAL, FRANCISCO MORAZÁN, HONDURAS, C.A.<br>
+              Tel: 9520-2613 • Cel: 9582-3410
+            </div>
+          </div>
+
+          <div class="document-info">
+            <div class="doc-left">
+              <strong>CLIENTE:</strong><br>
+              ${consignment.cardName}<br>
+              RTN: ${consignment.federalTaxID}<br>
+              CÓDIGO: ${consignment.cardCode}
+            </div>
+            <div class="doc-right">
+              <strong>FACTURA</strong><br>
+              No.004-001-01-${String(consignment.docEntry).padStart(8, '0')}<br>
+              <strong>FECHA:</strong> ${new Date(consignment.docDate).toLocaleDateString('es-HN')}<br>
+            </div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th width="12%">CÓDIGO</th>
+                <th width="43%">DESCRIPCIÓN</th>
+                <th width="15%">PRECIO UNITARIO</th>
+                <th width="10%">CANT.</th>
+                <th width="20%">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${consignment.lines.map((line) => `
+                <tr>
+                  <td>${line.itemCode || 'N/A'}</td>
+                  <td class="desc">${line.itemDescription}</td>
+                  <td class="amount">L. ${line.priceAfterVAT.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td>${line.quantity}</td>
+                  <td class="amount">L. ${(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                </tr>
+              `).join('')}
+              ${Array.from({ length: Math.max(0, 8 - consignment.lines.length) }, () => `
+                <tr>
+                  <td>&nbsp;</td>
+                  <td class="desc">&nbsp;</td>
+                  <td class="amount">&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td class="amount">&nbsp;</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="totals">
+            <div class="total-row">
+              <span>SUB-TOTAL EXONERADO:</span>
+              <span>L. 0.00</span>
+            </div>
+            <div class="total-row">
+              <span>SUB-TOTAL EXENTO:</span>
+              <span>L. 0.00</span>
+            </div>
+            <div class="total-row">
+              <span>SUB-TOTAL GRAVADO 15%:</span>
+              <span>L. ${(consignment.docTotal / 1.15).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div class="total-row">
+              <span>DESCUENTO/BONIFICACIÓN:</span>
+              <span>L. 0.00</span>
+            </div>
+            <div class="total-row">
+              <span>SUB-TOTAL:</span>
+              <span>L. ${(consignment.docTotal / 1.15).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div class="total-row">
+              <span>IMPUESTO SOBRE VENTAS (15%):</span>
+              <span>L. ${(consignment.docTotal - (consignment.docTotal / 1.15)).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div class="total-row final">
+              <span>TOTAL A PAGAR:</span>
+              <span>L. ${consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          </div>
         </div>
       </body>
       </html>
@@ -252,45 +369,13 @@ const ConsignmentDetails = () => {
                   </Text>
                 )}
               </TouchableOpacity>
-
-              {/* <TouchableOpacity
-                className='bg-primary py-3 h-[50px] w-[50px] rounded-full items-center justify-center flex-row'
-                onPress={() => {
-                  if (!consignment) return;
-                  
-                  // Configurar modo edición
-                  const { setEditMode, preloadCartWithConsignmentItems, setSelectedCustomerConsignment } = useAppStore.getState();
-                  setEditMode(true, docEntry.toString(), consignment);
-                  
-                  // Establecer el cliente de la consignación
-                  const customerData: Customer = {
-                    cardCode: consignment.cardCode,
-                    cardName: consignment.cardName,
-                    federalTaxID: consignment.federalTaxID,
-                    priceListNum: "1", // valor por defecto si no está disponible
-                  };
-                  setSelectedCustomerConsignment(customerData);
-                  
-                  // Precargar productos al carrito
-                  preloadCartWithConsignmentItems(consignment.lines);
-                  
-                  
-                  // Navegar a la tienda con parámetro de edición
-                  router.push({
-                    pathname: '/consignaciones',
-                    params: { editConsignmentId: docEntry }
-                  });
-                }}
-              >
-                <Feather name="edit" size={20} color="white" />
-              </TouchableOpacity> */}
             </View>
 
             <Text className='tracking-[-0.3px] mt-4' style={{ fontFamily: 'Poppins-SemiBold' }}>Productos</Text>
             {consignment.lines.map((line, index) => (
               <View key={index} className='py-2 gap-4 flex-row items-center'>
                 <Image
-                  source={{ uri: 'https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/BlurImage.png' }}
+                  source={{ uri: `https://pub-f524aa67d2854c378ac58dd12adeca33.r2.dev/${line.groupCode}.png` }}
                   resizeMode='contain'
                   height={100} width={100}
                   className='border-2 border-gray-200 rounded-xl'

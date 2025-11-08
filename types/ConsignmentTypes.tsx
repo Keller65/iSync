@@ -6,6 +6,7 @@ export interface ConsignmentLine {
   warehouseName: string;
   quantity: number;
   priceAfterVAT: number;
+  groupCode: string;
 }
 
 export interface Consignment {

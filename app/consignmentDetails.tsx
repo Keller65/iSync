@@ -63,8 +63,10 @@ const ConsignmentDetails = () => {
       <head>
         <meta charset="UTF-8" />
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nata+Sans:wght@100..900&display=swap');
+        
         body {
-          font-family: 'Arial', sans-serif;
+          font-family: 'Nata Sans', Arial, sans-serif;
           background: #fff;
           color: #333;
           margin: 0;
@@ -73,10 +75,8 @@ const ConsignmentDetails = () => {
         }
         .container {
           width: 100%;
-          max-width: 800px;
           margin: 0 auto;
           background: #fff;
-          box-shadow: 0 0 20px rgba(0,0,0,0.1);
           border-radius: 8px;
           overflow: hidden;
         }
@@ -133,36 +133,68 @@ const ConsignmentDetails = () => {
           margin-bottom: 8px;
           color: #1e293b;
         }
-        .table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 0;
+        .products-section {
+          padding: 20px;
         }
-        .table th {
-          background: linear-gradient(135deg, #374151, #1f2937);
-          color: #fff;
-          padding: 12px 8px;
-          text-align: center;
+        .products-title {
+          font-size: 16px;
           font-weight: bold;
-          font-size: 10px;
-          border-bottom: 2px solid #e2e8f0;
-        }
-        .table td {
-          padding: 10px 8px;
-          border-bottom: 1px solid #e2e8f0;
-          font-size: 10px;
+          margin-bottom: 15px;
+          color: #1e293b;
           text-align: center;
+        }
+        .product-item {
+          display: flex;
+          align-items: center;
+          padding: 15px;
+          margin-bottom: 10px;
+          background: #fff;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .product-image {
+          width: 60px;
+          height: 60px;
+          object-fit: contain;
+          border-radius: 6px;
+          margin-right: 15px;
+          background: #f8fafc;
+        }
+        .product-details {
+          flex: 1;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .product-info {
+          flex: 1;
+        }
+        .product-name {
+          font-weight: bold;
+          font-size: 12px;
+          color: #1e293b;
+          margin-bottom: 4px;
+        }
+        .product-code {
+          font-size: 10px;
+          color: #64748b;
+          margin-bottom: 2px;
+        }
+        .product-price {
+          font-size: 10px;
           color: #374151;
         }
-        .table td.desc {
-          text-align: left;
+        .product-quantity {
+          text-align: center;
+          min-width: 60px;
+          font-size: 11px;
+          color: #374151;
         }
-        .table td.amount {
+        .product-total {
           text-align: right;
-          font-weight: 500;
-        }
-        .table tbody tr:hover {
-          background: #f8fafc;
+          min-width: 100px;
+          font-weight: bold;
+          font-size: 12px;
+          color: #1e293b;
         }
         .totals {
           margin-top: 0;
@@ -197,21 +229,22 @@ const ConsignmentDetails = () => {
       </head>
       <body>
         <div class="container">
-          <div class="header">
-            ORIGINAL • CLIENTE • 1ERA. COPIA • OBLIGADO TRIBUTARIO EMISOR • 2DA. COPIA • CONTABILIDAD
-          </div>
-          
           <div class="company-info">
-            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
-              <img src="https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/logo.jpg" alt="Logo" style="height: 60px; width: auto; margin-right: 15px;" />
-              <div class="company-name" style="margin-bottom: 0;">iSync ERP</div>
-            </div>
-            <div class="company-details">
-              ELECTRO LLANTAS S. DE R.L.<br>
-              RTN: 08011962810019<br>
-              COL. GODOY, BLVD PASEO AL SUR FRENTE A DIVISION DE SEGURIDAD PORTUARIA CASA 1237<br>
-              DISTRITO CENTRAL, FRANCISCO MORAZÁN, HONDURAS, C.A.<br>
-              Tel: 9520-2613 • Cel: 9582-3410
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+              <div style="flex: 0 0 auto;">
+                <img src="https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/logo.jpg" alt="Logo" style="height: 110px; width: auto;" />
+              </div>
+              <div style="flex: 1; text-align: center; margin-left: 20px;">
+                <div class="company-name" style="margin-bottom: 8px; text-align: center;">ElectroLlantas</div>
+                <div class="company-details" style="text-align: center;">
+                  ELECTRO LLANTAS S. DE R.L.<br>
+                  RTN: 08011962810019<br>
+                  COL. GODOY, BLVD PASEO AL SUR FRENTE A DIVISION<br>
+                  DE SEGURIDAD PORTUARIA CASA 1237<br>
+                  DISTRITO CENTRAL, FRANCISCO MORAZÁN, HONDURAS, C.A.<br>
+                  Tel: 9520-2613 • Cel: 9582-3410
+                </div>
+              </div>
             </div>
           </div>
 
@@ -223,69 +256,38 @@ const ConsignmentDetails = () => {
               CÓDIGO: ${consignment.cardCode}
             </div>
             <div class="doc-right">
-              <strong>FACTURA</strong><br>
+              <strong>Cotización</strong><br>
               No.004-001-01-${String(consignment.docEntry).padStart(8, '0')}<br>
               <strong>FECHA:</strong> ${new Date(consignment.docDate).toLocaleDateString('es-HN')}<br>
             </div>
           </div>
 
-          <table class="table">
-            <thead>
-              <tr>
-                <th width="12%">CÓDIGO</th>
-                <th width="43%">DESCRIPCIÓN</th>
-                <th width="15%">PRECIO UNITARIO</th>
-                <th width="10%">CANT.</th>
-                <th width="20%">TOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${consignment.lines.map((line) => `
-                <tr>
-                  <td>${line.itemCode || 'N/A'}</td>
-                  <td class="desc">${line.itemDescription}</td>
-                  <td class="amount">L. ${line.priceAfterVAT.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  <td>${line.quantity}</td>
-                  <td class="amount">L. ${(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                </tr>
-              `).join('')}
-              ${Array.from({ length: Math.max(0, 8 - consignment.lines.length) }, () => `
-                <tr>
-                  <td>&nbsp;</td>
-                  <td class="desc">&nbsp;</td>
-                  <td class="amount">&nbsp;</td>
-                  <td>&nbsp;</td>
-                  <td class="amount">&nbsp;</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+          <div class="products-section">
+            <div class="products-title">PRODUCTOS</div>
+            ${consignment.lines.map((line) => `
+              <div class="product-item">
+                <img src="https://pub-51a1583fe6c247528ea6255ea10c9541.r2.dev/${line.groupCode || 'BlurImage'}.jpg" 
+                     alt="Producto" class="product-image" />
+                <div class="product-details">
+                  <div class="product-info">
+                    <div class="product-name">${line.itemDescription}</div>
+                    <div class="product-code">Código: ${line.barCode || 'N/A'}</div>
+                    <div class="product-price">Precio: L. ${line.priceAfterVAT.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div class="product-quantity">
+                    <div style="font-size: 9px; color: #64748b; margin-bottom: 2px;">CANT.</div>
+                    <div style="font-weight: bold;">${line.quantity}</div>
+                  </div>
+                  <div class="product-total">
+                    <div style="font-size: 9px; color: #64748b; margin-bottom: 2px;">TOTAL</div>
+                    <div>L. ${(line.priceAfterVAT * line.quantity).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
 
           <div class="totals">
-            <div class="total-row">
-              <span>SUB-TOTAL EXONERADO:</span>
-              <span>L. 0.00</span>
-            </div>
-            <div class="total-row">
-              <span>SUB-TOTAL EXENTO:</span>
-              <span>L. 0.00</span>
-            </div>
-            <div class="total-row">
-              <span>SUB-TOTAL GRAVADO 15%:</span>
-              <span>L. ${(consignment.docTotal / 1.15).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div class="total-row">
-              <span>DESCUENTO/BONIFICACIÓN:</span>
-              <span>L. 0.00</span>
-            </div>
-            <div class="total-row">
-              <span>SUB-TOTAL:</span>
-              <span>L. ${(consignment.docTotal / 1.15).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div class="total-row">
-              <span>IMPUESTO SOBRE VENTAS (15%):</span>
-              <span>L. ${(consignment.docTotal - (consignment.docTotal / 1.15)).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
             <div class="total-row final">
               <span>TOTAL A PAGAR:</span>
               <span>L. ${consignment.docTotal.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>

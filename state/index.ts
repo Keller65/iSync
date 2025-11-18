@@ -94,6 +94,29 @@ interface AppStoreState {
   setAlmacenSalida: (almacenSalida: string) => void;
   clearOrderConfig: () => void;
 
+  // Configuración de ventas
+  ventasConfig: {
+    cotizacion: {
+      concepto: string;
+      almacen: string;
+    };
+    facturasCredito: {
+      concepto: string;
+      almacen: string;
+    };
+    facturasContado: {
+      concepto: string;
+      almacen: string;
+    };
+  };
+  setCotizacionConcepto: (concepto: string) => void;
+  setCotizacionAlmacen: (almacen: string) => void;
+  setFacturasCreditoConcepto: (concepto: string) => void;
+  setFacturasCreditoAlmacen: (almacen: string) => void;
+  setFacturasContadoConcepto: (concepto: string) => void;
+  setFacturasContadoAlmacen: (almacen: string) => void;
+  clearVentasConfig: () => void;
+
   selectedInvoices: SelectedInvoice[];
   addInvoice: (invoice: Invoice, paidAmount: number) => void;
   removeInvoice: (invoiceId: string) => void;
@@ -178,6 +201,22 @@ export const useAppStore = create<AppStoreState>()(
       orderConfig: {
         codigoConcepto: '',
         almacenSalida: '',
+      },
+
+      // Configuración de ventas
+      ventasConfig: {
+        cotizacion: {
+          concepto: '',
+          almacen: '',
+        },
+        facturasCredito: {
+          concepto: '',
+          almacen: '',
+        },
+        facturasContado: {
+          concepto: '',
+          almacen: '',
+        },
       },
       setDeviceUUID: (value: string | null) => set({ deviceUUID: value }),
       setFcmToken: (value: string | null) => set({ fcmToken: value }),
@@ -466,6 +505,98 @@ export const useAppStore = create<AppStoreState>()(
           orderConfig: {
             codigoConcepto: '',
             almacenSalida: '',
+          },
+        });
+      },
+
+      // Funciones para configuración de ventas
+      setCotizacionConcepto: (concepto: string) => {
+        set((state) => ({
+          ventasConfig: {
+            ...state.ventasConfig,
+            cotizacion: {
+              ...state.ventasConfig.cotizacion,
+              concepto,
+            },
+          },
+        }));
+      },
+
+      setCotizacionAlmacen: (almacen: string) => {
+        set((state) => ({
+          ventasConfig: {
+            ...state.ventasConfig,
+            cotizacion: {
+              ...state.ventasConfig.cotizacion,
+              almacen,
+            },
+          },
+        }));
+      },
+
+      setFacturasCreditoConcepto: (concepto: string) => {
+        set((state) => ({
+          ventasConfig: {
+            ...state.ventasConfig,
+            facturasCredito: {
+              ...state.ventasConfig.facturasCredito,
+              concepto,
+            },
+          },
+        }));
+      },
+
+      setFacturasCreditoAlmacen: (almacen: string) => {
+        set((state) => ({
+          ventasConfig: {
+            ...state.ventasConfig,
+            facturasCredito: {
+              ...state.ventasConfig.facturasCredito,
+              almacen,
+            },
+          },
+        }));
+      },
+
+      setFacturasContadoConcepto: (concepto: string) => {
+        set((state) => ({
+          ventasConfig: {
+            ...state.ventasConfig,
+            facturasContado: {
+              ...state.ventasConfig.facturasContado,
+              concepto,
+            },
+          },
+        }));
+      },
+
+      setFacturasContadoAlmacen: (almacen: string) => {
+        set((state) => ({
+          ventasConfig: {
+            ...state.ventasConfig,
+            facturasContado: {
+              ...state.ventasConfig.facturasContado,
+              almacen,
+            },
+          },
+        }));
+      },
+
+      clearVentasConfig: () => {
+        set({
+          ventasConfig: {
+            cotizacion: {
+              concepto: '',
+              almacen: '',
+            },
+            facturasCredito: {
+              concepto: '',
+              almacen: '',
+            },
+            facturasContado: {
+              concepto: '',
+              almacen: '',
+            },
           },
         });
       },

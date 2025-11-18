@@ -1,3 +1,8 @@
+
+plugins {
+    id 'io.sentry.android.gradle' version '5.12.2'
+}
+
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
@@ -177,3 +182,12 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+sentry {
+    org = "aerley"
+    projectName = "isync-erp"
+
+    // this will upload your source code to Sentry to show it as part of the stack traces
+    // disable if you don't want to expose your sources
+    includeSourceContext = true
+}

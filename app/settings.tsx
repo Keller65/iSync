@@ -4,6 +4,7 @@ import { useAppStore } from '@/state/index'
 import { Picker } from '@react-native-picker/picker'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native'
+import { useRouter } from 'expo-router'
 
 const Settings = () => {
   const {
@@ -25,6 +26,7 @@ const Settings = () => {
   const [isSyncing, setIsSyncing] = useState(false)
   const [hasInvalidUrl, setHasInvalidUrl] = useState(false)
   const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     setHasInvalidUrl(false)
@@ -89,7 +91,7 @@ const Settings = () => {
       const urls = [
         `${API_BASE_URL}/api/Catalog/products/categories`
       ];
-      
+
       const results = await Promise.allSettled(urls.map(url => api.get(url, {
         baseURL: API_BASE_URL,
         headers: {
@@ -179,44 +181,6 @@ const Settings = () => {
         <Text className="text-gray-600 text-sm">{fullUrl || 'Vista previa de conexión'}</Text>
       </View>
 
-
-      {/* Configuración de Consignaciones - Título */}
-      <View className="pt-4">
-        <Text className="text-lg font-[Poppins-SemiBold] text-gray-800 tracking-[-0.3px]">Configuración de Consignaciones</Text>
-      </View>
-
-      <View className='flex-row gap-2'>
-        {/* Código Concepto */}
-        <TextInput
-          value={codigoConcepto}
-          onChangeText={setCodigoConceptoLocal}
-          placeholder="Código Concepto (ej: 3)"
-          placeholderTextColor="#000"
-          keyboardAppearance="light"
-          keyboardType="numeric"
-          className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white flex-1"
-        />
-
-        {/* Almacén Salida */}
-        <TextInput
-          value={almacenSalida}
-          onChangeText={setAlmacenSalidaLocal}
-          placeholder="Almacén Salida (ej: 1)"
-          placeholderTextColor="#000"
-          keyboardAppearance="light"
-          keyboardType="numeric"
-          className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white flex-1"
-        />
-      </View>
-
-      {/* Vista previa Configuración de Pedidos */}
-      <View className="border border-dashed border-blue-300 rounded-xl px-4 py-2 bg-blue-50">
-        <Text className="text-blue-600 text-sm font-medium mb-1">Configuración de Pedidos:</Text>
-        <Text className="text-blue-600 text-sm">
-          Código Concepto: {codigoConcepto || 'Sin configurar'} | Almacén Salida: {almacenSalida || 'Sin configurar'}
-        </Text>
-      </View>
-
       {/* Botón de Guardar */}
       <TouchableOpacity
         onPress={handleSave}
@@ -250,6 +214,14 @@ const Settings = () => {
           )}
         </TouchableOpacity>
       )}
+
+      <View className="flex-1 items-center justify-center absolute bottom-4 right-0 left-0">
+        <TouchableOpacity
+          onPress={() => router.push('/settingsSales')}
+        >
+          <Text className="font-[Poppins-SemiBold] text-sm tracking-[-0.3px] text-primary">Configuracion de Ventas</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }

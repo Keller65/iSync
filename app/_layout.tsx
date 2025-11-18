@@ -83,6 +83,7 @@ export default function RootLayout() {
                 <Stack.Screen name="previewInvoice" options={{ headerShown: true, headerTitle: 'Vista previa de impresion' }} />
                 <Stack.Screen name="settings" options={{ headerShown: true, headerTitle: 'Configuracion del Host' }} />
                 <Stack.Screen name="modal" options={{ headerShown: false }} />
+                <Stack.Screen name="settingsSales" options={{ headerShown: true, headerTitle: 'Configuracion de Ventas' }} />
 
                 <Stack.Screen
                   name="consignaciones"

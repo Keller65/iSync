@@ -2,7 +2,7 @@
   "expo": {
     "name": "iSync ERP",
     "slug": "iSync-ERP",
-    "version": "1.711.25",
+    "version": "1.2111.25",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "isyncerp",

@@ -77,7 +77,7 @@ export default function RootLayout() {
                 <Stack.Screen name="login" options={{ headerShown: false }} />
                 <Stack.Screen name="InvoiceClient" options={{ headerShown: true, headerTitle: 'Seleccionar Cliente' }} />
                 <Stack.Screen name="consignmentClient" options={{ headerShown: true, headerTitle: 'Seleccionar Cliente' }} />
-                <Stack.Screen name="consignmentDetails" options={{ headerShown: true, headerTitle: 'Detalles de la Cotización' }} />
+                <Stack.Screen name="consignmentDetails" options={{ headerShown: true, headerTitle: 'Detalles del Documento' }} />
                 <Stack.Screen name="order" options={{ headerShown: true, headerTitle: 'Detalles del Pedido' }} />
                 <Stack.Screen name="invoicesDetails" options={{ headerShown: true, headerTitle: 'Detalles de Cobros' }} />
                 <Stack.Screen name="previewInvoice" options={{ headerShown: true, headerTitle: 'Vista previa de impresion' }} />

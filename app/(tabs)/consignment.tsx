@@ -157,8 +157,8 @@ const Consignment = () => {
   if (loading && !loadingMore) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#000" />
-        <Text className="mt-4 text-gray-600">Cargando cotizaciones...</Text>
+        <ActivityIndicator size="large" color="#4b5563" />
+        <Text className="mt-4 text-gray-600 font-[Poppins-Regular] text-base tracking-[-0.3px]">Cargando Documentos...</Text>
       </View>
     );
   }

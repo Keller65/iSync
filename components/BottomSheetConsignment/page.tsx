@@ -169,7 +169,7 @@ export default function BottomSheetConsignment() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
-  const { fetchUrl, orderConfig, ventasConfig } = useAppStore();
+  const { fetchUrl, ventasConfig } = useAppStore();
   const setRawSearchText = useAppStore((state) => state.setRawSearchText);
   const setDebouncedSearchText = useAppStore((state) => state.setDebouncedSearchText);
 
@@ -222,14 +222,14 @@ export default function BottomSheetConsignment() {
     );
   };
 
-  const handleSubmitOrder = useCallback(async (withRtn: boolean = false, rtnData?: { clientName: string, rtnNumber: string }, documentType: 'factura' | 'cotizacion' = 'cotizacion') => {
+  const handleSubmitOrder = useCallback(async (withRtn: boolean = false, rtnData?: { clientName: string, rtnNumber: string }, documentType: 'factura' | 'cotizacion' = 'cotizacion', facturaTipo: 'facturasContado' | 'facturasCredito' = 'facturasContado') => {
     if (!customerSelected || products.length === 0) {
       Alert.alert('Error', 'Faltan datos para enviar el pedido.');
       return;
     }
 
     // Obtener configuración de ventas desde el estado global
-    const config = documentType === 'cotizacion' ? ventasConfig.cotizacion : ventasConfig.facturasContado;
+    const config = documentType === 'cotizacion' ? ventasConfig.cotizacion : ventasConfig[facturaTipo];
 
     const partidas = products.map((product) => ({
       codigoProducto: product.barCode,
@@ -342,19 +342,21 @@ export default function BottomSheetConsignment() {
     setShowDocumentModal(true);
   }, [customerSelected, products]);
 
-  const handleSelectDocument = useCallback((documentType: 'factura' | 'cotizacion') => {
+  const handleSelectDocument = useCallback((documentType: 'factura' | 'cotizacion', facturaTipo?: 'contado' | 'credito') => {
     setSelectedDocumentType(documentType);
     setShowDocumentModal(false);
 
     if (documentType === 'factura') {
+      const tipoFactura = facturaTipo === 'credito' ? 'facturasCredito' : 'facturasContado';
+
       // Para facturas, preguntamos por RTN
       Alert.alert(
-        'Factura con RTN',
-        '¿Desea su Factura con RTN?',
+        `Factura ${facturaTipo === 'credito' ? 'Crédito' : 'Contado'} con RTN`,
+        `¿Desea su Factura ${facturaTipo === 'credito' ? 'Crédito' : 'Contado'} con RTN?`,
         [
           {
             text: 'No',
-            onPress: () => handleSubmitOrder(false, undefined, 'factura'),
+            onPress: () => handleSubmitOrder(false, undefined, 'factura', tipoFactura),
             style: 'cancel'
           },
           {
@@ -706,11 +708,20 @@ export default function BottomSheetConsignment() {
             {/* Botones de selección */}
             <View className="gap-3">
               <TouchableOpacity
-                onPress={() => handleSelectDocument('factura')}
+                onPress={() => handleSelectDocument('factura', 'contado')}
                 className="bg-primary rounded-full py-4 items-center justify-center"
               >
                 <Text className="text-white font-[Poppins-SemiBold] text-base tracking-[-0.3px]">
-                  Factura
+                  Factura Contado
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleSelectDocument('factura', 'credito')}
+                className="bg-primary rounded-full py-4 items-center justify-center"
+              >
+                <Text className="text-white font-[Poppins-SemiBold] text-base tracking-[-0.3px]">
+                  Factura Credito
                 </Text>
               </TouchableOpacity>
 

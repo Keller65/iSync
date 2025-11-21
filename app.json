@@ -72,7 +72,8 @@
           ],
           "enableBackgroundRemoteNotifications": true
         }
-      ]
+      ],
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true

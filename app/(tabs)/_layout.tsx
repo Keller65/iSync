@@ -86,7 +86,7 @@ export default function Layout() {
               name="consignment"
               component={Consignment}
               options={{
-                title: 'Cotizaciones',
+                title: 'Documentos',
                 drawerIcon: ({ focused }) => (
                   <ConsignmentIcon size={26} color={focused ? ActiveColor : InActiveColor} />
                 ),

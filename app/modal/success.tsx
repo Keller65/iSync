@@ -56,10 +56,10 @@ const Success = () => {
       />
 
       <Text style={{ fontSize: 28, fontFamily: 'Poppins-SemiBold', color: '#1a753c', marginTop: 20, textAlign: 'center' }}>
-        {message ?? '¡Consignacion realizada con exito!'}
+        {message ?? 'Documento creado con exito!'}
       </Text>
       <Text style={{ fontSize: 14, color: '#333', marginTop: 10, marginBottom: 40, textAlign: 'center', fontFamily: 'Poppins-Regular' }}>
-        {message ? 'Acción realizada con éxito.' : 'Pronto recibirás una notificación cuando esta sea procesada.'}
+        {message ? 'Acción realizada con éxito.' : 'Pronto recibirás una notificación cuando esto sea procesado.'}
       </Text>
 
       {message ?
@@ -83,7 +83,7 @@ const Success = () => {
           style={{ backgroundColor: '#28a745', width: '100%', height: 50, alignItems: 'center', justifyContent: 'center', marginBottom: 15 }}
         >
           <Text style={{ fontFamily: 'Poppins-Medium', color: '#fff', fontSize: 18 }}>
-            Ver Consignación
+            Ver Documento
           </Text>
         </TouchableOpacity>
       }

@@ -13,7 +13,7 @@ import axios from 'axios';
 import { brand, modelName } from 'expo-device';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
-import "../../global.css";
+import LogRocket from '@logrocket/react-native';
 
 export default function App() {
   const { user } = useAuth();
@@ -192,6 +192,11 @@ export default function App() {
     { fecha: "2024-06-01", cliente: "Cliente A", monto: 12000 },
     { fecha: "2024-06-02", cliente: "Cliente B", monto: 8500 },
   ];
+
+  LogRocket.identify('com.aerley_adkins2.iSyncERP', {
+    name: user?.fullName || 'Usuario Desconocido',
+    email: user?.salesPersonCode || 'correo@desconocido.com',
+  });
 
   return (
     <View className='flex-1 bg-white relative'>

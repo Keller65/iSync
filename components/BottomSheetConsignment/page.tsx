@@ -169,7 +169,7 @@ export default function BottomSheetConsignment() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState('');
-  const { fetchUrl, orderConfig } = useAppStore();
+  const { fetchUrl, orderConfig, ventasConfig } = useAppStore();
   const setRawSearchText = useAppStore((state) => state.setRawSearchText);
   const setDebouncedSearchText = useAppStore((state) => state.setDebouncedSearchText);
 
@@ -177,6 +177,10 @@ export default function BottomSheetConsignment() {
   const [showRtnModal, setShowRtnModal] = useState(false);
   const [clientName, setClientName] = useState('');
   const [rtnNumber, setRtnNumber] = useState('');
+
+  // Estados para el modal de selección de documento
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<'factura' | 'cotizacion' | null>(null);
 
   const pulse = useSharedValue(0);
   useEffect(() => {
@@ -218,11 +222,14 @@ export default function BottomSheetConsignment() {
     );
   };
 
-  const handleSubmitOrder = useCallback(async (withRtn: boolean = false, rtnData?: { clientName: string, rtnNumber: string }) => {
+  const handleSubmitOrder = useCallback(async (withRtn: boolean = false, rtnData?: { clientName: string, rtnNumber: string }, documentType: 'factura' | 'cotizacion' = 'cotizacion') => {
     if (!customerSelected || products.length === 0) {
       Alert.alert('Error', 'Faltan datos para enviar el pedido.');
       return;
     }
+
+    // Obtener configuración de ventas desde el estado global
+    const config = documentType === 'cotizacion' ? ventasConfig.cotizacion : ventasConfig.facturasContado;
 
     const partidas = products.map((product) => ({
       codigoProducto: product.barCode,
@@ -233,12 +240,13 @@ export default function BottomSheetConsignment() {
 
     const data = {
       codigoCliente: customerSelected.cardCode,
-      codigoConcepto: orderConfig.codigoConcepto || '01',
-      almacenSalida: orderConfig.almacenSalida || '1',
+      codigoConcepto: config.concepto || "N/D",
+      almacenSalida: config.almacen || "N/D",
       fecha: new Date().toISOString(),
       referencia: 'API',
       partidas,
       userId: deviceUUID, // UUID proporcionado por useLicense
+      documentType: documentType,
       ...(withRtn && rtnData && {
         CRAZONSOCIAL: rtnData.clientName,
         CRFC: rtnData.rtnNumber
@@ -257,7 +265,7 @@ export default function BottomSheetConsignment() {
             itemCode: product.barCode,
             quantity: product.quantity,
             price: product.unitPrice,
-            warehouseId: 1,
+            warehouseId: config.almacen,
             remarks: comments || 'no hay',
           })),
           userId: deviceUUID,
@@ -274,7 +282,7 @@ export default function BottomSheetConsignment() {
         console.log('✅ Cotización actualizada exitosamente:', response.data);
         console.log('data enviada:', updateData);
       } else {
-        // Crear nueva Cotización
+        // Crear nueva Cotización o Factura
         response = await axios.post(`${fetchUrl}/api/Consignaciones/async`, data, {
           headers: {
             'Content-Type': 'application/json',
@@ -284,7 +292,7 @@ export default function BottomSheetConsignment() {
             'User-Agent': 'iSync-ERP',
           },
         });
-        console.log('✅ Nueva Cotización creada exitosamente:', response.data);
+        console.log('✅ Documento creado exitosamente:', response.data);
       }
 
       console.log('data enviada:', data);
@@ -315,7 +323,7 @@ export default function BottomSheetConsignment() {
         console.error('❌ Error en la solicitud:', error.response?.data || error.message);
         const errorMessage = isEditingConsignment
           ? 'No se pudo actualizar la Cotización.'
-          : 'No se pudo crear la Cotización.';
+          : 'No se pudo crear el Documento.';
         Alert.alert('Error', `${errorMessage} ${error.response?.data?.message || error.message}`);
       } else {
         console.error('❌ Error desconocido:', (error as Error).message);
@@ -324,30 +332,56 @@ export default function BottomSheetConsignment() {
     } finally {
       setIsLoading(false);
     }
-  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router, deviceUUID, isEditingConsignment, editingConsignmentId, exitEditMode, comments, orderConfig.almacenSalida, orderConfig.codigoConcepto, setRawSearchText, setDebouncedSearchText]);
+  }, [customerSelected, products, fetchUrl, user?.token, clearCart, setComments, router, deviceUUID, isEditingConsignment, editingConsignmentId, exitEditMode, comments, ventasConfig, setRawSearchText, setDebouncedSearchText]);
 
-  const handleAskForRtn = useCallback(() => {
+  const handleDocumentSelection = useCallback(() => {
     if (!customerSelected || products.length === 0) {
       Alert.alert('Error', 'Faltan datos para enviar el pedido.');
       return;
     }
+    setShowDocumentModal(true);
+  }, [customerSelected, products]);
 
-    Alert.alert(
-      'Factura con RTN',
-      '¿Desea su Factura con RTN?',
-      [
-        {
-          text: 'No',
-          onPress: () => handleSubmitOrder(false),
-          style: 'cancel'
-        },
-        {
-          text: 'Sí',
-          onPress: () => setShowRtnModal(true)
-        }
-      ]
-    );
-  }, [customerSelected, products, handleSubmitOrder]);
+  const handleSelectDocument = useCallback((documentType: 'factura' | 'cotizacion') => {
+    setSelectedDocumentType(documentType);
+    setShowDocumentModal(false);
+
+    if (documentType === 'factura') {
+      // Para facturas, preguntamos por RTN
+      Alert.alert(
+        'Factura con RTN',
+        '¿Desea su Factura con RTN?',
+        [
+          {
+            text: 'No',
+            onPress: () => handleSubmitOrder(false, undefined, 'factura'),
+            style: 'cancel'
+          },
+          {
+            text: 'Sí',
+            onPress: () => setShowRtnModal(true)
+          }
+        ]
+      );
+    } else {
+      // Para cotizaciones, también preguntamos por RTN
+      Alert.alert(
+        'Cotización con RTN',
+        '¿Desea su Cotización con RTN?',
+        [
+          {
+            text: 'No',
+            onPress: () => handleSubmitOrder(false, undefined, 'cotizacion'),
+            style: 'cancel'
+          },
+          {
+            text: 'Sí',
+            onPress: () => setShowRtnModal(true)
+          }
+        ]
+      );
+    }
+  }, [handleSubmitOrder]);
 
   const total = useMemo(() => {
     return products.reduce((sum, item) => {
@@ -416,21 +450,21 @@ export default function BottomSheetConsignment() {
         <View className='flex-row w-full gap-2 justify-between'>
           <TouchableOpacity
             className="flex-row flex-1 items-center justify-center h-[50px] bg-primary rounded-full"
-            onPress={handleAskForRtn}
+            onPress={handleDocumentSelection}
             disabled={isLoading}
           >
             {isLoading ? (
               <>
                 <ActivityIndicator color="white" size="small" />
                 <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">
-                  {isEditingConsignment ? 'Actualizando Cotización...' : 'Realizando Cotización...'}
+                  {isEditingConsignment ? 'Actualizando Cotización...' : 'Creando Documento...'}
                 </Text>
               </>
             ) : (
               <>
                 <ConsignmentIcon color="white" />
                 <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px] ml-2">
-                  {isEditingConsignment ? 'Actualizar Cotización' : 'Realizar Cotización'}
+                  {isEditingConsignment ? 'Actualizar Cotización' : 'Crear Documento'}
                 </Text>
               </>
             )}
@@ -448,7 +482,7 @@ export default function BottomSheetConsignment() {
         </View>
       </View>
     </BottomSheetFooter>
-  ), [total, customerSelected?.cardName, isLoading, isEditingConsignment, router, closeCart, handleAskForRtn]);
+  ), [total, customerSelected?.cardName, isLoading, isEditingConsignment, router, closeCart, handleDocumentSelection]);
 
   const CancelEdit = useCallback(() => {
     Alert.alert(
@@ -467,13 +501,15 @@ export default function BottomSheetConsignment() {
       return;
     }
     setShowRtnModal(false);
-    handleSubmitOrder(true, { clientName: clientName.trim(), rtnNumber: rtnNumber.trim() });
-  }, [clientName, rtnNumber, handleSubmitOrder]);
+    const docType = selectedDocumentType || 'cotizacion';
+    handleSubmitOrder(true, { clientName: clientName.trim(), rtnNumber: rtnNumber.trim() }, docType);
+  }, [clientName, rtnNumber, handleSubmitOrder, selectedDocumentType]);
 
   const handleCloseRtnModal = useCallback(() => {
     setShowRtnModal(false);
     setClientName('');
     setRtnNumber('');
+    setSelectedDocumentType(null);
   }, []);
 
   const isRtnFormValid = clientName.trim().length > 0 && rtnNumber.trim().length > 0;
@@ -519,11 +555,11 @@ export default function BottomSheetConsignment() {
         )}
       >
         <View className='flex-1'>
-          <View className='px-4 pb-2'>
+          {/* <View className='px-4 pb-2'>
             <Text className="text-lg text-start font-[Poppins-Bold] tracking-[-0.3px]">
               {isEditingConsignment ? 'Editar Cotización' : 'Resumen de Cotización'}
             </Text>
-          </View>
+          </View> */}
           <MemoizedCommentInput comments={comments} onCommentsChange={setComments} />
 
           {isEditingConsignment && (
@@ -568,7 +604,7 @@ export default function BottomSheetConsignment() {
             {/* Header con botón de cerrar */}
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-lg font-[Poppins-Bold] tracking-[-0.3px]">
-                Datos de Facturación
+                {selectedDocumentType === 'factura' ? 'Datos de Facturación' : 'Datos de Cotización'}
               </Text>
               <TouchableOpacity
                 onPress={handleCloseRtnModal}
@@ -580,7 +616,7 @@ export default function BottomSheetConsignment() {
 
             {/* Descripción */}
             <Text className="text-sm text-gray-600 mb-4 font-[Poppins-Regular]">
-              Complete los datos para generar la factura con RTN
+              Complete los datos para generar {selectedDocumentType === 'factura' ? 'la factura' : 'la cotización'} con RTN
             </Text>
 
             {/* Campo Nombre del Cliente */}
@@ -632,10 +668,61 @@ export default function BottomSheetConsignment() {
               ) : (
                 <Text className={`font-[Poppins-SemiBold] tracking-[-0.3px] ${isRtnFormValid && rtnNumber.trim().length === 14 ? 'text-white' : 'text-gray-500'
                   }`}>
-                  Enviar Cotización
+                  Enviar {selectedDocumentType === 'factura' ? 'Factura' : 'Cotización'}
                 </Text>
               )}
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal para selección de documento */}
+      <Modal
+        visible={showDocumentModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowDocumentModal(false)}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-4">
+          <View className="bg-white rounded-2xl p-6 w-full">
+            {/* Header con botón de cerrar */}
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-lg font-[Poppins-Bold] tracking-[-0.3px]">
+                Documento a crear
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowDocumentModal(false)}
+                className="p-1"
+              >
+                <Feather name="x" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Descripción */}
+            <Text className="text-sm text-gray-600 mb-6 font-[Poppins-Regular]">
+              Seleccione el tipo de documento que desea crear
+            </Text>
+
+            {/* Botones de selección */}
+            <View className="gap-3">
+              <TouchableOpacity
+                onPress={() => handleSelectDocument('factura')}
+                className="bg-primary rounded-full py-4 items-center justify-center"
+              >
+                <Text className="text-white font-[Poppins-SemiBold] text-base tracking-[-0.3px]">
+                  Factura
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleSelectDocument('cotizacion')}
+                className="bg-primary rounded-full py-4 items-center justify-center"
+              >
+                <Text className="text-white font-[Poppins-SemiBold] text-base tracking-[-0.3px]">
+                  Cotización
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

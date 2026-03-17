@@ -347,7 +347,7 @@ const CategoryProductScreen = memo(() => {
 
     setUnitPrice(selectedItem.price);
     setEditablePrice(selectedItem.price);
-    setEditablePriceText(selectedItem.price.toFixed(2));
+    setEditablePriceText(selectedItem.price.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
   }, [selectedItem]);
 
@@ -367,7 +367,7 @@ const CategoryProductScreen = memo(() => {
     const finalPrice = newUnitPrice - discountValue;
     setUnitPrice(newUnitPrice);
     setEditablePrice(finalPrice);
-    setEditablePriceText(finalPrice.toFixed(2));
+    setEditablePriceText(finalPrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   }, [quantity, editableTiers, selectedItem, applyTierDiscounts, isPriceManuallyEdited]);
 
   useEffect(() => {
@@ -508,7 +508,7 @@ const CategoryProductScreen = memo(() => {
       finalValue = parseFloat(finalValue.toFixed(2));
     }
     setEditablePrice(finalValue);
-    setEditablePriceText(finalValue.toFixed(2));
+    setEditablePriceText(finalValue.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
     setIsPriceValid(true);
   };
 
@@ -539,7 +539,7 @@ const CategoryProductScreen = memo(() => {
     const basePrice = unitPrice > 0 ? unitPrice : (selectedItem?.price ?? 0);
     const finalPrice = basePrice - finalDiscount;
     setEditablePrice(finalPrice);
-    setEditablePriceText(finalPrice.toFixed(2));
+    setEditablePriceText(finalPrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   };
 
   if (loading && !loadingMore) {
@@ -575,7 +575,6 @@ const CategoryProductScreen = memo(() => {
           data={filteredItems}
           renderItem={renderItem}
           keyExtractor={(item) => item.itemCode}
-          estimatedItemSize={100}
           numColumns={1}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
@@ -652,28 +651,27 @@ const CategoryProductScreen = memo(() => {
                     <View className='items-start justify-between flex-row'>
                       <View className='flex flex-row justify-between items-start'>
                         <View className="flex-1">
-                          <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 leading-3">
+                          <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
                             Precio de Venta:
                           </Text>
 
                           <View className="flex-row items-center">
                             <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
                             <TextInput
-                              className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] ${!isPriceValid ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                              className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] border-gray-300`}
                               value={editablePriceText}
-                              onChangeText={handlePriceChange}
-                              onBlur={handlePriceBlur}
+                              editable={false}
                               keyboardType="numeric"
                             />
                           </View>
                         </View>
 
                         <View>
-                          <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mr-2">
+                          <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
                             Descuento
                           </Text>
                           <View className="flex-row items-center">
-                            <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-1">L.</Text>
+                            <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black">L.</Text>
                             <TextInput
                               className={`p-2 text-lg font-[Poppins-Bold] text-black w-[80px] border-gray-300`}
                               value={discountText}

@@ -240,7 +240,7 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
 
     setUnitPrice(selectedItem.price);
     setEditablePrice(selectedItem.price);
-    setEditablePriceText(selectedItem.price.toFixed(2));
+    setEditablePriceText(selectedItem.price.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
   }, [selectedItem]);
 
@@ -259,7 +259,7 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
 
     setUnitPrice(newUnitPrice);
     setEditablePrice(newUnitPrice);
-    setEditablePriceText(newUnitPrice.toFixed(2));
+    setEditablePriceText(newUnitPrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   }, [quantity, editableTiers, selectedItem, applyTierDiscounts, isPriceManuallyEdited]);
 
   useEffect(() => {
@@ -317,7 +317,7 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
       finalValue = parseFloat(finalValue.toFixed(2));
     }
     setEditablePrice(finalValue);
-    setEditablePriceText(finalValue.toFixed(2));
+    setEditablePriceText(finalValue.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
     const originalApplicableTier = selectedItem?.tiers?.filter(t => quantity >= t.qty).sort((a, b) => b.qty - a.qty)[0];
     const minimumAllowedPrice = (applyTierDiscounts && originalApplicableTier) ? originalApplicableTier.price : selectedItem?.price || 0;
@@ -435,7 +435,6 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
         data={filteredItems}
         renderItem={renderItem}
         keyExtractor={(item) => item.itemCode}
-        estimatedItemSize={240}
         numColumns={2}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
@@ -454,9 +453,7 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
         }
         contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20 }}
         drawDistance={1000}
-        estimatedListSize={{ height: 600, width: 400 }}
         getItemType={() => 'product'}
-        overrideItemLayout={(layout) => { layout.size = 240; }}
       />
 
       {/* Bottom Sheet Modal */}
@@ -502,10 +499,9 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
                     <View className="flex-row items-center">
                       <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
                       <TextInput
-                        className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] ${!isPriceValid ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                        className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] border-gray-300`}
                         value={editablePriceText}
-                        onChangeText={handlePriceChange}
-                        onBlur={handlePriceBlur}
+                        editable={false}
                         keyboardType="numeric"
                       />
                     </View>

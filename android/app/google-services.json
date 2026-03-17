@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "689557045138",
+    "project_id": "isync-26c98",
+    "storage_bucket": "isync-26c98.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689557045138:android:70c550901780a543800b4b",
+        "android_client_info": {
+          "package_name": "com.isync.contapqi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "689557045138-hmgvfeg89eco8o0j7bnjn9ui2n2dkhl6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1Z_Qm5lJ7R5bF7boJ8eJO-Xh9Opf-a4g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "689557045138-hmgvfeg89eco8o0j7bnjn9ui2n2dkhl6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

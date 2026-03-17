@@ -23,7 +23,6 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1A3D59"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.isync.contapqi",
       "googleServicesFile": "./google-services.json",
       "permissions": [
@@ -66,24 +65,6 @@
             "./assets/sound/notification.wav"
           ],
           "enableBackgroundRemoteNotifications": true
-        }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "configurations": {
-              "all": {
-                "resolutionStrategy": {
-                  "force": [
-                    "androidx.browser:browser:1.8.0"
-                  ]
-                }
-              }
-            }
-          }
         }
       ]
     ],

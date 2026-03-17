@@ -23,11 +23,6 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1A3D59"
       },
-      "config": {
-        "googleMaps": {
-          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
-        }
-      },
       "edgeToEdgeEnabled": true,
       "package": "com.isync.contapqi",
       "googleServicesFile": "./google-services.json",
@@ -73,7 +68,24 @@
           "enableBackgroundRemoteNotifications": true
         }
       ],
-      "expo-build-properties"
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "configurations": {
+              "all": {
+                "resolutionStrategy": {
+                  "force": [
+                    "androidx.browser:browser:1.8.0"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

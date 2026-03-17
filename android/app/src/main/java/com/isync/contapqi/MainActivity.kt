@@ -1,4 +1,4 @@
-package com.aerley_adkins2.iSyncERP
+package com.isync.contapqi
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
@@ -10,7 +10,6 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 import expo.modules.ReactActivityDelegateWrapper
-import io.sentry.Sentry
 
 class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,15 +21,6 @@ class MainActivity : ReactActivity() {
     SplashScreenManager.registerOnActivity(this)
     // @generated end expo-splashscreen
     super.onCreate(null)
-    // waiting for view to draw to better represent a captured error with a screenshot
-    findViewById<android.view.View>(android.R.id.content).viewTreeObserver.addOnGlobalLayoutListener {
-      try {
-        throw Exception("This app uses Sentry! :)")
-      } catch (e: Exception) {
-        Sentry.captureException(e)
-      }
-    }
-
   }
 
   /**

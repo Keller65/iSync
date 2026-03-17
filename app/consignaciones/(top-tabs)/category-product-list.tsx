@@ -79,13 +79,13 @@ const CategoryProductScreen = memo(() => {
 
     const searchLower = debouncedSearchText.toLowerCase().trim();
     console.log("[CategoryProduct] Filtering with search term:", searchLower);
-    
-    const filtered = allItems.filter(item => 
+
+    const filtered = allItems.filter(item =>
       item.itemName.toLowerCase().includes(searchLower) ||
       item.itemCode.toLowerCase().includes(searchLower) ||
       item.barCode?.toLowerCase().includes(searchLower)
     );
-    
+
     console.log("[CategoryProduct] Filtered results:", filtered.length, "from", allItems.length);
     setFilteredItems(filtered);
   }, [debouncedSearchText, allItems]);
@@ -103,6 +103,8 @@ const CategoryProductScreen = memo(() => {
   const [editableTiers, setEditableTiers] = useState<ProductDiscount['tiers']>([]);
   const [applyTierDiscounts, setApplyTierDiscounts] = useState(false);
   const [isPriceManuallyEdited, setIsPriceManuallyEdited] = useState(false);
+  const [discountValue, setDiscountValue] = useState<number>(0);
+  const [discountText, setDiscountText] = useState<string>('0.00');
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -123,11 +125,11 @@ const CategoryProductScreen = memo(() => {
   // Función especializada para búsqueda que carga todos los productos
   const fetchAllProductsForSearch = useCallback(async () => {
     if (!user?.token || !debouncedSearchText?.trim()) return;
-    
+
     console.log("[CategoryProduct] Fetching all products for search:", debouncedSearchText);
     setLoading(true);
     setError(null);
-    
+
     try {
       const headers = {
         Authorization: `Bearer ${user.token}`,
@@ -163,11 +165,11 @@ const CategoryProductScreen = memo(() => {
 
         allSearchResults = [...allSearchResults, ...newItems];
         console.log(`[CategoryProduct] Page ${currentPage}: found ${newItems.length} items, total: ${allSearchResults.length}`);
-        
+
         // Si la página devolvió menos de 100 items, no hay más páginas
         hasMorePages = newItems.length === 100;
         currentPage++;
-        
+
         // Límite de seguridad para evitar bucles infinitos
         if (currentPage > 50) {
           console.warn("[CategoryProduct] Reached page limit for search");
@@ -179,7 +181,7 @@ const CategoryProductScreen = memo(() => {
       setItems(allSearchResults);
       setAllItems(allSearchResults);
       setHasMore(false); // No hay más páginas en modo búsqueda
-      
+
     } catch (err: any) {
       console.error("[CategoryProduct] Search error:", err);
       setError(err?.message || 'Error en la búsqueda');
@@ -228,7 +230,7 @@ const CategoryProductScreen = memo(() => {
       //   params.push(`search=${encodeURIComponent(debouncedSearchText)}`);
       //   console.log("[CategoryProduct] Adding search param:", debouncedSearchText);
       // } else {
-        console.log("[CategoryProduct] Using local search, debouncedSearchText:", debouncedSearchText);
+      console.log("[CategoryProduct] Using local search, debouncedSearchText:", debouncedSearchText);
       // }
 
       if (params.length) url += `?${params.join('&')}`;
@@ -290,13 +292,13 @@ const CategoryProductScreen = memo(() => {
       priceListNum,
       hasSearch: !!debouncedSearchText?.trim()
     });
-    
+
     // Si hay búsqueda activa, no cargar productos normalmente
     if (debouncedSearchText && debouncedSearchText.trim() !== '') {
       console.log("[CategoryProduct] Skipping normal fetch due to active search");
       return;
     }
-    
+
     const timer = setTimeout(() => {
       setItems([]);
       setAllItems([]);
@@ -316,7 +318,7 @@ const CategoryProductScreen = memo(() => {
     }
 
     console.log("[CategoryProduct] Search effect triggered:", debouncedSearchText);
-    
+
     const timer = setTimeout(() => {
       fetchAllProductsForSearch();
     }, 300);
@@ -333,11 +335,15 @@ const CategoryProductScreen = memo(() => {
       setIsPriceValid(true);
       setEditableTiers([]);
       setIsPriceManuallyEdited(false);
+      setDiscountValue(0);
+      setDiscountText('0.00');
       return;
     }
     setEditableTiers(selectedItem.tiers ? [...selectedItem.tiers] : []);
     setIsPriceValid(true);
     setIsPriceManuallyEdited(false);
+    setDiscountValue(0);
+    setDiscountText('0.00');
 
     setUnitPrice(selectedItem.price);
     setEditablePrice(selectedItem.price);
@@ -358,29 +364,21 @@ const CategoryProductScreen = memo(() => {
       newUnitPrice = selectedItem.price;
     }
 
+    const finalPrice = newUnitPrice - discountValue;
     setUnitPrice(newUnitPrice);
-    setEditablePrice(newUnitPrice);
-    setEditablePriceText(newUnitPrice.toFixed(2));
+    setEditablePrice(finalPrice);
+    setEditablePriceText(finalPrice.toFixed(2));
   }, [quantity, editableTiers, selectedItem, applyTierDiscounts, isPriceManuallyEdited]);
 
   useEffect(() => {
     if (selectedItem && editablePrice > 0 && quantity > 0) {
       setTotal(editablePrice * quantity);
-
-      const originalApplicableTier = selectedItem.tiers
-        ?.filter(t => quantity >= t.qty)
-        .sort((a, b) => b.qty - a.qty)[0];
-
-      const minimumAllowedPrice = (applyTierDiscounts && originalApplicableTier)
-        ? originalApplicableTier.price
-        : selectedItem.price;
-
-      setIsPriceValid(editablePrice >= minimumAllowedPrice);
+      setIsPriceValid(true);
     } else {
       setTotal(0);
       setIsPriceValid(false);
     }
-  }, [editablePrice, quantity, selectedItem, applyTierDiscounts]);
+  }, [editablePrice, quantity, selectedItem]);
 
   const onRefresh = useCallback(() => {
     pagesCacheRef.current = new Map();
@@ -388,7 +386,7 @@ const CategoryProductScreen = memo(() => {
     setHasMore(true);
     setAllItems([]);
     setFilteredItems([]);
-    
+
     // Si hay búsqueda activa, usar función de búsqueda
     if (debouncedSearchText && debouncedSearchText.trim() !== '') {
       fetchAllProductsForSearch();
@@ -438,7 +436,7 @@ const CategoryProductScreen = memo(() => {
       console.log("[CategoryProduct] In search mode, not loading more pages");
       return;
     }
-    
+
     if (loadingMore || loading || !hasMore) return;
 
     const nextPage = page + 1;
@@ -455,7 +453,7 @@ const CategoryProductScreen = memo(() => {
       <BottomSheetFooter {...props}>
         <View
           className='w-full px-4 pt-4 pb-2 bg-white'
-          // onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+        // onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
         >
           <View className="w-full flex-row justify-between items-end">
             <Text className="font-[Poppins-Bold] text-black tracking-[-0.3px]">Total</Text>
@@ -511,10 +509,37 @@ const CategoryProductScreen = memo(() => {
     }
     setEditablePrice(finalValue);
     setEditablePriceText(finalValue.toFixed(2));
+    setIsPriceValid(true);
+  };
 
-    const originalApplicableTier = selectedItem?.tiers?.filter(t => quantity >= t.qty).sort((a, b) => b.qty - a.qty)[0];
-    const minimumAllowedPrice = (applyTierDiscounts && originalApplicableTier) ? originalApplicableTier.price : selectedItem?.price || 0;
-    setIsPriceValid(finalValue >= minimumAllowedPrice);
+  const handleDiscountChange = (text: string) => {
+    const cleaned = text.replace(/[^0-9.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      setDiscountText(parts.slice(0, 2).join('.'));
+    } else {
+      setDiscountText(cleaned);
+    }
+  };
+
+  const handleDiscountBlur = () => {
+    let finalDiscount = parseFloat(discountText);
+    const maxDiscount = 200;
+    if (isNaN(finalDiscount) || finalDiscount < 0) {
+      finalDiscount = 0;
+      setDiscountText('0');
+    } else if (finalDiscount > maxDiscount) {
+      finalDiscount = maxDiscount;
+      setDiscountText(maxDiscount.toString());
+    } else {
+      setDiscountText(finalDiscount.toString());
+    }
+    setDiscountValue(finalDiscount);
+
+    const basePrice = unitPrice > 0 ? unitPrice : (selectedItem?.price ?? 0);
+    const finalPrice = basePrice - finalDiscount;
+    setEditablePrice(finalPrice);
+    setEditablePriceText(finalPrice.toFixed(2));
   };
 
   if (loading && !loadingMore) {
@@ -623,25 +648,46 @@ const CategoryProductScreen = memo(() => {
                 </View>
 
                 <View className="flex-row items-start justify-between">
-                  <View className="bg-white py-4 rounded-lg">
+                  <View className="bg-white py-4 rounded-lg flex-1">
                     <View className='items-start justify-between flex-row'>
-                      <View>
-                        <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 leading-3">
-                          Precio de Venta:
-                        </Text>
+                      <View className='flex flex-row justify-between items-start'>
+                        <View className="flex-1">
+                          <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 leading-3">
+                            Precio de Venta:
+                          </Text>
 
-                        <View className="flex-row items-center">
-                          <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
-                          <TextInput
-                            className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] ${!isPriceValid ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                            value={editablePriceText}
-                            onChangeText={handlePriceChange}
-                            onBlur={handlePriceBlur}
-                            keyboardType="numeric"
-                          />
+                          <View className="flex-row items-center">
+                            <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
+                            <TextInput
+                              className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] ${!isPriceValid ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                              value={editablePriceText}
+                              onChangeText={handlePriceChange}
+                              onBlur={handlePriceBlur}
+                              keyboardType="numeric"
+                            />
+                          </View>
+                        </View>
+
+                        <View>
+                          <Text className="font-[Poppins-SemiBold] text-base tracking-[-0.3px] text-gray-800 mr-2">
+                            Descuento
+                          </Text>
+                          <View className="flex-row items-center">
+                            <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-1">L.</Text>
+                            <TextInput
+                              className={`p-2 text-lg font-[Poppins-Bold] text-black w-[80px] border-gray-300`}
+                              value={discountText}
+                              onChangeText={handleDiscountChange}
+                              onBlur={handleDiscountBlur}
+                              keyboardType="numeric"
+                            />
+                          </View>
                         </View>
                       </View>
+                    </View>
 
+                    <View className='flex-row justify-between items-center'>
+                      <Text className="text-md font-[Poppins-SemiBold] tracking-[-0.3px]">Cantidad</Text>
                       <View className="flex-row items-center">
                         <TouchableOpacity
                           className="bg-gray-200 rounded-full p-2"

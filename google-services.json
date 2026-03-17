@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "141295196284",
-    "project_id": "isync-erp",
-    "storage_bucket": "isync-erp.firebasestorage.app"
+    "project_number": "689557045138",
+    "project_id": "isync-26c98",
+    "storage_bucket": "isync-26c98.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:141295196284:android:16f6ff7c10b7cde91f51f9",
+        "mobilesdk_app_id": "1:689557045138:android:70c550901780a543800b4b",
         "android_client_info": {
-          "package_name": "com.aerley_adkins2.iSyncERP"
+          "package_name": "com.isync.contapqi"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "689557045138-hmgvfeg89eco8o0j7bnjn9ui2n2dkhl6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCn1tNh_hupb4Gmw4VHR00gBuJ99-x5K98"
+          "current_key": "AIzaSyB1Z_Qm5lJ7R5bF7boJ8eJO-Xh9Opf-a4g"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "689557045138-hmgvfeg89eco8o0j7bnjn9ui2n2dkhl6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

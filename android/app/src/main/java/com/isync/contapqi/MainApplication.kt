@@ -1,4 +1,4 @@
-package com.aerley_adkins2.iSyncERP
+package com.isync.contapqi
 
 import android.app.Application
 import android.content.res.Configuration

@@ -3,17 +3,26 @@ import { useAppStore } from '@/state';
 import { Consignment } from '@/types/ConsignmentTypes';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
+import { useRouter } from 'expo-router';
 import * as Print from 'expo-print';
 import { useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { fetchOrderDetails } from '@/lib/orderUtils';
+import { OrderDataType } from '@/types/types';
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { useAuth } from '@/context/auth';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const ConsignmentDetails = () => {
   const { docEntry } = useLocalSearchParams();
+  const [orderData, setOrderData] = useState<OrderDataType | null>(null);
   const [consignment, setConsignment] = useState<Consignment | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const { fetchUrl } = useAppStore();
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+  const { fetchUrl, loadOrderForEdit, clearEditMode } = useAppStore();
+  const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchConsignment = async () => {
@@ -299,6 +308,35 @@ const ConsignmentDetails = () => {
     `;
   };
 
+  const handleEditOrder = useCallback(async () => {
+    if (!orderData || !user?.token) {
+      Alert.alert('Error', 'No hay datos del pedido.');
+      return;
+    }
+
+    setIsLoadingEdit(true);
+
+    try {
+      clearEditMode();
+      const updatedOrderData = await fetchOrderDetails(
+        orderData.docEntry,
+        fetchUrl,
+        user.token
+      );
+
+      loadOrderForEdit(orderData.docEntry, updatedOrderData);
+      router.push('/consignaciones');
+    } catch (error) {
+      console.error('Error al cargar pedido para edición:', error);
+      Alert.alert(
+        'Error',
+        'No se pudo cargar el pedido para edición. Por favor, intenta de nuevo.'
+      );
+    } finally {
+      setIsLoadingEdit(false);
+    }
+  }, [orderData, user?.token, fetchUrl, loadOrderForEdit, clearEditMode, router]);
+  
   return (
     <View className='flex-1 bg-white relative'>
       <ScrollView className='px-4 bg-white flex-1'>
@@ -369,6 +407,18 @@ const ConsignmentDetails = () => {
                   <Text className='text-white text-lg tracking-[-0.3px]' style={{ fontFamily: 'Poppins-SemiBold' }}>
                     Compartir PDF
                   </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className='h-[50px] w-[50px] items-center justify-center bg-primary rounded-full'
+                onPress={handleEditOrder}
+                disabled={isLoadingEdit}
+              >
+                {isLoadingEdit ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <MaterialIcons name="edit" size={24} color="white" />
                 )}
               </TouchableOpacity>
             </View>

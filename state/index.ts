@@ -1,5 +1,5 @@
 import { Consignment, ConsignmentLine } from '@/types/ConsignmentTypes';
-import { Customer, Invoice, ProductDiscount } from '@/types/types';
+import { Customer, Invoice, OrderDataType, ProductDiscount } from '@/types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -166,6 +166,14 @@ interface AppStoreState {
   // Token persistente de notificaciones (FCM)
   fcmToken: string | null;
   setFcmToken: (value: string | null) => void;
+
+  // Configuración de imágenes
+  imageConfig: boolean;
+  setImageConfig: (value: boolean) => void;
+
+  // Cargar pedido para edición
+  loadOrderForEdit: (docEntry: number, orderData: OrderDataType) => void;
+  clearEditMode: () => void;
 }
 
 export const useAppStore = create<AppStoreState>()(
@@ -196,6 +204,7 @@ export const useAppStore = create<AppStoreState>()(
       deviceUUID: null,
       fcmToken: null,
       productsInConsignment: [],
+      imageConfig: false,
       
       // Configuración de pedidos
       orderConfig: {
@@ -598,6 +607,50 @@ export const useAppStore = create<AppStoreState>()(
               almacen: '',
             },
           },
+        });
+      },
+
+      setImageConfig: (value: boolean) => set({ imageConfig: value }),
+
+      loadOrderForEdit: (docEntry: number, orderData: OrderDataType) => {
+        set({
+          isEditingConsignment: true,
+          editingConsignmentId: docEntry.toString(),
+          originalConsignmentData: null,
+        });
+        const cartItems: CartItem[] = orderData.lines.map(line => ({
+          itemCode: line.itemCode,
+          itemName: line.itemDescription,
+          groupCode: 'DEFAULT',
+          groupName: 'Productos',
+          inStock: line.quantity,
+          ws: [{
+            warehouseName: '',
+            inStock: line.quantity
+          }],
+          committed: 0,
+          ordered: 0,
+          price: line.priceAfterVAT,
+          hasDiscount: false,
+          barCode: line.barCode,
+          salesUnit: 'UND',
+          salesItemsPerUnit: 1,
+          imageUrl: null,
+          taxType: 'IVA',
+          tiers: [],
+          categoryCode: 'DEFAULT',
+          quantity: line.quantity,
+          unitPrice: line.priceAfterVAT,
+          total: line.priceAfterVAT * line.quantity,
+        }));
+        set({ products: cartItems });
+      },
+
+      clearEditMode: () => {
+        set({
+          isEditingConsignment: false,
+          editingConsignmentId: null,
+          originalConsignmentData: null,
         });
       },
     }),

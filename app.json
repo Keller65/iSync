@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "iSync ERP",
-    "slug": "iSync-ERP",
-    "version": "1.2111.25",
+    "name": "iSync",
+    "slug": "iSync",
+    "version": "1.1212.25",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "isyncerp",
+    "scheme": "isync",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
@@ -29,7 +29,7 @@
         }
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.aerley_adkins2.iSyncERP",
+      "package": "com.isync.contapqi",
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO",

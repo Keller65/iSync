@@ -58,10 +58,10 @@ const Settings = () => {
   }, [appHost, appPort, orderConfig])
 
   const fullUrl = `${protocol}://${ip}${port ? `:${port}` : ''}`
-  const isUrlReady = !!ip && !!port && !hasInvalidUrl
+  const isUrlReady = !!ip && !hasInvalidUrl
 
   const handleSave = async () => {
-    if (!protocol || !ip || !port) {
+    if (!protocol || !ip) {
       alert('Por favor, rellena todos los campos antes de guardar la configuración.');
       return;
     }
@@ -133,7 +133,7 @@ const Settings = () => {
 
   return (
     <View className="p-4 space-y-5 bg-white rounded-2xl flex-1 gap-2">
-      {(hasInvalidUrl || !ip || !port) && (
+      {(hasInvalidUrl || !ip) && (
         <View className="border border-red-200 bg-red-50 rounded-xl px-4 py-3">
           <Text className="text-red-700 text-sm">
             Configura una URL válida antes de continuar. Ingresa IP y Puerto válidos para evitar errores.

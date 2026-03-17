@@ -1,16 +1,20 @@
 import ClientIcon from '@/assets/icons/ClientIcon';
 import { useAuth } from '@/context/auth';
-import api from '@/lib/api';
+import { fetchOrderDetails } from '@/lib/orderUtils';
 import { useAppStore } from '@/state';
 import { OrderDataType } from '@/types/types';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRoute } from '@react-navigation/native';
+import axios from 'axios';
 import { Image } from 'expo-image';
 import * as Print from 'expo-print';
+import { useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View, } from 'react-native';
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View, } from 'react-native';
+import { logUserAction } from "@/hooks/logger";
 
 const OrderDetails = () => {
   const route = useRoute();
@@ -18,8 +22,10 @@ const OrderDetails = () => {
   const [orderData, setOrderData] = useState<OrderDataType | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  const { fetchUrl } = useAppStore();
-
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const { fetchUrl, loadOrderForEdit, clearEditMode, imageConfig } = useAppStore();
+  const router = useRouter();
   const { user } = useAuth();
 
   // Helper para formatear valores monetarios con 2 decimales usando toLocaleString
@@ -36,28 +42,37 @@ const OrderDetails = () => {
     const fetchOrderDetails = async () => {
       console.log(docEntryParam);
       try {
-        const response = await api.get(
+        const response = await axios.get(
           `/api/Quotations/${docEntryParam}`,
           {
             baseURL: fetchUrl,
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${user?.token}`,
-            },
-            cache: {
-              ttl: 1000 * 60 * 60 * 24, // 24 horas
-            },
+            }
           }
         );
-        console.log(response.cached ? 'Pedido cargado desde CACHE' : 'Pedido cargado desde RED');
+        // console.log(response.cached ? 'Pedido cargado desde CACHE' : 'Pedido cargado desde RED');
         if (isMounted) {
           setOrderData(response.data);
         }
       } catch (error) {
         console.error('Error fetching order details:', error);
+        await logUserAction({
+          section: "PEDIDO",
+          event: "ERROR_CARGAR_PEDIDO",
+          date: new Date().toISOString(),
+          payload: { error },
+        });
         if (isMounted) {
           Alert.alert('Error', 'No se pudieron cargar los detalles del pedido.');
         }
+        await logUserAction({
+          section: "PEDIDO",
+          event: "ERROR_CARGAR_PEDIDO",
+          date: new Date().toISOString(),
+          payload: { error },
+        });
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -79,6 +94,66 @@ const OrderDetails = () => {
   const totalItems = useMemo(() => {
     return orderData?.lines?.reduce((sum, line) => sum + (line.quantity ?? 0), 0) || 0;
   }, [orderData]);
+
+  const onRefresh = useCallback(async () => {
+    if (!docEntryParam) return;
+
+    setRefreshing(true);
+    try {
+      const response = await axios.get(
+        `/api/Quotations/${docEntryParam}`,
+        {
+          baseURL: fetchUrl,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${user?.token}`,
+          }
+        }
+      );
+      setOrderData(response.data);
+    } catch (error) {
+      console.error('Error refreshing order details:', error);
+      Alert.alert('Error', 'No se pudieron actualizar los detalles del pedido.');
+    } finally {
+      setRefreshing(false);
+    }
+  }, [docEntryParam, fetchUrl, user?.token]);
+
+  const handleEditOrder = useCallback(async () => {
+    if (!orderData || !user?.token) {
+      Alert.alert('Error', 'No hay datos del pedido o no tienes permisos para editarlo.');
+      return;
+    }
+
+    setIsLoadingEdit(true);
+
+    try {
+      // Limpiar cualquier modo de edición anterior
+      clearEditMode();
+
+      // Obtener los detalles actualizados del pedido
+      const updatedOrderData = await fetchOrderDetails(
+        orderData.docEntry,
+        fetchUrl,
+        user.token
+      );
+
+      // Cargar el pedido en modo edición
+      loadOrderForEdit(orderData.docEntry, updatedOrderData);
+
+      // Navegar a la tienda
+      router.push('/consignaciones');
+
+    } catch (error) {
+      console.error('Error al cargar pedido para edición:', error);
+      Alert.alert(
+        'Error',
+        'No se pudo cargar el pedido para edición. Por favor, intenta de nuevo.'
+      );
+    } finally {
+      setIsLoadingEdit(false);
+    }
+  }, [orderData, user?.token, fetchUrl, loadOrderForEdit, clearEditMode, router]);
 
   const handleShareAsPdf = useCallback(async () => {
     if (!orderData) {
@@ -169,6 +244,7 @@ const OrderDetails = () => {
       padding: 10px;
       border-bottom: 1px solid #e5e7eb;
       vertical-align: top;
+      font-size: 13px;
     }
     .text-center {
       text-align: center;
@@ -176,6 +252,10 @@ const OrderDetails = () => {
     .text-right {
       text-align: right;
     }
+    .text-left {
+      text-align: left;
+    }
+
     /* Totales */
     .totales {
       width: 100%;
@@ -227,11 +307,11 @@ const OrderDetails = () => {
     <div class="encabezado">
       <div class="encabezado-izq">
         <p>Para:</p>
-        <strong>${orderData.cardName ?? 'N/A'}</strong>
+        <strong>${orderData.cardCode ?? 'N/A'} - ${orderData.cardName ?? 'N/A'}</strong>
         <p>${orderData.address ?? 'Dirección no disponible'}</p>
       </div>
       <div class="encabezado-der">
-        <div class="logo">Grupo iSync ERP</div>
+        <div class="logo">Grupo Alfa Y Omega</div>
         <p></p>
       </div>
     </div>
@@ -247,8 +327,8 @@ const OrderDetails = () => {
         <strong>${new Date(orderData.docDate ?? '').toLocaleDateString()}</strong>
       </div>
       <div>
-        <p>N° de Pedido</p>
-        <strong>${orderData.docEntry ?? 'N/A'}</strong>
+        <p>N° de Oferta</p>
+        <strong>${orderData.docNum ?? 'N/A'}</strong>
       </div>
     </div>
 
@@ -256,7 +336,8 @@ const OrderDetails = () => {
     <table>
       <thead>
         <tr>
-          <th style="width:50%">Producto</th>
+        <th style="width:15%" class="text-left">Codigo</th>
+          <th style="width:45%">Producto</th>
           <th style="width:15%" class="text-right">Precio UNT</th>
           <th style="width:10%" class="text-center">Cantidad</th>
           <th style="width:15%" class="text-right">Total</th>
@@ -265,6 +346,7 @@ const OrderDetails = () => {
       <tbody>
         ${orderData.lines.map(item => `
           <tr>
+            <td>${item.barCode ?? 'N/A'}</td>
             <td>${item.itemDescription ?? 'N/A'}</td>
             <td class="text-right">L. ${(item.priceAfterVAT ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
             <td class="text-center">${item.quantity ?? 0}</td>
@@ -297,7 +379,7 @@ const OrderDetails = () => {
 
     <!-- Footer -->
     <div class="pie">
-      <div>© ${new Date().getFullYear()} Grupo iSync ERP</div>
+      <div>© ${new Date().getFullYear()} Grupo Alfa Y Omega</div>
       <div class="pie-info">
         <span>📍 Barrio el cacao 32 y 33 cll SE 3 AV SE San pedro sula, cortes, Honduras.</span>
         <span>📧 info@alfayomega-hn.com</span>
@@ -308,7 +390,6 @@ const OrderDetails = () => {
 </body>
 </html>
 `;
-
 
     try {
       const { uri } = await Print.printToFileAsync({ html: htmlContent });
@@ -348,12 +429,22 @@ const OrderDetails = () => {
   }
 
   return (
-    <ScrollView className="flex-1 p-4 bg-white">
-      <View className="p-5 bg-white rounded-b-[36px] shadow-sm border border-gray-100">
+    <ScrollView
+      className="flex-1 p-4 bg-white"
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#000']}
+          tintColor="#000"
+        />
+      }
+    >
+      <View className="p-5 bg-white rounded-b-[36px] border border-gray-100">
         <View className="flex-row justify-between items-center mb-5">
           <View className="flex-row items-center gap-2">
             <View className="bg-primary w-[40px] h-[40px] items-center justify-center rounded-full">
-              <ClientIcon size={24} color="#fff" />
+              <ClientIcon size={24} color="white" />
             </View>
 
             <View>
@@ -415,27 +506,58 @@ const OrderDetails = () => {
           </View>
         </View>
 
-        <TouchableOpacity
-          className="w-full bg-primary h-[50px] rounded-full flex-row gap-3 p-2 items-center justify-center"
-          onPress={handleShareAsPdf}
-          disabled={isGeneratingPdf}
-        >
-          {isGeneratingPdf ? (
-            <>
-              <ActivityIndicator color="white" />
-              <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px]">
-                Generando PDF...
-              </Text>
-            </>
-          ) : (
-            <>
-              <Entypo name="share" size={24} color="white" />
-              <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px]">
-                Compartir como PDF
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
+        <View className="flex-1 p-3 bg-gray-50 rounded-lg mb-5">
+          <View className="flex-row items-center gap-2 mb-1">
+            <Ionicons name="chatbubble-outline" size={16} color="#6b7280" />
+            <Text className="text-xs text-gray-500 font-[Poppins-Regular]">Comentarios</Text>
+          </View>
+          <Text className="text-base font-[Poppins-SemiBold] text-gray-900 mt-1 tracking-[-0.3px]">
+            {orderData.comments || 'Comentarios no disponibles'}
+          </Text>
+        </View>
+
+        <View className="flex-1 p-3 bg-gray-50 rounded-lg mb-5">
+          <Text className="text-xs text-gray-500 font-[Poppins-Regular]">Ubicacion</Text>
+          <Text className="text-base font-[Poppins-SemiBold] text-gray-900 mt-1 tracking-[-0.3px]">
+            {orderData.address || 'No disponible'}
+          </Text>
+        </View>
+
+        <View className='flex-row gap-4'>
+          <TouchableOpacity
+            className="flex-1 bg-primary h-[50px] rounded-full flex-row gap-3 p-2 items-center justify-center"
+            onPress={handleShareAsPdf}
+            disabled={isGeneratingPdf}
+          >
+            {isGeneratingPdf ? (
+              <>
+                <ActivityIndicator color="white" />
+                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px]">
+                  Generando PDF
+                </Text>
+              </>
+            ) : (
+              <>
+                <Entypo name="share" size={24} color="white" />
+                <Text className="text-white font-[Poppins-SemiBold] tracking-[-0.3px]">
+                  Compartir como PDF
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className='h-[50px] w-[50px] items-center justify-center bg-primary rounded-full'
+            onPress={handleEditOrder}
+            disabled={isLoadingEdit}
+          >
+            {isLoadingEdit ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <MaterialIcons name="edit" size={24} color="white" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View className="my-5 ">
@@ -444,15 +566,17 @@ const OrderDetails = () => {
           orderData.lines.map((item, index) => (
             <View
               key={index}
-              className="flex-row items-center bg-white p-3 rounded-lg mb-3 shadow-sm border border-gray-100"
+              className="flex-row items-center bg-white p-3 rounded-lg mb-3 border border-gray-100"
             >
               <View className="bg-white rounded-xl overflow-hidden mr-3">
-                <Image
-                  source={{ uri: `https://pub-266f56f2e24d4d3b8e8abdb612029f2f.r2.dev/${item.itemCode}.jpg` }}
-                  style={{ height: 60, width: 60, objectFit: "contain" }}
-                  contentFit="contain"
-                  transition={500}
-                />
+                {imageConfig && (
+                  <Image
+                    source={{ uri: `https://pub-266f56f2e24d4d3b8e8abdb612029f2f.r2.dev/${item.itemCode}.jpg` }}
+                    style={{ height: 60, width: 60, objectFit: "contain" }}
+                    contentFit="contain"
+                    transition={500}
+                  />
+                )}
               </View>
 
               <View className="flex-1">

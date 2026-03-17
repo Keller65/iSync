@@ -1,4 +1,3 @@
-import React from 'react';
 import { Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export type SettingItemProps = BaseProps & (ToggleProps | ActionProps | InfoProps);

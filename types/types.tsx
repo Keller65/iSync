@@ -71,7 +71,7 @@ export interface OrderLineType {
   quantity: number;
   priceAfterVAT: number;
   taxCode: string;
-  lineTotal: number;
+  lineTotal?: number;
 }
 
 export interface OrderDataType {

@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "iSync",
-    "slug": "iSync",
+    "slug": "isync-contapqi",
     "version": "1.1212.25",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "isync",
+    "scheme": "isync-contapqi",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
@@ -27,7 +27,9 @@
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ],
       "runtimeVersion": "1.0.0"
     },
@@ -74,11 +76,11 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "630fb244-2368-4513-8e53-086acaa58df0"
+        "projectId": "43a7ad31-b0ab-46f9-936e-7d7c256ff800"
       }
     },
     "updates": {
-      "url": "https://u.expo.dev/630fb244-2368-4513-8e53-086acaa58df0"
+      "url": "https://u.expo.dev/43a7ad31-b0ab-46f9-936e-7d7c256ff800"
     },
     "owner": "aerley_adkins-2"
   }

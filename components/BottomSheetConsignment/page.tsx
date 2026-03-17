@@ -582,9 +582,8 @@ export default function BottomSheetConsignment() {
                 ...product,
                 imageUrl: product.imageUrl ?? null,
               }))}
-              keyExtractor={(item) => item.itemCode}
+              keyExtractor={(item: any) => item.itemCode}
               renderItem={renderItem}
-              getItemLayout={(_, index) => ({ length: 150, offset: 150 * index, index })}
               initialNumToRender={5}
               maxToRenderPerBatch={5}
               windowSize={10}

@@ -617,6 +617,12 @@ export const useAppStore = create<AppStoreState>()(
           isEditingConsignment: true,
           editingConsignmentId: docEntry.toString(),
           originalConsignmentData: null,
+          selectedCustomerConsignment: {
+            cardCode: orderData.cardCode,
+            cardName: orderData.cardName,
+            federalTaxID: orderData.federalTaxID,
+            priceListNum: '',
+          },
         });
         const cartItems: CartItem[] = orderData.lines.map(line => ({
           itemCode: line.itemCode,

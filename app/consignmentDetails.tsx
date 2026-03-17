@@ -8,19 +8,17 @@ import * as Print from 'expo-print';
 import { useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useEffect, useState } from 'react';
-import { fetchOrderDetails } from '@/lib/orderUtils';
-import { OrderDataType } from '@/types/types';
+import { fetchOrderDetails, OrderDetailsResponse } from '@/lib/orderUtils';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { useAuth } from '@/context/auth';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const ConsignmentDetails = () => {
   const { docEntry } = useLocalSearchParams();
-  const [orderData, setOrderData] = useState<OrderDataType | null>(null);
   const [consignment, setConsignment] = useState<Consignment | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isLoadingEdit, setIsLoadingEdit] = useState(false);
-  const { fetchUrl, loadOrderForEdit, clearEditMode } = useAppStore();
+  const { fetchUrl, loadOrderForEdit } = useAppStore();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -309,7 +307,7 @@ const ConsignmentDetails = () => {
   };
 
   const handleEditOrder = useCallback(async () => {
-    if (!orderData || !user?.token) {
+    if (!consignment || !user?.token) {
       Alert.alert('Error', 'No hay datos del pedido.');
       return;
     }
@@ -317,14 +315,35 @@ const ConsignmentDetails = () => {
     setIsLoadingEdit(true);
 
     try {
-      clearEditMode();
-      const updatedOrderData = await fetchOrderDetails(
-        orderData.docEntry,
+      const orderDetails = await fetchOrderDetails(
+        Number(docEntry),
         fetchUrl,
         user.token
       );
 
-      loadOrderForEdit(orderData.docEntry, updatedOrderData);
+      const orderData = {
+        docEntry: orderDetails.docEntry,
+        docNum: orderDetails.docNum,
+        cardCode: orderDetails.cardCode,
+        cardName: orderDetails.cardName,
+        federalTaxID: orderDetails.federalTaxID,
+        address: orderDetails.address || '',
+        docDate: orderDetails.docDate,
+        vatSum: orderDetails.vatSum,
+        docTotal: orderDetails.docTotal,
+        comments: orderDetails.comments || '',
+        salesPersonCode: orderDetails.salesPersonCode,
+        lines: orderDetails.lines.map(line => ({
+          itemCode: line.itemCode,
+          itemDescription: line.itemDescription,
+          barCode: line.barCode,
+          quantity: line.quantity,
+          priceAfterVAT: line.priceAfterVAT,
+          taxCode: line.taxCode,
+        })),
+      };
+
+      loadOrderForEdit(Number(docEntry), orderData);
       router.push('/consignaciones');
     } catch (error) {
       console.error('Error al cargar pedido para edición:', error);
@@ -335,7 +354,7 @@ const ConsignmentDetails = () => {
     } finally {
       setIsLoadingEdit(false);
     }
-  }, [orderData, user?.token, fetchUrl, loadOrderForEdit, clearEditMode, router]);
+  }, [consignment, user?.token, fetchUrl, loadOrderForEdit, router, docEntry]);
   
   return (
     <View className='flex-1 bg-white relative'>

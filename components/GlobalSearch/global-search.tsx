@@ -67,6 +67,8 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
   const productsInCart = useAppStore(state => state.products);
 
   const [searchResults, setSearchResults] = useState<ProductDiscount[]>([]);
+  const [allItems, setAllItems] = useState<ProductDiscount[]>([]);
+  const [filteredItems, setFilteredItems] = useState<ProductDiscount[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +86,7 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
   const [isPriceManuallyEdited, setIsPriceManuallyEdited] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
+  const [basePrice, setBasePrice] = useState<number>(0);
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['85%', '100%'], []);
@@ -118,15 +121,17 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
       const searchUrl = `/api/Catalog/products/search?searchText=${encodeURIComponent(searchText)}&priceList=${priceListNum}&page=${page}&pageSize=20`;
 
       console.log('Searching products:', searchUrl);
-      const response = await axios.get(searchUrl, { baseURL: 'http://44.212.108.188:4325', headers });
+      const response = await axios.get(searchUrl, { baseURL: fetchUrl, headers });
 
       const newProducts: ProductDiscount[] = response.data.items || response.data || [];
       console.log(`Page ${page} loaded:`, newProducts.length, 'products');
 
       if (append) {
         setSearchResults(prev => [...prev, ...newProducts]);
+        setAllItems(prev => [...prev, ...newProducts]);
       } else {
         setSearchResults(newProducts);
+        setAllItems(newProducts);
       }
 
       // Determinar si hay más páginas
@@ -138,6 +143,8 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
       setError('Error al buscar productos');
       if (!append) {
         setSearchResults([]);
+        setAllItems([]);
+        setFilteredItems([]);
       }
     } finally {
       setLoading(false);
@@ -160,16 +167,37 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
     }
   }, [debouncedSearchText, searchProducts]);
 
-  // Los productos ya vienen filtrados del servidor, no necesitamos filtro local adicional
-  const filteredItems = useMemo(() => {
-    return searchResults;
-  }, [searchResults]);
+  useEffect(() => {
+    console.log("[GlobalSearch] debouncedSearchText changed:", debouncedSearchText);
+  }, [debouncedSearchText]);
+
+  useEffect(() => {
+    if (!debouncedSearchText || debouncedSearchText.trim() === '') {
+      console.log("[GlobalSearch] No search text, showing all items");
+      setFilteredItems(allItems);
+      return;
+    }
+
+    const searchLower = debouncedSearchText.toLowerCase().trim();
+    console.log("[GlobalSearch] Filtering with search term:", searchLower);
+
+    const filtered = allItems.filter(item =>
+      item.itemName.toLowerCase().includes(searchLower) ||
+      item.itemCode.toLowerCase().includes(searchLower) ||
+      item.barCode?.toLowerCase().includes(searchLower)
+    );
+
+    console.log("[GlobalSearch] Filtered results:", filtered.length, "from", allItems.length);
+    setFilteredItems(filtered);
+  }, [debouncedSearchText, allItems]);
 
   const onRefresh = useCallback(() => {
     if (debouncedSearchText.trim() && debouncedSearchText.length >= 2) {
       setRefreshing(true);
       setCurrentPage(1);
       setHasMore(true);
+      setAllItems([]);
+      setFilteredItems([]);
       searchProducts(debouncedSearchText, 1, false);
     }
   }, [debouncedSearchText, searchProducts]);
@@ -232,11 +260,13 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
       setIsPriceValid(true);
       setEditableTiers([]);
       setIsPriceManuallyEdited(false);
+      setBasePrice(0);
       return;
     }
     setEditableTiers(selectedItem.tiers ? [...selectedItem.tiers] : []);
     setIsPriceValid(true);
     setIsPriceManuallyEdited(false);
+    setBasePrice(selectedItem.price);
 
     setUnitPrice(selectedItem.price);
     setEditablePrice(selectedItem.price);
@@ -247,39 +277,30 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
   useEffect(() => {
     if (!selectedItem || isPriceManuallyEdited) return;
 
-    let newUnitPrice;
-    if (applyTierDiscounts) {
-      const applicableTier = (editableTiers || [])
-        .filter(t => quantity >= t.qty)
-        .sort((a, b) => b.qty - a.qty)[0];
-      newUnitPrice = applicableTier ? applicableTier.price : selectedItem.price;
+    let newBasePrice: number;
+    if (applyTierDiscounts && editableTiers && editableTiers.length > 0) {
+      const sortedTiers = [...editableTiers].sort((a, b) => a.price - b.price);
+      newBasePrice = sortedTiers[0].price;
+      setBasePrice(newBasePrice);
     } else {
-      newUnitPrice = selectedItem.price;
+      newBasePrice = selectedItem.price;
+      setBasePrice(newBasePrice);
     }
 
-    setUnitPrice(newUnitPrice);
-    setEditablePrice(newUnitPrice);
-    setEditablePriceText(newUnitPrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    setUnitPrice(newBasePrice);
+    setEditablePrice(newBasePrice);
+    setEditablePriceText(newBasePrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   }, [quantity, editableTiers, selectedItem, applyTierDiscounts, isPriceManuallyEdited]);
 
   useEffect(() => {
     if (selectedItem && editablePrice > 0 && quantity > 0) {
       setTotal(editablePrice * quantity);
-
-      const originalApplicableTier = selectedItem.tiers
-        ?.filter(t => quantity >= t.qty)
-        .sort((a, b) => b.qty - a.qty)[0];
-
-      const minimumAllowedPrice = (applyTierDiscounts && originalApplicableTier)
-        ? originalApplicableTier.price
-        : selectedItem.price;
-
-      setIsPriceValid(editablePrice >= minimumAllowedPrice);
+      setIsPriceValid(editablePrice >= basePrice);
     } else {
       setTotal(0);
       setIsPriceValid(false);
     }
-  }, [editablePrice, quantity, selectedItem, applyTierDiscounts]);
+  }, [editablePrice, quantity, selectedItem, basePrice]);
 
   const handleQuantityChange = (text: string) => {
     const cleanedText = text.replace(/[^0-9]/g, '');
@@ -316,12 +337,14 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
     } else {
       finalValue = parseFloat(finalValue.toFixed(2));
     }
+    
+    if (finalValue < basePrice) {
+      finalValue = basePrice;
+    }
+    
     setEditablePrice(finalValue);
     setEditablePriceText(finalValue.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-
-    const originalApplicableTier = selectedItem?.tiers?.filter(t => quantity >= t.qty).sort((a, b) => b.qty - a.qty)[0];
-    const minimumAllowedPrice = (applyTierDiscounts && originalApplicableTier) ? originalApplicableTier.price : selectedItem?.price || 0;
-    setIsPriceValid(finalValue >= minimumAllowedPrice);
+    setIsPriceValid(finalValue >= basePrice);
   };
 
   const renderFooter = useCallback((props: any) => (
@@ -501,7 +524,8 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
                       <TextInput
                         className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] border-gray-300`}
                         value={editablePriceText}
-                        editable={false}
+                        onChangeText={handlePriceChange}
+                        onBlur={handlePriceBlur}
                         keyboardType="numeric"
                       />
                     </View>

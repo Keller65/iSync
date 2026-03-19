@@ -100,6 +100,10 @@ interface AppStoreState {
       concepto: string;
       almacen: string;
     };
+    factura: {
+      concepto: string;
+      almacen: string;
+    };
     facturasCredito: {
       concepto: string;
       almacen: string;
@@ -111,6 +115,8 @@ interface AppStoreState {
   };
   setCotizacionConcepto: (concepto: string) => void;
   setCotizacionAlmacen: (almacen: string) => void;
+  setFacturaConcepto: (concepto: string) => void;
+  setFacturaAlmacen: (almacen: string) => void;
   setFacturasCreditoConcepto: (concepto: string) => void;
   setFacturasCreditoAlmacen: (almacen: string) => void;
   setFacturasContadoConcepto: (concepto: string) => void;
@@ -215,6 +221,10 @@ export const useAppStore = create<AppStoreState>()(
       // Configuración de ventas
       ventasConfig: {
         cotizacion: {
+          concepto: '',
+          almacen: '',
+        },
+        factura: {
           concepto: '',
           almacen: '',
         },
@@ -543,6 +553,30 @@ export const useAppStore = create<AppStoreState>()(
         }));
       },
 
+      setFacturaConcepto: (concepto: string) => {
+        set((state) => ({
+          ventasConfig: {
+            ...state.ventasConfig,
+            factura: {
+              ...state.ventasConfig.factura,
+              concepto,
+            },
+          },
+        }));
+      },
+
+      setFacturaAlmacen: (almacen: string) => {
+        set((state) => ({
+          ventasConfig: {
+            ...state.ventasConfig,
+            factura: {
+              ...state.ventasConfig.factura,
+              almacen,
+            },
+          },
+        }));
+      },
+
       setFacturasCreditoConcepto: (concepto: string) => {
         set((state) => ({
           ventasConfig: {
@@ -595,6 +629,10 @@ export const useAppStore = create<AppStoreState>()(
         set({
           ventasConfig: {
             cotizacion: {
+              concepto: '',
+              almacen: '',
+            },
+            factura: {
               concepto: '',
               almacen: '',
             },

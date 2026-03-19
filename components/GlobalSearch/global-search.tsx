@@ -118,7 +118,7 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
       const searchUrl = `/api/Catalog/products/search?searchText=${encodeURIComponent(searchText)}&priceList=${priceListNum}&page=${page}&pageSize=20`;
 
       console.log('Searching products:', searchUrl);
-      const response = await axios.get(searchUrl, { baseURL: fetchUrl, headers });
+      const response = await axios.get(searchUrl, { baseURL: 'http://44.212.108.188:4325', headers });
 
       const newProducts: ProductDiscount[] = response.data.items || response.data || [];
       console.log(`Page ${page} loaded:`, newProducts.length, 'products');

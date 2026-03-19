@@ -5,6 +5,7 @@ import { ActivityIndicator, Text, TextInput, ToastAndroid, TouchableOpacity, Vie
 const SettingsSales = () => {
   const {
     ventasConfig, setCotizacionConcepto, setCotizacionAlmacen,
+    setFacturaConcepto, setFacturaAlmacen,
     setFacturasCreditoConcepto, setFacturasCreditoAlmacen,
     setFacturasContadoConcepto, setFacturasContadoAlmacen
   } = useAppStore();
@@ -12,6 +13,8 @@ const SettingsSales = () => {
   // Estados locales para la sección Ventas
   const [cotizacionConcepto, setCotizacionConceptoLocal] = useState('')
   const [cotizacionAlmacen, setCotizacionAlmacenLocal] = useState('')
+  const [facturaConcepto, setFacturaConceptoLocal] = useState('')
+  const [facturaAlmacen, setFacturaAlmacenLocal] = useState('')
   const [facturasContadoConcepto, setFacturasContadoConceptoLocal] = useState('')
   const [facturasContadoAlmacen, setFacturasContadoAlmacenLocal] = useState('')
   const [facturasCreditoConcepto, setFacturasCreditoConceptoLocal] = useState('')
@@ -21,12 +24,14 @@ const SettingsSales = () => {
   // Cargar configuración de ventas desde el estado
   useEffect(() => {
     if (ventasConfig) {
-      setCotizacionConceptoLocal(ventasConfig.cotizacion.concepto || '')
-      setCotizacionAlmacenLocal(ventasConfig.cotizacion.almacen || '')
-      setFacturasCreditoConceptoLocal(ventasConfig.facturasCredito.concepto || '')
-      setFacturasCreditoAlmacenLocal(ventasConfig.facturasCredito.almacen || '')
-      setFacturasContadoConceptoLocal(ventasConfig.facturasContado.concepto || '')
-      setFacturasContadoAlmacenLocal(ventasConfig.facturasContado.almacen || '')
+      setCotizacionConceptoLocal(ventasConfig.cotizacion?.concepto || '')
+      setCotizacionAlmacenLocal(ventasConfig.cotizacion?.almacen || '')
+      setFacturaConceptoLocal(ventasConfig.factura?.concepto || '')
+      setFacturaAlmacenLocal(ventasConfig.factura?.almacen || '')
+      setFacturasCreditoConceptoLocal(ventasConfig.facturasCredito?.concepto || '')
+      setFacturasCreditoAlmacenLocal(ventasConfig.facturasCredito?.almacen || '')
+      setFacturasContadoConceptoLocal(ventasConfig.facturasContado?.concepto || '')
+      setFacturasContadoAlmacenLocal(ventasConfig.facturasContado?.almacen || '')
     }
   }, [ventasConfig])
 
@@ -37,6 +42,8 @@ const SettingsSales = () => {
     // Guardar configuración de ventas
     setCotizacionConcepto(cotizacionConcepto);
     setCotizacionAlmacen(cotizacionAlmacen);
+    setFacturaConcepto(facturaConcepto);
+    setFacturaAlmacen(facturaAlmacen);
     setFacturasCreditoConcepto(facturasCreditoConcepto);
     setFacturasCreditoAlmacen(facturasCreditoAlmacen);
     setFacturasContadoConcepto(facturasContadoConcepto);
@@ -45,6 +52,7 @@ const SettingsSales = () => {
     console.log('Configuración de Ventas guardada:', {
       ventasConfig: {
         cotizacion: { concepto: cotizacionConcepto, almacen: cotizacionAlmacen },
+        factura: { concepto: facturaConcepto, almacen: facturaAlmacen },
         facturasCredito: { concepto: facturasCreditoConcepto, almacen: facturasCreditoAlmacen },
         facturasContado: { concepto: facturasContadoConcepto, almacen: facturasContadoAlmacen }
       }
@@ -52,7 +60,7 @@ const SettingsSales = () => {
 
     ToastAndroid.show('Configuración de Ventas guardada exitosamente.', ToastAndroid.SHORT);
     setIsSaving(false);
-  }, [cotizacionConcepto, cotizacionAlmacen, facturasCreditoConcepto, facturasCreditoAlmacen, facturasContadoConcepto, facturasContadoAlmacen, setCotizacionConcepto, setCotizacionAlmacen, setFacturasCreditoConcepto, setFacturasCreditoAlmacen, setFacturasContadoConcepto, setFacturasContadoAlmacen]);
+  }, [cotizacionConcepto, cotizacionAlmacen, facturaConcepto, facturaAlmacen, facturasCreditoConcepto, facturasCreditoAlmacen, facturasContadoConcepto, facturasContadoAlmacen, setCotizacionConcepto, setCotizacionAlmacen, setFacturaConcepto, setFacturaAlmacen, setFacturasCreditoConcepto, setFacturasCreditoAlmacen, setFacturasContadoConcepto, setFacturasContadoAlmacen]);
 
   return (
     <View className="p-4 space-y-5 bg-white rounded-2xl flex-1 gap-2">
@@ -77,6 +85,37 @@ const SettingsSales = () => {
             <TextInput
               value={cotizacionAlmacen}
               onChangeText={setCotizacionAlmacenLocal}
+              placeholder="Almacén"
+              placeholderTextColor="#000"
+              keyboardAppearance="light"
+              keyboardType="numeric"
+              className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white"
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Factura */}
+      <View>
+        <Text className="text-sm font-[Poppins-Medium] text-gray-700 tracking-[-0.3px] mb-2">Factura</Text>
+        <View className='flex-row gap-2'>
+          <View className='flex-1'>
+            <Text className="text-xs font-[Poppins-Medium] text-gray-600 mb-1">Concepto</Text>
+            <TextInput
+              value={facturaConcepto}
+              onChangeText={setFacturaConceptoLocal}
+              placeholder="Concepto"
+              placeholderTextColor="#000"
+              keyboardAppearance="light"
+              keyboardType="numeric"
+              className="border border-gray-300 rounded-xl px-4 py-2 text-base h-[50px] bg-white"
+            />
+          </View>
+          <View className='flex-1'>
+            <Text className="text-xs font-[Poppins-Medium] text-gray-600 mb-1">Almacén</Text>
+            <TextInput
+              value={facturaAlmacen}
+              onChangeText={setFacturaAlmacenLocal}
               placeholder="Almacén"
               placeholderTextColor="#000"
               keyboardAppearance="light"
@@ -154,6 +193,9 @@ const SettingsSales = () => {
         <Text className="text-green-600 text-sm font-medium mb-1">Configuración de Ventas:</Text>
         <Text className="text-green-600 text-xs">
           Cotización: {cotizacionConcepto || 'Sin configurar'} | {cotizacionAlmacen || 'Sin configurar'}
+        </Text>
+        <Text className="text-green-600 text-xs">
+          Factura: {facturaConcepto || 'Sin configurar'} | {facturaAlmacen || 'Sin configurar'}
         </Text>
         <Text className="text-green-600 text-xs">
           F. Crédito: {facturasCreditoConcepto || 'Sin configurar'} | {facturasCreditoAlmacen || 'Sin configurar'}

@@ -707,6 +707,15 @@ export default function BottomSheetConsignment() {
             {/* Botones de selección */}
             <View className="gap-3">
               <TouchableOpacity
+                onPress={() => handleSelectDocument('factura', 'credito')}
+                className="bg-primary rounded-full py-4 items-center justify-center"
+              >
+                <Text className="text-white font-[Poppins-SemiBold] text-base tracking-[-0.3px]">
+                  Factura
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
                 onPress={() => handleSelectDocument('factura', 'contado')}
                 className="bg-primary rounded-full py-4 items-center justify-center"
               >

@@ -103,8 +103,7 @@ const CategoryProductScreen = memo(() => {
   const [editableTiers, setEditableTiers] = useState<ProductDiscount['tiers']>([]);
   const [applyTierDiscounts, setApplyTierDiscounts] = useState(false);
   const [isPriceManuallyEdited, setIsPriceManuallyEdited] = useState(false);
-  const [discountValue, setDiscountValue] = useState<number>(0);
-  const [discountText, setDiscountText] = useState<string>('0.00');
+  const [basePrice, setBasePrice] = useState<number>(0);
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -335,15 +334,13 @@ const CategoryProductScreen = memo(() => {
       setIsPriceValid(true);
       setEditableTiers([]);
       setIsPriceManuallyEdited(false);
-      setDiscountValue(0);
-      setDiscountText('0.00');
+      setBasePrice(0);
       return;
     }
     setEditableTiers(selectedItem.tiers ? [...selectedItem.tiers] : []);
     setIsPriceValid(true);
     setIsPriceManuallyEdited(false);
-    setDiscountValue(0);
-    setDiscountText('0.00');
+    setBasePrice(selectedItem.price);
 
     setUnitPrice(selectedItem.price);
     setEditablePrice(selectedItem.price);
@@ -354,31 +351,30 @@ const CategoryProductScreen = memo(() => {
   useEffect(() => {
     if (!selectedItem || isPriceManuallyEdited) return;
 
-    let newUnitPrice;
-    if (applyTierDiscounts) {
-      const applicableTier = (editableTiers || [])
-        .filter(t => quantity >= t.qty)
-        .sort((a, b) => b.qty - a.qty)[0];
-      newUnitPrice = applicableTier ? applicableTier.price : selectedItem.price;
+    let newBasePrice: number;
+    if (applyTierDiscounts && editableTiers && editableTiers.length > 0) {
+      const sortedTiers = [...editableTiers].sort((a, b) => a.price - b.price);
+      newBasePrice = sortedTiers[0].price;
+      setBasePrice(newBasePrice);
     } else {
-      newUnitPrice = selectedItem.price;
+      newBasePrice = selectedItem.price;
+      setBasePrice(newBasePrice);
     }
 
-    const finalPrice = newUnitPrice - discountValue;
-    setUnitPrice(newUnitPrice);
-    setEditablePrice(finalPrice);
-    setEditablePriceText(finalPrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    setUnitPrice(newBasePrice);
+    setEditablePrice(newBasePrice);
+    setEditablePriceText(newBasePrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   }, [quantity, editableTiers, selectedItem, applyTierDiscounts, isPriceManuallyEdited]);
 
   useEffect(() => {
     if (selectedItem && editablePrice > 0 && quantity > 0) {
       setTotal(editablePrice * quantity);
-      setIsPriceValid(true);
+      setIsPriceValid(editablePrice >= basePrice);
     } else {
       setTotal(0);
       setIsPriceValid(false);
     }
-  }, [editablePrice, quantity, selectedItem]);
+  }, [editablePrice, quantity, selectedItem, basePrice]);
 
   const onRefresh = useCallback(() => {
     pagesCacheRef.current = new Map();
@@ -507,39 +503,14 @@ const CategoryProductScreen = memo(() => {
     } else {
       finalValue = parseFloat(finalValue.toFixed(2));
     }
+    
+    if (finalValue < basePrice) {
+      finalValue = basePrice;
+    }
+    
     setEditablePrice(finalValue);
     setEditablePriceText(finalValue.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-    setIsPriceValid(true);
-  };
-
-  const handleDiscountChange = (text: string) => {
-    const cleaned = text.replace(/[^0-9.]/g, '');
-    const parts = cleaned.split('.');
-    if (parts.length > 2) {
-      setDiscountText(parts.slice(0, 2).join('.'));
-    } else {
-      setDiscountText(cleaned);
-    }
-  };
-
-  const handleDiscountBlur = () => {
-    let finalDiscount = parseFloat(discountText);
-    const maxDiscount = 200;
-    if (isNaN(finalDiscount) || finalDiscount < 0) {
-      finalDiscount = 0;
-      setDiscountText('0');
-    } else if (finalDiscount > maxDiscount) {
-      finalDiscount = maxDiscount;
-      setDiscountText(maxDiscount.toString());
-    } else {
-      setDiscountText(finalDiscount.toString());
-    }
-    setDiscountValue(finalDiscount);
-
-    const basePrice = unitPrice > 0 ? unitPrice : (selectedItem?.price ?? 0);
-    const finalPrice = basePrice - finalDiscount;
-    setEditablePrice(finalPrice);
-    setEditablePriceText(finalPrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    setIsPriceValid(finalValue >= basePrice);
   };
 
   if (loading && !loadingMore) {
@@ -660,23 +631,8 @@ const CategoryProductScreen = memo(() => {
                             <TextInput
                               className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] border-gray-300`}
                               value={editablePriceText}
-                              editable={false}
-                              keyboardType="numeric"
-                            />
-                          </View>
-                        </View>
-
-                        <View>
-                          <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
-                            Descuento
-                          </Text>
-                          <View className="flex-row items-center">
-                            <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black">L.</Text>
-                            <TextInput
-                              className={`p-2 text-lg font-[Poppins-Bold] text-black w-[80px] border-gray-300`}
-                              value={discountText}
-                              onChangeText={handleDiscountChange}
-                              onBlur={handleDiscountBlur}
+                              onChangeText={handlePriceChange}
+                              onBlur={handlePriceBlur}
                               keyboardType="numeric"
                             />
                           </View>

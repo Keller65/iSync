@@ -1,8 +1,71 @@
 import { useAppStore } from '@/state/index';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native';
 
+const ACCESS_PIN = '3303';
+
+const PinScreen = ({ onSuccess }: { onSuccess: () => void }) => {
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, []);
+
+  const handleChange = (text: string) => {
+    const digits = text.replace(/\D/g, '').slice(0, 4);
+    setError(false);
+    setPin(digits);
+    if (digits.length === 4) {
+      if (digits === ACCESS_PIN) {
+        onSuccess();
+      } else {
+        setError(true);
+        setTimeout(() => setPin(''), 600);
+      }
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      activeOpacity={1}
+      className="flex-1 items-center justify-center bg-white gap-8 px-8"
+      onPress={() => inputRef.current?.focus()}
+    >
+      <Text className="text-xl font-[Poppins-Bold] tracking-[-0.3px] text-gray-900">Código de acceso</Text>
+
+      {/* Indicadores */}
+      <View className="flex-row gap-4">
+        {[0, 1, 2, 3].map(i => (
+          <View
+            key={i}
+            className={`w-4 h-4 rounded-full border-2 ${error ? 'border-red-500 bg-red-500' : pin.length > i ? 'border-black bg-black' : 'border-gray-400 bg-transparent'}`}
+          />
+        ))}
+      </View>
+
+      {error && (
+        <Text className="text-red-500 text-sm font-[Poppins-Regular] -mt-4">Código incorrecto</Text>
+      )}
+
+      <TextInput
+        ref={inputRef}
+        value={pin}
+        onChangeText={handleChange}
+        keyboardType="number-pad"
+        maxLength={4}
+        secureTextEntry
+        style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+        caretHidden
+      />
+    </TouchableOpacity>
+  );
+};
+
 const SettingsSales = () => {
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
   const {
     ventasConfig, setCotizacionConcepto, setCotizacionAlmacen,
     setFacturaConcepto, setFacturaAlmacen,
@@ -61,6 +124,10 @@ const SettingsSales = () => {
     ToastAndroid.show('Configuración de Ventas guardada exitosamente.', ToastAndroid.SHORT);
     setIsSaving(false);
   }, [cotizacionConcepto, cotizacionAlmacen, facturaConcepto, facturaAlmacen, facturasCreditoConcepto, facturasCreditoAlmacen, facturasContadoConcepto, facturasContadoAlmacen, setCotizacionConcepto, setCotizacionAlmacen, setFacturaConcepto, setFacturaAlmacen, setFacturasCreditoConcepto, setFacturasCreditoAlmacen, setFacturasContadoConcepto, setFacturasContadoAlmacen]);
+
+  if (!isUnlocked) {
+    return <PinScreen onSuccess={() => setIsUnlocked(true)} />;
+  }
 
   return (
     <View className="p-4 space-y-5 bg-white rounded-2xl flex-1 gap-2">

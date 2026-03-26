@@ -1,6 +1,7 @@
 import MinusIcon from '@/assets/icons/MinusIcon';
 import PercentIcon from '@/assets/icons/PercentIcon';
 import PlusIcon from '@/assets/icons/PlusIcon';
+import POSDiscountInput from '@/components/POSInput';
 import { useAuth } from '@/context/auth';
 import { useAppStore } from '@/state/index';
 import { ProductDiscount } from '@/types/types';
@@ -101,14 +102,16 @@ const CategoryProductScreen = memo(() => {
   const [isPriceValid, setIsPriceValid] = useState<boolean>(true);
   const [editablePriceText, setEditablePriceText] = useState<string>('0.00');
   const [editableTiers, setEditableTiers] = useState<ProductDiscount['tiers']>([]);
-  const [applyTierDiscounts, setApplyTierDiscounts] = useState(false);
+  const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [isPriceManuallyEdited, setIsPriceManuallyEdited] = useState(false);
   const [basePrice, setBasePrice] = useState<number>(0);
+  const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const MAX_DISCOUNT = 200;
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const FETCH_URL = fetchUrl + "/api/Catalog/products/all";
-  const [footerHeight] = useState(0);
+  const [footerHeight, setFooterHeight] = useState(0);
 
   const PAGE_SIZE = 20;
   const [page, setPage] = useState<number>(1);
@@ -335,6 +338,8 @@ const CategoryProductScreen = memo(() => {
       setEditableTiers([]);
       setIsPriceManuallyEdited(false);
       setBasePrice(0);
+      setDiscountAmount(0);
+      setSelectedTierIndex(null);
       return;
     }
     setEditableTiers(selectedItem.tiers ? [...selectedItem.tiers] : []);
@@ -351,30 +356,22 @@ const CategoryProductScreen = memo(() => {
   useEffect(() => {
     if (!selectedItem || isPriceManuallyEdited) return;
 
-    let newBasePrice: number;
-    if (applyTierDiscounts && editableTiers && editableTiers.length > 0) {
-      const sortedTiers = [...editableTiers].sort((a, b) => a.price - b.price);
-      newBasePrice = sortedTiers[0].price;
-      setBasePrice(newBasePrice);
-    } else {
-      newBasePrice = selectedItem.price;
-      setBasePrice(newBasePrice);
-    }
-
+    const newBasePrice = selectedItem.price;
+    setBasePrice(newBasePrice);
     setUnitPrice(newBasePrice);
     setEditablePrice(newBasePrice);
     setEditablePriceText(newBasePrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-  }, [quantity, editableTiers, selectedItem, applyTierDiscounts, isPriceManuallyEdited]);
+  }, [selectedItem, isPriceManuallyEdited]);
 
   useEffect(() => {
     if (selectedItem && editablePrice > 0 && quantity > 0) {
       setTotal(editablePrice * quantity);
-      setIsPriceValid(editablePrice >= basePrice);
+      setIsPriceValid(discountAmount <= MAX_DISCOUNT && editablePrice > 0);
     } else {
       setTotal(0);
       setIsPriceValid(false);
     }
-  }, [editablePrice, quantity, selectedItem, basePrice]);
+  }, [editablePrice, quantity, selectedItem, discountAmount, MAX_DISCOUNT]);
 
   const onRefresh = useCallback(() => {
     pagesCacheRef.current = new Map();
@@ -449,7 +446,7 @@ const CategoryProductScreen = memo(() => {
       <BottomSheetFooter {...props}>
         <View
           className='w-full px-4 pt-4 pb-2 bg-white'
-        // onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+          onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
         >
           <View className="w-full flex-row justify-between items-end">
             <Text className="font-[Poppins-Bold] text-black tracking-[-0.3px]">Total</Text>
@@ -468,6 +465,22 @@ const CategoryProductScreen = memo(() => {
       </BottomSheetFooter>
     ) : null
   ), [selectedItem, quantity, total, isPriceValid, handleAddToCart]);
+
+  const handleDiscountChange = useCallback((value: number) => {
+    const newPrice = parseFloat(Math.max(0, basePrice - value).toFixed(2));
+    setDiscountAmount(value);
+    setEditablePrice(newPrice);
+    setEditablePriceText(newPrice.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+  }, [basePrice]);
+
+  const handleTierSelect = useCallback((tier: { qty: number; price: number; percent: number }, index: number) => {
+    setSelectedTierIndex(index);
+    setBasePrice(tier.price);
+    setDiscountAmount(0);
+    setEditablePrice(tier.price);
+    setEditablePriceText(tier.price.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    setIsPriceManuallyEdited(true);
+  }, []);
 
   const handleQuantityChange = (text: string) => {
     const cleanedText = text.replace(/[^0-9]/g, '');
@@ -503,11 +516,11 @@ const CategoryProductScreen = memo(() => {
     } else {
       finalValue = parseFloat(finalValue.toFixed(2));
     }
-    
+
     if (finalValue < basePrice) {
       finalValue = basePrice;
     }
-    
+
     setEditablePrice(finalValue);
     setEditablePriceText(finalValue.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
     setIsPriceValid(finalValue >= basePrice);
@@ -619,24 +632,30 @@ const CategoryProductScreen = memo(() => {
 
                 <View className="flex-row items-start justify-between">
                   <View className="bg-white py-4 rounded-lg flex-1">
-                    <View className='items-start justify-between flex-row'>
-                      <View className='flex flex-row justify-between items-start'>
-                        <View className="flex-1">
-                          <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
-                            Precio de Venta:
-                          </Text>
-
-                          <View className="flex-row items-center">
-                            <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
-                            <TextInput
-                              className={`p-2 text-lg font-[Poppins-Bold] text-black w-[100px] border-gray-300`}
-                              value={editablePriceText}
-                              onChangeText={handlePriceChange}
-                              onBlur={handlePriceBlur}
-                              keyboardType="numeric"
-                            />
-                          </View>
+                    <View className='items-start justify-between flex-row gap-4'>
+                      <View className="flex-1">
+                        <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
+                          Precio de Venta:
+                        </Text>
+                        <View className="flex-row items-center">
+                          <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
+                          <TextInput
+                            className="p-2 text-lg font-[Poppins-Bold] text-black w-[100px]"
+                            value={editablePriceText}
+                            editable={false}
+                            keyboardType="numeric"
+                          />
                         </View>
+                      </View>
+
+                      <View className="items-start">
+                        <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
+                          Descuento
+                        </Text>
+                        <POSDiscountInput
+                          maxAmount={MAX_DISCOUNT}
+                          onAmountChange={handleDiscountChange}
+                        />
                       </View>
                     </View>
 
@@ -680,53 +699,40 @@ const CategoryProductScreen = memo(() => {
 
                 {!isPriceValid && (
                   <Text className="text-red-600 text-xs font-[Poppins-Regular] tracking-[-0.3px]">
-                    El precio no puede ser menor al mínimo permitido.
+                    El descuento no puede superar L. {MAX_DISCOUNT.toFixed(2)}.
                   </Text>
                 )}
 
                 {editableTiers && editableTiers.length > 0 && (
-                  <View
-                    className={`bg-gray-100 py-2 px-3 rounded-2xl ${!applyTierDiscounts && 'opacity-50'}`}
-                  >
-                    <TouchableOpacity
-                      onPress={() => {
-                        setApplyTierDiscounts((prev) => {
-                          const newValue = !prev;
-                          if (newValue) {
-                            setIsPriceManuallyEdited(false);
-                          }
-                          return newValue;
-                        });
-                      }}
-                      className="flex-row justify-between items-center mb-3"
-                    >
-                      <Text className="font-[Poppins-Bold] text-base tracking-[-0.3px] text-gray-800">
-                        Precios por Cantidad:
-                      </Text>
-                      <Text className="font-[Poppins-SemiBold] text-blue-500">
-                        {applyTierDiscounts ? 'Desactivar' : 'Activar'}
-                      </Text>
-                    </TouchableOpacity>
+                  <View className="bg-gray-100 py-2 px-3 rounded-2xl">
+                    <Text className="font-[Poppins-Bold] text-base tracking-[-0.3px] text-gray-800 mb-3">
+                      Lista de Precios
+                    </Text>
                     {editableTiers.map((tier, index) => {
+                      const isSelected = selectedTierIndex === index;
                       return (
-                        <View key={index} className="mb-2">
-                          <View className="flex-row items-center justify-between">
-                            <View className="items-start">
-                              <Text className="font-[Poppins-SemiBold] text-sm tracking-[-0.3px] text-gray-700">
-                                Desde {tier.qty} unidades:
+                        <TouchableOpacity
+                          key={index}
+                          onPress={() => handleTierSelect(tier, index)}
+                          className={`mb-2 flex-row items-center justify-between px-3 py-2 rounded-xl ${isSelected ? 'bg-primary' : 'bg-white'}`}
+                        >
+                          <View className="items-start">
+                            <Text className={`font-[Poppins-SemiBold] text-sm tracking-[-0.3px] ${isSelected ? 'text-white' : 'text-gray-700'}`}>
+                              Desde {tier.qty} unidades
+                            </Text>
+                            {tier.percent > 0 && (
+                              <Text className={`text-xs ${isSelected ? 'text-white' : 'text-green-600'}`}>
+                                ({tier.percent}% desc)
                               </Text>
-                              {tier.percent > 0 && (
-                                <Text className="text-green-600 text-xs">({tier.percent}% desc)</Text>
-                              )}
-                            </View>
-                            <View className="flex-row items-center">
-                              <Text className="font-[Poppins-Bold] text-base text-black mr-1">L.</Text>
-                              <Text className="font-[Poppins-Bold] text-base text-black">
-                                {tier.price.toFixed(2)}
-                              </Text>
-                            </View>
+                            )}
                           </View>
-                        </View>
+                          <View className="flex-row items-center">
+                            <Text className={`font-[Poppins-Bold] text-base mr-1 ${isSelected ? 'text-white' : 'text-black'}`}>L.</Text>
+                            <Text className={`font-[Poppins-Bold] text-base ${isSelected ? 'text-white' : 'text-black'}`}>
+                              {tier.price.toFixed(2)}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
                       );
                     })}
                   </View>

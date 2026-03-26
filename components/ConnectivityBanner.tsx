@@ -103,7 +103,7 @@ export default function ConnectivityBanner({
         className='items-center justify-center p-2 absolute bottom-14 z-10 left-0 right-0'
       >
         <View className="bg-white p-4 gap-2 my-2 border border-gray-100 shadow-md w-[230px] min-h-[50px] rounded-full items-center justify-center flex-row">
-          {withIcon && <AntDesign name="cloudo" size={20} color="#4b5563" />}
+          {withIcon && <AntDesign name="cloud" size={20} color="#4b5563" />}
           <Text className="text-gray-600 text-[12px] font-[Poppins-SemiBold] tracking-[-0.3px]">{message}</Text>
         </View>
       </Animated.View>

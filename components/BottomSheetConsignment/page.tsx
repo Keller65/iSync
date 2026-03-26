@@ -235,15 +235,16 @@ export default function BottomSheetConsignment() {
       codigoProducto: product.barCode,
       cantidad: product.quantity,
       precioUnitario: product.unitPrice,
-      observaciones: 'no hay',
+      observaciones: "",
     }));
 
     const data = {
       codigoCliente: customerSelected.cardCode,
-      codigoConcepto: config.concepto || "N/D",
-      almacenSalida: config.almacen || "N/D",
+      codigoConcepto: config.concepto || "",
+      almacenSalida: config.almacen || "",
       fecha: new Date().toISOString(),
-      referencia: 'API',
+      referencia: comments,
+      codigoAgente: user?.salesPersonCode || "",
       partidas,
       userId: deviceUUID, // UUID proporcionado por useLicense
       documentType: documentType,

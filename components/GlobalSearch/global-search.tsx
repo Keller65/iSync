@@ -89,7 +89,20 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
   const [refreshing, setRefreshing] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
   const [basePrice, setBasePrice] = useState<number>(0);
-  const MAX_DISCOUNT = 200;
+
+  const maxDiscount = useMemo(() => {
+    if (!selectedItem) return 0;
+    const prices = [selectedItem.price, ...(selectedItem.tiers?.map(t => t.price) ?? [])];
+    return Math.max(...prices) - Math.min(...prices);
+  }, [selectedItem]);
+
+  const minTierPrice = useMemo(() => {
+    if (!selectedItem) return 0;
+    const prices = [selectedItem.price, ...(selectedItem.tiers?.map(t => t.price) ?? [])];
+    return Math.min(...prices);
+  }, [selectedItem]);
+
+  const isDiscountDisabled = basePrice <= minTierPrice;
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['85%', '100%'], []);
@@ -292,12 +305,12 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
   useEffect(() => {
     if (selectedItem && editablePrice > 0 && quantity > 0) {
       setTotal(editablePrice * quantity);
-      setIsPriceValid(discountAmount <= MAX_DISCOUNT && editablePrice > 0);
+      setIsPriceValid(discountAmount <= maxDiscount && editablePrice > 0);
     } else {
       setTotal(0);
       setIsPriceValid(false);
     }
-  }, [editablePrice, quantity, selectedItem, discountAmount, MAX_DISCOUNT]);
+  }, [editablePrice, quantity, selectedItem, discountAmount, maxDiscount]);
 
   const handleDiscountChange = useCallback((value: number) => {
     const newPrice = parseFloat(Math.max(0, basePrice - value).toFixed(2));
@@ -350,11 +363,11 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
     } else {
       finalValue = parseFloat(finalValue.toFixed(2));
     }
-    
+
     if (finalValue < basePrice) {
       finalValue = basePrice;
     }
-    
+
     setEditablePrice(finalValue);
     setEditablePriceText(finalValue.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
     setIsPriceValid(finalValue >= basePrice);
@@ -529,72 +542,74 @@ export default function GlobalSearchScreen({ priceListNum }: GlobalSearchScreenP
                   </View>
                 </View>
 
-                <View className='items-start justify-between flex-row gap-4'>
-                  <View className="flex-1">
-                    <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
-                      Precio de Venta:
-                    </Text>
-                    <View className="flex-row items-center">
-                      <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
-                      <TextInput
-                        className="p-2 text-lg font-[Poppins-Bold] text-black w-[100px]"
-                        value={editablePriceText}
-                        editable={false}
-                        keyboardType="numeric"
-                      />
+                <View className="flex-row items-start justify-between">
+                  <View className="bg-white py-4 rounded-lg flex-1">
+                    <View className='items-start justify-between flex-row gap-4'>
+                      <View className="flex-1">
+                        <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
+                          Precio de Venta:
+                        </Text>
+                        <View className="flex-row items-center">
+                          <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-2">L.</Text>
+                          <TextInput
+                            className="p-2 text-lg font-[Poppins-Bold] text-black w-[100px]"
+                            value={editablePriceText}
+                            editable={false}
+                            keyboardType="numeric"
+                          />
+                        </View>
+                      </View>
+
+                      <View className="items-start">
+                        <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
+                          Descuento
+                        </Text>
+                        <POSDiscountInput
+                          maxAmount={maxDiscount}
+                          onAmountChange={handleDiscountChange}
+                          disabled={isDiscountDisabled}
+                        />
+                      </View>
                     </View>
-                  </View>
 
-                  <View className="items-start">
-                    <Text className="font-[Poppins-SemiBold] tracking-[-0.3px] text-gray-800">
-                      Descuento:
-                    </Text>
-                    <View className="flex-row items-center">
-                      <Text className="font-[Poppins-Bold] text-lg tracking-[-0.3px] text-black mr-1">-L.</Text>
-                      <POSDiscountInput
-                        maxAmount={MAX_DISCOUNT}
-                        onAmountChange={handleDiscountChange}
-                      />
+                    <View className='flex-row justify-between items-center'>
+                      <Text className="text-md font-[Poppins-SemiBold] tracking-[-0.3px]">Cantidad</Text>
+                      <View className="flex-row items-center">
+                        <TouchableOpacity className="bg-gray-200 rounded-full p-2" onPress={() => setQuantity(q => Math.max(1, q - 1))}>
+                          <MinusIcon size={20} color="#4b5563" />
+                        </TouchableOpacity>
+                        <TextInput
+                          value={quantity.toString()}
+                          onChangeText={handleQuantityChange}
+                          keyboardType="numeric"
+                          className="mx-4 text-center text-lg text-black w-12"
+                        />
+                        <TouchableOpacity
+                          className={`rounded-full p-2 ${quantity >= (selectedItem?.inStock || 0) ? 'bg-gray-300' : 'bg-gray-200'}`}
+                          onPress={() => setQuantity(q => Math.min(selectedItem?.inStock || 0, q + 1))}
+                          disabled={quantity >= (selectedItem?.inStock || 0)}
+                        >
+                          <PlusIcon size={20} color={quantity >= (selectedItem?.inStock || 0) ? "#9ca3af" : "#4b5563"} />
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                  </View>
-                </View>
 
-                <View className='flex-row justify-between items-center mt-2'>
-                  <Text className="text-md font-[Poppins-SemiBold] tracking-[-0.3px]">Cantidad</Text>
-                  <View className="flex-row items-center">
-                    <TouchableOpacity className="bg-gray-200 rounded-full p-2" onPress={() => setQuantity(q => Math.max(1, q - 1))}>
-                      <MinusIcon size={20} color="#4b5563" />
-                    </TouchableOpacity>
-                    <TextInput
-                      value={quantity.toString()}
-                      onChangeText={handleQuantityChange}
-                      keyboardType="numeric"
-                      className="mx-4 text-center text-lg text-black w-12"
-                    />
-                    <TouchableOpacity
-                      className={`rounded-full p-2 ${quantity >= (selectedItem?.inStock || 0) ? 'bg-gray-300' : 'bg-gray-200'}`}
-                      onPress={() => setQuantity(q => Math.min(selectedItem?.inStock || 0, q + 1))}
-                      disabled={quantity >= (selectedItem?.inStock || 0)}
-                    >
-                      <PlusIcon size={20} color={quantity >= (selectedItem?.inStock || 0) ? "#9ca3af" : "#4b5563"} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View className='flex-row items-center justify-between mt-1 w-full'>
-                  <Text className="text-xs text-gray-500 font-[Poppins-Regular] tracking-[-0.3px]">
-                    Precio base original: L.{selectedItem.price.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </Text>
-                  <View className="bg-gray-200 py-1 px-3 rounded-full w-[60px] items-center justify-center">
-                    <Text className="font-[Poppins-Regular] text-[12px] tracking-[-0.3px] text-gray-700">
-                      {selectedItem.taxType}
-                    </Text>
+                    <View className='flex-row items-center justify-between mt-1 w-full'>
+                      <Text className="text-xs text-gray-500 font-[Poppins-Regular] tracking-[-0.3px]">
+                        Precio base original: L.{selectedItem.price.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </Text>
+                      <View className="bg-gray-200 py-1 px-3 rounded-full w-[60px] items-center justify-center">
+                        <Text className="font-[Poppins-Regular] text-[12px] tracking-[-0.3px] text-gray-700">
+                          {selectedItem.taxType}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
 
                 {!isPriceValid && (
                   <Text className="text-red-600 text-xs font-[Poppins-Regular] tracking-[-0.3px]">
-                    El descuento no puede superar L. {MAX_DISCOUNT.toFixed(2)}.
+                    El descuento no puede superar L. {maxDiscount.toFixed(2)}.
                   </Text>
                 )}
 

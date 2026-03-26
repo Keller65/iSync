@@ -9,7 +9,7 @@ import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal, BottomSheetSc
 import { useRoute } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 import axios from 'axios';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const ProductItem = memo(({ item, onPress }: { item: ProductDiscount, onPress: (item: ProductDiscount) => void }) => {
@@ -106,7 +106,20 @@ const CategoryProductScreen = memo(() => {
   const [isPriceManuallyEdited, setIsPriceManuallyEdited] = useState(false);
   const [basePrice, setBasePrice] = useState<number>(0);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
-  const MAX_DISCOUNT = 200;
+
+  const maxDiscount = useMemo(() => {
+    if (!selectedItem) return 0;
+    const prices = [selectedItem.price, ...(selectedItem.tiers?.map(t => t.price) ?? [])];
+    return Math.max(...prices) - Math.min(...prices);
+  }, [selectedItem]);
+
+  const minTierPrice = useMemo(() => {
+    if (!selectedItem) return 0;
+    const prices = [selectedItem.price, ...(selectedItem.tiers?.map(t => t.price) ?? [])];
+    return Math.min(...prices);
+  }, [selectedItem]);
+
+  const isDiscountDisabled = basePrice <= minTierPrice;
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -366,12 +379,12 @@ const CategoryProductScreen = memo(() => {
   useEffect(() => {
     if (selectedItem && editablePrice > 0 && quantity > 0) {
       setTotal(editablePrice * quantity);
-      setIsPriceValid(discountAmount <= MAX_DISCOUNT && editablePrice > 0);
+      setIsPriceValid(discountAmount <= maxDiscount && editablePrice > 0);
     } else {
       setTotal(0);
       setIsPriceValid(false);
     }
-  }, [editablePrice, quantity, selectedItem, discountAmount, MAX_DISCOUNT]);
+  }, [editablePrice, quantity, selectedItem, discountAmount, maxDiscount]);
 
   const onRefresh = useCallback(() => {
     pagesCacheRef.current = new Map();
@@ -653,8 +666,9 @@ const CategoryProductScreen = memo(() => {
                           Descuento
                         </Text>
                         <POSDiscountInput
-                          maxAmount={MAX_DISCOUNT}
+                          maxAmount={maxDiscount}
                           onAmountChange={handleDiscountChange}
+                          disabled={isDiscountDisabled}
                         />
                       </View>
                     </View>
@@ -699,7 +713,7 @@ const CategoryProductScreen = memo(() => {
 
                 {!isPriceValid && (
                   <Text className="text-red-600 text-xs font-[Poppins-Regular] tracking-[-0.3px]">
-                    El descuento no puede superar L. {MAX_DISCOUNT.toFixed(2)}.
+                    El descuento no puede superar L. {maxDiscount.toFixed(2)}.
                   </Text>
                 )}
 

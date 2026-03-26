@@ -11,11 +11,13 @@ import { usePOSAmount } from '@/hooks/usePosPrice';
 interface POSDiscountInputProps {
   onAmountChange?: (value: number) => void;
   maxAmount?: number;
+  disabled?: boolean;
 }
 
 const POSDiscountInput: React.FC<POSDiscountInputProps> = ({
   onAmountChange,
   maxAmount = 200,
+  disabled = false,
 }) => {
   const {
     displayAmount,
@@ -77,9 +79,13 @@ const POSDiscountInput: React.FC<POSDiscountInputProps> = ({
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.displayArea} onPress={focusInput}>
-        <View style={styles.amountWrapper}>{renderDigits()}</View>
+    <View style={[styles.container, disabled && styles.disabledContainer]}>
+      <TouchableOpacity style={styles.displayArea} onPress={disabled ? undefined : focusInput} disabled={disabled}>
+        <View style={styles.amountWrapper}>
+          {renderDigits().map((digit, i) =>
+            disabled ? <Text key={i} style={styles.disabledDigit}>{digit.props.children}</Text> : digit
+          )}
+        </View>
       </TouchableOpacity>
 
       <TextInput
@@ -91,6 +97,7 @@ const POSDiscountInput: React.FC<POSDiscountInputProps> = ({
         autoFocus={false}
         caretHidden
         contextMenuHidden
+        editable={!disabled}
       />
     </View>
   );
@@ -120,6 +127,17 @@ const styles = StyleSheet.create({
   },
   inactiveDigit: {
     color: '#000000',
+  },
+  disabledContainer: {
+    opacity: 0.4,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+  },
+  disabledDigit: {
+    fontSize: 18,
+    color: '#9ca3af',
+    fontFamily: 'Poppins-Bold',
+    lineHeight: 30,
   },
   hiddenInput: {
     position: 'absolute',
